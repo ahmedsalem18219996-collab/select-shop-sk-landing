@@ -16,12 +16,12 @@ const $$ = (s, root=document) => [...root.querySelectorAll(s)];
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const state = {
-  bundle: false, // true = two paid pairs for 1280
+  bundle: false,
   pairs: [
     {...PRODUCTS["SK-1"], size:""},
     {...PRODUCTS["SK-2"], size:""},
   ],
-  singleSizes: [], // one size, or two trial sizes for one paid pair
+  singleSizes: [],
   dualSize: false,
 };
 
@@ -107,14 +107,12 @@ function sync(){
         : "الدفع عند الاستلام";
   }
 
-  // Main/sheet offer mode buttons.
   $$('[data-mode]').forEach(el=>{
     const active=(el.dataset.mode==='double')===state.bundle;
     el.classList.toggle('active',active);
     el.setAttribute('aria-pressed',String(active));
   });
 
-  // Single product controls.
   $$('[data-product]:not([data-pair-product])').forEach(el=>{
     const active=!state.bundle && el.dataset.product===p1.product;
     el.classList.toggle('active',active);
@@ -122,7 +120,6 @@ function sync(){
   });
   $$('[data-size]:not([data-pair-size])').forEach(el=>el.classList.toggle('active',!state.bundle && state.singleSizes.includes(el.dataset.size)));
 
-  // Two-pair controls, duplicated between page and checkout sheet.
   $$('[data-pair-product]').forEach(el=>{
     const p=pair(Number(el.dataset.pairProduct));
     el.classList.toggle('active',state.bundle && p.product===el.dataset.product);
@@ -153,9 +150,7 @@ function setMode(mode){
   if(double){
     state.bundle=true;
     state.dualSize=false;
-    // Carry an already chosen single size into pair 1 so upsell feels effortless.
     if(state.singleSizes[0]) pair(1).size=state.singleSizes[0];
-    // If pair 2 was never configured, default to the other color.
     if(!pair(2).product || pair(2).product===pair(1).product){
       const other=pair(1).product==='SK-1'?'SK-2':'SK-1';
       state.pairs[1]={...PRODUCTS[other],size:pair(2).size||""};
@@ -222,14 +217,12 @@ function choosePairSize(el){
 }
 $$('[data-pair-size]').forEach(el=>el.addEventListener('click',()=>choosePairSize(el)));
 
-// Touch swipe on hero changes pair 1 / single color.
 let startX=0,startY=0,deltaX=0,swiping=false;
 stage?.addEventListener('pointerdown',e=>{if(e.pointerType==='mouse'||state.bundle)return;swiping=true;startX=e.clientX;startY=e.clientY;deltaX=0;stage.setPointerCapture?.(e.pointerId)});
 stage?.addEventListener('pointermove',e=>{if(!swiping)return;const dx=e.clientX-startX,dy=e.clientY-startY;if(Math.abs(dx)>Math.abs(dy)*1.2){deltaX=dx;stage.style.transition='none';stage.style.transform=`translateX(${Math.max(-42,Math.min(42,dx))}px) rotate(${dx*.025}deg)`}});
 function endSwipe(){if(!swiping)return;swiping=false;stage.style.transition='';stage.style.transform='';if(Math.abs(deltaX)>44){const target=pair(1).product==='SK-1'?'SK-2':'SK-1';chooseSingleProduct($(`[data-product="${target}"]:not([data-pair-product])`))}deltaX=0}
 stage?.addEventListener('pointerup',endSwipe);stage?.addEventListener('pointercancel',endSwipe);
 
-// Subtle desktop parallax only.
 if(!reduceMotion&&heroMedia&&stage&&matchMedia('(hover:hover) and (pointer:fine)').matches){let targetX=0,targetY=0,currentX=0,currentY=0;const update=()=>{currentX+=(targetX-currentX)*.08;currentY+=(targetY-currentY)*.08;if(!state.bundle)stage.style.transform=`rotateX(${currentY*-2.4}deg) rotateY(${currentX*3}deg)`;requestAnimationFrame(update)};heroMedia.addEventListener('pointermove',e=>{const r=heroMedia.getBoundingClientRect();targetX=((e.clientX-r.left)/r.width-.5);targetY=((e.clientY-r.top)/r.height-.5)});heroMedia.addEventListener('pointerleave',()=>{targetX=0;targetY=0});requestAnimationFrame(update)}
 
 function openSheet(){
@@ -290,18 +283,15 @@ $("#orderForm")?.addEventListener('submit',async e=>{
   }
 });
 
-// Reveal / progress
 const ro=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');ro.unobserve(e.target)}}),{threshold:.12,rootMargin:'0px 0px -20px 0px'});$$('[data-reveal]').forEach(el=>ro.observe(el));
 const progress=$("#progress");function onScroll(){const max=document.documentElement.scrollHeight-innerHeight;progress.style.width=`${max>0?(scrollY/max)*100:0}%`}addEventListener('scroll',onScroll,{passive:true});onScroll();
 
-// CTA tactile response.
 $$('.cta,.mobile-dock button,.nav-buy,.submit-order,.mode-card,.smart-upsell,.pair-card button').forEach(btn=>{btn.addEventListener('pointerdown',e=>{const r=btn.getBoundingClientRect();btn.style.setProperty('--tap-x',`${Math.round(((e.clientX-r.left)/r.width)*100)}%`);btn.animate([{transform:'scale(1)'},{transform:'scale(.975)'},{transform:'scale(1)'}],{duration:190,easing:'ease-out'});softHaptic(8)})});
 
 $("#year").textContent=new Date().getFullYear();sync();
 
 if(META_PIXEL_ID){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',META_PIXEL_ID);fbq('track','PageView');fbq('track','ViewContent',{content_name:'SK Sneakers',value:PRICE_SINGLE,currency:'EGP'})}
 
-// ===== Mobile viewport safety + app-like micro interactions =====
 const stickyNav=document.querySelector('#stickyNav');
 function updateViewportSafe(){const vv=window.visualViewport;let bottom=0;if(vv){bottom=Math.max(0,Math.round(window.innerHeight-(vv.height+vv.offsetTop)));if(bottom>180)bottom=0}document.documentElement.style.setProperty('--vv-bottom',`${bottom}px`)}
 updateViewportSafe();window.addEventListener('resize',updateViewportSafe,{passive:true});window.visualViewport?.addEventListener('resize',updateViewportSafe,{passive:true});window.visualViewport?.addEventListener('scroll',updateViewportSafe,{passive:true});
@@ -315,3 +305,6 @@ $$('[data-size],[data-pair-size]').forEach(el=>el.addEventListener('click',()=>{
 $$('[data-mode]').forEach(el=>el.addEventListener('click',()=>{burstAt(el,el.dataset.mode==='double'?'#f5b95f':'#a68cff');pop(el);setTimeout(popPrices,30)}));
 $$('[data-open-order]').forEach(el=>el.addEventListener('click',()=>burstAt(el,'#ffffff')));
 $$('.quick-jump a').forEach(a=>a.addEventListener('click',()=>{softHaptic(6);document.querySelector(a.getAttribute('href'))?.style.setProperty('scroll-margin-top','108px')}));
+
+// V9 is isolated so future catalog/routing changes do not require rewriting the stable checkout core.
+import('./v9.js').catch(err => console.error('V9 enhancement failed', err));
