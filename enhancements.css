@@ -1,0 +1,49 @@
+/* SELECT SHOP V9 additive UI refinements */
+.v9-enhanced .model-deck{margin-top:14px;margin-bottom:34px}
+.model-deck{position:relative;z-index:5}
+.model-deck-head{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:14px}
+.model-deck-head>div>span{display:block;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:#b6a7d9;margin-bottom:4px}
+.model-deck-head h2{font-size:clamp(1.2rem,2.2vw,1.75rem);margin:0;color:#fff}
+.model-deck-head>small{color:#a9a3b5;font-size:.8rem}
+.model-deck-rail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.model-link{position:relative;display:grid;grid-template-columns:112px 1fr auto;align-items:center;gap:14px;padding:10px;border:1px solid rgba(255,255,255,.08);border-radius:22px;background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.02));text-decoration:none;color:#fff;overflow:hidden;transition:transform .24s ease,border-color .24s ease,background .24s ease,box-shadow .24s ease}
+.model-link:hover{transform:translateY(-2px);border-color:rgba(194,154,255,.28);box-shadow:0 14px 42px rgba(36,14,63,.18)}
+.model-link.active{border-color:rgba(194,154,255,.48);background:linear-gradient(145deg,rgba(154,96,255,.13),rgba(255,136,197,.055));box-shadow:0 16px 48px rgba(64,26,98,.22)}
+.model-visual{position:relative;display:block;aspect-ratio:1.22/1;border-radius:16px;overflow:hidden;background:#111015}
+.model-visual img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s ease}
+.model-link:hover .model-visual img{transform:scale(1.035)}
+.model-visual i{position:absolute;inset:auto 7px 7px auto;padding:4px 7px;border-radius:999px;background:rgba(8,7,12,.78);backdrop-filter:blur(7px);font-style:normal;font-size:.58rem;color:#fff;opacity:0;transform:translateY(4px);transition:.2s ease}
+.model-link.active .model-visual i{opacity:1;transform:none}
+.model-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
+.model-copy small{font-family:Manrope,Cairo,sans-serif;font-size:.72rem;color:#b79cff;font-weight:800;letter-spacing:.04em}
+.model-copy b{font-size:1rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.model-copy em{font-style:normal;font-size:.72rem;color:#9f9aa9;direction:ltr;text-align:right}
+.model-arrow{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.055);color:#d7c9ff;font-size:1.05rem;transition:.22s ease}
+.model-link:hover .model-arrow,.model-link.active .model-arrow{background:rgba(166,140,255,.14);transform:translateX(-2px)}
+.v9-enhanced .spec-hub{padding-top:28px}
+.v9-enhanced .spec-grid{gap:10px}
+.v9-enhanced .spec-card{min-height:unset;padding:16px 15px}
+.v9-enhanced .spec-card small{line-height:1.65}
+.v9-enhanced .feature-card{min-height:unset}
+.v9-enhanced .hero-media,.v9-enhanced .stage{isolation:isolate}
+@media (max-width:760px){
+  .v9-enhanced .model-deck{margin-top:2px;margin-bottom:26px}
+  .model-deck-head{align-items:start;margin-bottom:10px}
+  .model-deck-head>small{display:none}
+  .model-deck-rail{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding:2px 1px 7px;overscroll-behavior-inline:contain;scrollbar-width:none}
+  .model-deck-rail::-webkit-scrollbar{display:none}
+  .model-link{flex:0 0:min(84vw,330px);grid-template-columns:96px 1fr 30px;scroll-snap-align:start;border-radius:20px;padding:8px;gap:11px}
+  .model-copy b{font-size:.93rem}
+  .model-copy em{font-size:.67rem}
+  .v9-enhanced .spec-grid{grid-template-columns:1fr 1fr}
+  .v9-enhanced .spec-card{padding:13px 12px}
+  .v9-enhanced .spec-card strong{font-size:.9rem}
+  .v9-enhanced .spec-card small{font-size:.72rem}
+}
+@media (max-width:440px){
+  .model-link{flex-basis:88vw;grid-template-columns:90px 1fr 28px}
+  .v9-enhanced .spec-grid{grid-template-columns:1fr}
+  .v9-enhanced .spec-card{display:grid;grid-template-columns:42px 1fr;align-items:start}
+  .v9-enhanced .spec-note{margin-top:9px}
+}
+@media (prefers-reduced-motion:reduce){.model-link,.model-visual img,.model-arrow{transition:none!important}}
