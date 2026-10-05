@@ -2,219 +2,305 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#120d1f" />
-  <meta name="description" content="سنيكر SK خفيف ومريح بنعل EVA وخامة Mesh. 680 جنيه شامل الشحن لجميع المحافظات مع معاينة عند الاستلام." />
-  <title>SELECT SHOP | سنيكر SK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#09080d" />
+  <meta name="description" content="سنيكر SK خفيف ومريح بخامة Mesh ونعل EVA. زوج واحد 680 جنيه شامل الشحن، أو أي زوجين 1280 جنيه شامل الشحن. معاينة ودفع عند الاستلام." />
+  <title>SELECT SHOP | SK Sneakers</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="announcement">شحن مجاني لكل المحافظات • معاينة عند الاستلام • الدفع عند الاستلام</div>
+  <div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="cursor-light" id="cursorLight" aria-hidden="true"></div>
+  <div class="progress" id="progress" aria-hidden="true"></div>
 
-  <header class="site-header" id="top">
-    <a class="brand" href="#top" aria-label="SELECT SHOP">
-      <span>SELECT</span><b>SHOP</b>
+  <div class="announce" aria-label="معلومات العرض">
+    <div class="announce-track">
+      <span>لون واحد 680 شامل الشحن</span><b>•</b><span>أي زوجين 1280 شامل الشحن</span><b>•</b><span>معاينة عند الاستلام</span><b>•</b><span>مقاسات 37–41</span><b>•</b>
+      <span>لون واحد 680 شامل الشحن</span><b>•</b><span>أي زوجين 1280 شامل الشحن</span><b>•</b><span>الدفع عند الاستلام</span><b>•</b><span>SELECT SHOP</span>
+    </div>
+  </div>
+
+  <header class="nav shell" id="stickyNav">
+    <a class="brand brand-v6" href="#top" aria-label="SELECT SHOP">
+      <span class="brand-emblem" aria-hidden="true"><i>S</i><b></b></span>
+      <span class="brand-copy"><b>SELECT</b><small>SHOP</small></span>
     </a>
-    <nav class="desktop-nav" aria-label="التنقل الرئيسي">
-      <a href="#features">المميزات</a>
-      <a href="#colors">الألوان</a>
-      <a href="#sizes">المقاسات</a>
-      <a href="#order">اطلبي الآن</a>
-    </nav>
-    <a class="header-cta" href="#order">اطلبي الآن</a>
+    <div class="nav-buy-wrap"><span class="mini-cue" aria-hidden="true"><i></i><i></i></span><button class="nav-buy" type="button" data-open-order>اطلبي الآن</button></div>
   </header>
+  <nav class="quick-jump shell" aria-label="روابط سريعة">
+    <a href="#pick">اختاري</a><a href="#details">التفاصيل</a><a href="#features">المميزات</a><a href="#faq">الأسئلة</a>
+  </nav>
 
-  <main>
-    <section class="hero section-shell">
-      <div class="hero-copy">
-        <div class="eyebrow"><span></span> SK SNEAKERS • خفة وراحة طول اليوم</div>
-        <h1>السنيكر اللي يكمّل يومك<br><em>من غير ما يرهق رجلك.</em></h1>
-        <p class="hero-lead">خامة Mesh مهوّاة + نعل EVA خفيف بيمتص الصدمات. مناسب للمشي، الشغل، الخروج والجيم.</p>
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-media" id="heroMedia" data-reveal>
+        <div class="hero-halo" aria-hidden="true"></div>
+        <div class="hero-grid" aria-hidden="true"></div>
+        <div class="hero-signal signal-a" aria-hidden="true"></div>
+        <div class="hero-signal signal-b" aria-hidden="true"></div>
+        <div class="hero-orbit orbit-a" aria-hidden="true"></div>
+        <div class="hero-orbit orbit-b" aria-hidden="true"></div>
 
-        <div class="price-row">
-          <div>
-            <span class="price-label">السعر شامل الشحن</span>
-            <div class="price"><strong>680</strong><span>جنيه</span></div>
+        <div class="stage" id="stage">
+          <div class="stage-shine" aria-hidden="true"></div>
+          <img id="heroImage" src="assets/sk-1.jpg" alt="SK-1 أبيض ووردي" draggable="false" />
+          <div class="bundle-preview" id="bundlePreview" aria-hidden="true"><img src="assets/sk-1.jpg" alt=""><img src="assets/sk-2.jpg" alt=""></div>
+          <div class="stage-label">
+            <span id="heroCode">SK-1</span>
+            <small id="heroColor">أبيض × وردي</small>
           </div>
-          <div class="delivery-badge">
-            <span class="badge-icon">✓</span>
-            <div><b>معاينة عند الاستلام</b><small>اتأكدي من المنتج قبل الدفع</small></div>
+          <div class="stage-swipe" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M8 7 3 12l5 5M16 7l5 5-5 5M3 12h18"/></svg>
+            <span>اسحبي لتغيير اللون</span>
           </div>
+        </div>
+
+        <div class="float-chip chip-mesh"><span>Mesh</span><small>تهوية أعلى</small></div>
+        <div class="float-chip chip-eva"><span>EVA</span><small>أخف في المشي</small></div>
+        <div class="float-price" id="floatPrice"><small id="floatPriceLabel">شامل الشحن</small><strong id="floatPriceValue">680</strong><span>جنيه</span></div>
+      </div>
+
+      <div class="hero-copy" data-reveal>
+        <div class="kicker"><span></span> SK SNEAKERS / SELECT SHOP</div>
+        <h1>راحة تلفت النظر.<br><em>ستايل يتحس.</em></h1>
+        <p>Mesh مهوّاة + نعل EVA خفيف ومرن. سنيكر يومي للمشي، الشغل، الخروج والجيم.</p>
+        <div class="hero-facts" aria-label="مميزات الطلب السريعة">
+          <span><b>680</b><small>لون واحد</small></span>
+          <span><b>1280</b><small>أي زوجين</small></span>
+          <span><b>37–41</b><small>المقاسات</small></span>
+          <span><b>COD</b><small>دفع عند الاستلام</small></span>
         </div>
 
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#order">اختاري اللون والمقاس</a>
-          <a class="btn btn-ghost" href="#colors">شوفي الألوان</a>
-        </div>
-
-        <div class="micro-trust" aria-label="مميزات سريعة">
-          <span>✓ شحن مجاني</span>
-          <span>✓ دفع عند الاستلام</span>
-          <span>✓ مقاسات 37–41</span>
-        </div>
-      </div>
-
-      <div class="hero-visual" aria-label="صور المنتج">
-        <div class="glow glow-a"></div>
-        <div class="glow glow-b"></div>
-        <div class="product-stage">
-          <span class="floating-pill">SK-1 • أبيض × وردي</span>
-          <img id="heroImage" src="assets/sk-1.jpg" alt="سنيكر SK-1 أبيض ووردي" />
-          <div class="stage-meta">
-            <div><span>Mesh</span><b>تهوية أفضل</b></div>
-            <div><span>EVA</span><b>خفيف ومرن</b></div>
+          <div class="guided-cta hero-guided">
+            <span class="outside-arrows right-cue" aria-hidden="true"><i></i><i></i><i></i></span>
+            <button class="cta cta-main cta-motion" type="button" data-open-order>
+              <span><small id="heroCtaPrice">680 جنيه شامل الشحن</small><b>اطلبي الآن</b></span>
+              <span class="cta-dot" aria-hidden="true"></span>
+            </button>
+            <span class="outside-arrows left-cue" aria-hidden="true"><i></i><i></i><i></i></span>
+          </div>
+          <div class="trust-mini">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 7.9 7.5 9.5 4.3-1.6 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m9 12 2 2 4-4"/></svg>
+            <span><b>لشخصين؟ عادي جدًا</b><small>كل زوج بلونه ومقاسه — والعرض 1280</small></span>
           </div>
         </div>
-        <div class="thumbs" role="group" aria-label="اختيار صورة المنتج">
-          <button class="thumb active" data-image="assets/sk-1.jpg" data-label="SK-1 • أبيض × وردي" aria-label="عرض SK-1"><img src="assets/sk-1.jpg" alt="SK-1"></button>
-          <button class="thumb" data-image="assets/sk-2.jpg" data-label="SK-2 • أسود × أزرق" aria-label="عرض SK-2"><img src="assets/sk-2.jpg" alt="SK-2"></button>
-        </div>
       </div>
     </section>
 
-    <section class="trust-strip">
-      <div><span>01</span><b>خفيف جدًا</b><small>نعل EVA مناسب للحركة اليومية</small></div>
-      <div><span>02</span><b>تهوية طول اليوم</b><small>Mesh مريح وناعم على القدم</small></div>
-      <div><span>03</span><b>ستايل سهل</b><small>للخروج والمشي والشغل والجيم</small></div>
-      <div><span>04</span><b>طلب مطمّن</b><small>معاينة ودفع عند الاستلام</small></div>
-    </section>
-
-    <section class="feature-section section-shell" id="features">
-      <div class="section-heading">
-        <span class="kicker">ليه SK؟</span>
-        <h2>راحة حقيقية من أول خطوة.</h2>
-        <p>مش محتاجة تختاري بين الشكل والراحة. التصميم معمول للاستخدام اليومي الطويل بدون وزن زائد على القدم.</p>
+    <section class="chooser shell" id="pick" data-reveal>
+      <div class="section-head">
+        <span>اختيار سريع</span>
+        <h2>لونك ومقاسك في أقل من 10 ثواني.</h2>
       </div>
-      <div class="feature-grid">
-        <article class="feature-card featured">
-          <div class="feature-number">01</div>
-          <h3>نعل EVA فائق الخفة</h3>
-          <p>يمتص جزء كبير من الصدمات ويخلي الحركة أخف في المشي والخروج لفترات طويلة.</p>
-          <div class="feature-line"></div>
-          <span>Lightweight cushioning</span>
-        </article>
-        <article class="feature-card">
-          <div class="feature-number">02</div>
-          <h3>Mesh مهوّاة</h3>
-          <p>نسيج مرن وخفيف يساعد على تهوية القدم ومايضغطش على الحركة الطبيعية.</p>
-          <div class="feature-line"></div>
-          <span>Breathable upper</span>
-        </article>
-        <article class="feature-card">
-          <div class="feature-number">03</div>
-          <h3>مناسب لأكتر من ستايل</h3>
-          <p>جينز، ليجنز، تريننج أو لبس كاجوال — تصميم بسيط وسهل التنسيق.</p>
-          <div class="feature-line"></div>
-          <span>Everyday styling</span>
-        </article>
-      </div>
-    </section>
 
-    <section class="colors-section" id="colors">
-      <div class="section-shell colors-inner">
-        <div class="section-heading light">
-          <span class="kicker">اختاري ستايلك</span>
-          <h2>لونين. نفس الراحة.</h2>
-        </div>
-        <div class="color-grid">
-          <button class="color-card selected" data-color="SK-1" data-image="assets/sk-1.jpg">
-            <img src="assets/sk-1.jpg" alt="SK-1 أبيض وردي">
-            <div class="color-card-copy"><span>SK-1</span><b>أبيض × وردي</b><small>فاتح وسهل التنسيق</small></div>
-            <i>✓</i>
+      <div class="order-mode-switch" role="group" aria-label="اختاري العرض">
+        <button class="mode-card active" type="button" data-mode="single" aria-pressed="true">
+          <span><small>زوج واحد</small><b>680 جنيه</b></span><em>شامل الشحن</em>
+        </button>
+        <button class="mode-card hot" type="button" data-mode="double" aria-pressed="false">
+          <span><small>الأوفر</small><b>زوجين بـ1280</b></span><em>الزوج التاني بـ600 بس</em>
+        </button>
+      </div>
+
+      <div class="single-config" id="singleConfig">
+        <div class="color-rail" role="group" aria-label="اختيار اللون">
+          <button class="color-card active" type="button" data-product="SK-1" data-name="أبيض × وردي" data-image="assets/sk-1.jpg">
+            <img src="assets/sk-1.jpg" alt="SK-1 أبيض وردي" />
+            <span><b>SK-1</b><small>أبيض × وردي</small></span>
+            <i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 12 4 4 8-8"/></svg></i>
           </button>
-          <button class="color-card" data-color="SK-2" data-image="assets/sk-2.jpg">
-            <img src="assets/sk-2.jpg" alt="SK-2 أسود أزرق">
-            <div class="color-card-copy"><span>SK-2</span><b>أسود × أزرق</b><small>عملي وشكله أقوى</small></div>
-            <i>✓</i>
+          <button class="color-card" type="button" data-product="SK-2" data-name="أسود × أزرق" data-image="assets/sk-2.jpg">
+            <img src="assets/sk-2.jpg" alt="SK-2 أسود أزرق" />
+            <span><b>SK-2</b><small>أسود × أزرق</small></span>
+            <i aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m6 12 4 4 8-8"/></svg></i>
           </button>
         </div>
-      </div>
-    </section>
 
-    <section class="size-section section-shell" id="sizes">
-      <div class="size-copy">
-        <span class="kicker">المقاسات</span>
-        <h2>من 37 لحد 41.</h2>
-        <p>اختاري مقاسك المعتاد. ولو محتارة، اكتبي مقاسك في الطلب وإحنا نراجعه معاكي قبل الشحن.</p>
-        <div class="size-chips" aria-label="المقاسات المتاحة">
-          <span>37</span><span>38</span><span>39</span><span>40</span><span>41</span>
-        </div>
-      </div>
-      <div class="size-note">
-        <div class="note-icon">↔</div>
-        <div><b>اختيار المقاس بسهولة</b><p>الفورم تحت بيسمحلك تختاري اللون والمقاس قبل إرسال الطلب.</p></div>
-      </div>
-    </section>
-
-    <section class="order-section" id="order">
-      <div class="section-shell order-shell">
-        <div class="order-copy">
-          <span class="kicker">اطلبي دلوقتي</span>
-          <h2>680 جنيه <em>شامل الشحن.</em></h2>
-          <p>املّي بيانات الطلب، وبعدها هنجهزلك رسالة واتساب بالبيانات كلها عشان تبعتيها بضغطة واحدة.</p>
-          <div class="order-benefits">
-            <span>✓ شحن لجميع المحافظات</span>
-            <span>✓ معاينة عند الاستلام</span>
-            <span>✓ الدفع عند الاستلام</span>
+        <div class="size-panel">
+          <div class="size-copy"><span>اختاري المقاس</span><small>المتاح من 37 إلى 41</small></div>
+          <div class="sizes" role="group" aria-label="اختيار المقاس">
+            <button type="button" data-size="37">37</button><button type="button" data-size="38">38</button><button type="button" data-size="39">39</button><button type="button" data-size="40">40</button><button type="button" data-size="41">41</button>
           </div>
         </div>
 
-        <form class="order-card" id="orderForm" novalidate>
-          <div class="form-head"><div><small>SELECT SHOP</small><b>بيانات الطلب</b></div><span>680 EGP</span></div>
+        <button class="dual-size-card" id="dualSizeToggle" type="button" aria-pressed="false">
+          <span class="dual-icon" aria-hidden="true">2</span>
+          <span class="dual-copy"><b>محتارة بين مقاسين لنفس الزوج؟</b><small>اختاري مقاسين للتجربة وخدي الأنسب عند الاستلام.</small></span>
+          <span class="dual-switch" aria-hidden="true"><i></i></span>
+        </button>
+        <p class="dual-note">تجربة مقاسين تخص زوج واحد فقط، حسب التوافر وقت التأكيد.</p>
 
-          <label>الاسم
-            <input type="text" id="name" name="name" autocomplete="name" placeholder="اكتبي اسمك" required>
-          </label>
-          <label>رقم الموبايل
-            <input type="tel" id="phone" name="phone" inputmode="tel" autocomplete="tel" placeholder="01xxxxxxxxx" required>
-          </label>
-          <div class="form-grid">
-            <label>المحافظة
-              <select id="governorate" name="governorate" required>
-                <option value="">اختاري</option>
-                <option>القاهرة</option><option>الجيزة</option><option>الإسكندرية</option><option>القليوبية</option><option>الشرقية</option><option>الدقهلية</option><option>الغربية</option><option>المنوفية</option><option>البحيرة</option><option>كفر الشيخ</option><option>دمياط</option><option>بورسعيد</option><option>الإسماعيلية</option><option>السويس</option><option>الفيوم</option><option>بني سويف</option><option>المنيا</option><option>أسيوط</option><option>سوهاج</option><option>قنا</option><option>الأقصر</option><option>أسوان</option><option>البحر الأحمر</option><option>الوادي الجديد</option><option>مطروح</option><option>شمال سيناء</option><option>جنوب سيناء</option>
-              </select>
-            </label>
-            <label>المقاس
-              <select id="size" name="size" required><option value="">اختاري</option><option>37</option><option>38</option><option>39</option><option>40</option><option>41</option></select>
-            </label>
-          </div>
-
-          <fieldset>
-            <legend>اللون</legend>
-            <div class="radio-row">
-              <label class="radio-card"><input type="radio" name="color" value="SK-1 أبيض × وردي" checked><span><i class="swatch swatch-light"></i>SK-1 أبيض × وردي</span></label>
-              <label class="radio-card"><input type="radio" name="color" value="SK-2 أسود × أزرق"><span><i class="swatch swatch-dark"></i>SK-2 أسود × أزرق</span></label>
-            </div>
-          </fieldset>
-
-          <label>العنوان بالتفصيل
-            <textarea id="address" name="address" rows="3" placeholder="المنطقة، الشارع، رقم العمارة..." required></textarea>
-          </label>
-
-          <div id="formError" class="form-error" role="alert"></div>
-          <button class="btn btn-primary submit-btn" type="submit">إرسال الطلب على واتساب <span>←</span></button>
-          <p class="form-privacy">لن يتم الدفع أونلاين. الدفع عند الاستلام بعد المعاينة.</p>
-        </form>
+        <button class="smart-upsell" id="smartUpsell" type="button" data-mode="double">
+          <span class="upsell-badge">وفّري 80</span>
+          <span><small>بتطلبي لحد تاني؟</small><b>ضيفي زوج تاني بـ600 جنيه بس</b><em>اختاري له لون ومقاس مختلفين عادي</em></span>
+          <strong>+</strong>
+        </button>
       </div>
+
+      <div class="pair-builder" id="pairBuilder" aria-label="تخصيص الزوجين">
+        <div class="pair-builder-head"><span>عرض شخصين</span><h3>كل زوج بلونه ومقاسه.</h3><p>نفس اللون أو لونين مختلفين، نفس المقاس أو مقاسين مختلفين — كله داخل عرض 1280.</p></div>
+        <article class="pair-card" data-pair-card="1">
+          <div class="pair-card-head"><span>1</span><div><b>الزوج الأول</b><small id="pair1Summary">SK-1 • اختاري المقاس</small></div></div>
+          <div class="pair-color-row">
+            <button class="active" type="button" data-pair-product="1" data-product="SK-1" data-name="أبيض × وردي" data-image="assets/sk-1.jpg"><img src="assets/sk-1.jpg" alt=""><span>SK-1</span></button>
+            <button type="button" data-pair-product="1" data-product="SK-2" data-name="أسود × أزرق" data-image="assets/sk-2.jpg"><img src="assets/sk-2.jpg" alt=""><span>SK-2</span></button>
+          </div>
+          <div class="pair-size-row" aria-label="مقاس الزوج الأول"><button type="button" data-pair-size="1" data-size="37">37</button><button type="button" data-pair-size="1" data-size="38">38</button><button type="button" data-pair-size="1" data-size="39">39</button><button type="button" data-pair-size="1" data-size="40">40</button><button type="button" data-pair-size="1" data-size="41">41</button></div>
+        </article>
+        <article class="pair-card" data-pair-card="2">
+          <div class="pair-card-head"><span>2</span><div><b>الزوج الثاني</b><small id="pair2Summary">SK-2 • اختاري المقاس</small></div><em>+600 فقط</em></div>
+          <div class="pair-color-row">
+            <button type="button" data-pair-product="2" data-product="SK-1" data-name="أبيض × وردي" data-image="assets/sk-1.jpg"><img src="assets/sk-1.jpg" alt=""><span>SK-1</span></button>
+            <button class="active" type="button" data-pair-product="2" data-product="SK-2" data-name="أسود × أزرق" data-image="assets/sk-2.jpg"><img src="assets/sk-2.jpg" alt=""><span>SK-2</span></button>
+          </div>
+          <div class="pair-size-row" aria-label="مقاس الزوج الثاني"><button type="button" data-pair-size="2" data-size="37">37</button><button type="button" data-pair-size="2" data-size="38">38</button><button type="button" data-pair-size="2" data-size="39">39</button><button type="button" data-pair-size="2" data-size="40">40</button><button type="button" data-pair-size="2" data-size="41">41</button></div>
+        </article>
+        <div class="pair-savings"><span>الإجمالي</span><b>1280 جنيه</b><small>شامل الشحن • وفّري 80 جنيه</small></div>
+      </div>
+    </section>
+
+    <section class="spec-hub shell" id="details" data-reveal>
+      <div class="section-head compact-head"><span>كل التفاصيل قدامك</span><h2>اعرفي كل حاجة من غير ما تدوري.</h2></div>
+      <div class="spec-grid">
+        <article class="spec-card"><span class="spec-icon">01</span><div><b>الخامة</b><strong>Mesh خفيفة ومهوّاة</strong><small>تساعد القدم تتنفس وتقلل الإحساس بالحرارة.</small></div></article>
+        <article class="spec-card"><span class="spec-icon">02</span><div><b>النعل</b><strong>EVA خفيف ومرن</strong><small>يمتص الصدمات ويخلي المشي أريح لفترات أطول.</small></div></article>
+        <article class="spec-card"><span class="spec-icon">03</span><div><b>الاستخدام</b><strong>مشي • شغل • خروج • جيم</strong><small>ستايل يومي عملي يناسب أكتر من استخدام.</small></div></article>
+        <article class="spec-card"><span class="spec-icon">04</span><div><b>الاستلام</b><strong>معاينة + دفع عند الاستلام</strong><small>والسعر المعلن شامل الشحن لكل المحافظات.</small></div></article>
+      </div>
+      <div class="spec-note"><i></i><span><b>محتارة في المقاس؟</b> للون الواحد اختاري مقاسين للتجربة وخدي الأنسب عند الاستلام، حسب التوافر وقت التأكيد.</span></div>
+    </section>
+
+    <section class="motion-strip" aria-hidden="true">
+      <div><span>LIGHTWEIGHT</span><b>✦</b><span>BREATHABLE</span><b>✦</b><span>EVERYDAY COMFORT</span><b>✦</b><span>SELECT SHOP</span><b>✦</b><span>LIGHTWEIGHT</span></div>
+    </section>
+
+    <section class="features shell" id="features">
+      <div class="section-head" data-reveal><span>ليه هتحبيه؟</span><h2>أربع حاجات تفرق من أول لبسة.</h2></div>
+      <div class="feature-swipe-hint" aria-hidden="true"><span>اسحبي وشوفي التفاصيل</span><i></i><i></i><i></i></div>
+      <div class="feature-stack" id="featureStack">
+        <article class="feature-card feature-photo" data-reveal>
+          <img src="assets/sk-1.jpg" alt="تفاصيل خامة سنيكر SK" />
+          <div class="shade"></div>
+          <div class="feature-content"><span>01</span><h3>Mesh مهوّاة</h3><p>خامة خفيفة تساعد القدم تتنفس طول اليوم.</p></div>
+        </article>
+        <article class="feature-card" data-reveal>
+          <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M4 15c4-1 6-4 8-10 2 6 4 9 8 10-4 0-6 2-8 5-2-3-4-5-8-5Z"/></svg></div>
+          <div class="feature-content"><span>02</span><h3>EVA أخف</h3><p>امتصاص أفضل للصدمات وإحساس أخف مع كل خطوة.</p></div>
+        </article>
+        <article class="feature-card feature-accent" data-reveal>
+          <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M7 8c2-3 8-3 10 0M5 12h14M7 16c2 3 8 3 10 0"/></svg></div>
+          <div class="feature-content"><span>03</span><h3>مرونة للحركة</h3><p>مريحة للمشي والخروج والشغل من غير ضغط زائد.</p></div>
+        </article>
+        <article class="feature-card" data-reveal>
+          <div class="feature-icon"><svg viewBox="0 0 24 24"><path d="M12 3 4.5 6v5.5c0 4.6 3.2 7.9 7.5 9.5 4.3-1.6 7.5-4.9 7.5-9.5V6L12 3Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+          <div class="feature-content"><span>04</span><h3>طلب مطمّن</h3><p>شحن شامل السعر + معاينة + دفع عند الاستلام.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="compare shell" data-reveal>
+      <div class="compare-card">
+        <div class="compare-top"><span>اختاري على مزاجك</span><h2>لونين. نفس الراحة.</h2></div>
+        <div class="compare-grid">
+          <button type="button" data-product="SK-1" data-name="أبيض × وردي" data-image="assets/sk-1.jpg"><img src="assets/sk-1.jpg" alt="SK-1"><span><b>SK-1</b><small>أبيض × وردي</small></span></button>
+          <button type="button" data-product="SK-2" data-name="أسود × أزرق" data-image="assets/sk-2.jpg"><img src="assets/sk-2.jpg" alt="SK-2"><span><b>SK-2</b><small>أسود × أزرق</small></span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="proof shell" data-reveal>
+      <div><span>01</span><b>680 جنيه</b><small>زوج واحد شامل الشحن</small></div>
+      <div><span>02</span><b>1280 جنيه</b><small>أي زوجين شامل الشحن</small></div>
+      <div><span>03</span><b>معاينة</b><small>ودفع عند الاستلام</small></div>
+    </section>
+
+    <section class="faq shell" id="faq" data-reveal>
+      <div class="section-head"><span>قبل الطلب</span><h2>إجابات سريعة.</h2></div>
+      <details><summary>السعر شامل الشحن؟ <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary><p>أيوه. زوج واحد 680 جنيه شامل الشحن، وأي زوجين 1280 جنيه شامل الشحن.</p></details>
+      <details><summary>ينفع أطلب زوجين مع بعض؟ <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary><p>أيوه. تقدري تختاري أي زوجين: نفس اللون أو لونين مختلفين، وكل زوج بمقاس مختلف عادي، والسعر 1280 جنيه شامل الشحن.</p></details>
+      <details><summary>في معاينة عند الاستلام؟ <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary><p>أيوه، تقدري تعايني الأوردر عند الاستلام قبل الدفع.</p></details>
+      <details><summary>المقاسات المتاحة؟ <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary><p>المقاسات المتاحة من 37 إلى 41.</p></details>
+      <details><summary>لو محتارة بين مقاسين؟ <svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary><p>لو بتطلبي زوج واحد، فعّلي «جرّبي مقاسين» واختاري مقاسين لنفس الزوج. هنأكد التوافر قبل الشحن وعند الاستلام تختاري الأنسب.</p></details>
+    </section>
+
+    <section class="final shell" data-reveal>
+      <div class="final-orb" aria-hidden="true"></div>
+      <span>SELECT SHOP</span>
+      <h2>اختاري لونك.<br><em>وكمّلي يومك براحة.</em></h2>
+      <p id="finalPriceCopy">زوج واحد 680 جنيه شامل الشحن — أو زوجين 1280 شامل الشحن.</p>
+      <div class="guided-cta final-guided"><span class="outside-arrows right-cue" aria-hidden="true"><i></i><i></i><i></i></span><button class="cta cta-main cta-motion" type="button" data-open-order><span><small id="finalCtaPrice">680 جنيه شامل الشحن</small><b>اطلبي دلوقتي</b></span><span class="cta-dot" aria-hidden="true"></span></button><span class="outside-arrows left-cue" aria-hidden="true"><i></i><i></i><i></i></span></div>
     </section>
   </main>
 
-  <footer>
-    <a class="brand footer-brand" href="#top"><span>SELECT</span><b>SHOP</b></a>
-    <p>كل ما تحتاجه.. في مكان واحد</p>
-    <small>© <span id="year"></span> SELECT SHOP</small>
-  </footer>
+  <footer class="shell"><b>SELECT SHOP</b><span>© <span id="year"></span></span></footer>
 
-  <div class="mobile-buybar" id="mobileBuybar">
-    <div><small>شامل الشحن</small><b>680 جنيه</b></div>
-    <a href="#order">اطلبي الآن</a>
+  <div class="mobile-dock" id="mobileDock">
+    <div><small>شامل الشحن</small><b id="dockPrice">680 جنيه</b><em id="dockChoice">SK-1 • اختاري المقاس</em></div>
+    <div class="dock-action"><span class="dock-cue" aria-hidden="true"><i></i><i></i><i></i></span><button type="button" data-open-order>اطلبي الآن</button></div>
   </div>
 
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="sheet-backdrop" id="sheetBackdrop" hidden data-close-order></div>
+  <aside class="order-sheet" id="orderSheet" hidden aria-modal="true" role="dialog" aria-labelledby="orderTitle">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head"><div><span>خطوتين بس</span><h2 id="orderTitle">كمّلي طلبك</h2></div><button type="button" class="sheet-close" data-close-order aria-label="إغلاق"><svg viewBox="0 0 24 24"><path d="m7 7 10 10M17 7 7 17"/></svg></button></div>
+    <div class="sheet-steps" aria-hidden="true"><span class="active">1 <b>المقاس</b></span><i></i><span>2 <b>البيانات</b></span></div>
+
+    <div class="sheet-product">
+      <div class="sheet-product-visual"><img id="orderImage" src="assets/sk-1.jpg" alt=""><img id="orderImage2" src="assets/sk-2.jpg" alt="" hidden></div>
+      <div><span id="orderCode">SK-1</span><b id="orderColor">أبيض × وردي</b><small id="orderSizeLabel">اختاري المقاس</small></div>
+      <strong id="orderPrice">680</strong>
+    </div>
+
+    <div class="sheet-options">
+      <div class="sheet-mode-switch" role="group" aria-label="نوع الطلب">
+        <button class="active" type="button" data-mode="single">زوج واحد <small>680</small></button>
+        <button type="button" data-mode="double">زوجين <small>1280</small></button>
+      </div>
+
+      <div class="sheet-single-config" id="sheetSingleConfig">
+        <div class="sheet-colors">
+          <button class="active" type="button" data-product="SK-1" data-name="أبيض × وردي" data-image="assets/sk-1.jpg">SK-1</button>
+          <button type="button" data-product="SK-2" data-name="أسود × أزرق" data-image="assets/sk-2.jpg">SK-2</button>
+        </div>
+        <div class="sheet-sizes"><button type="button" data-size="37">37</button><button type="button" data-size="38">38</button><button type="button" data-size="39">39</button><button type="button" data-size="40">40</button><button type="button" data-size="41">41</button></div>
+        <button class="dual-size-card sheet-dual" id="dualSizeToggleSheet" type="button" aria-pressed="false">
+          <span class="dual-icon" aria-hidden="true">2</span><span class="dual-copy"><b>جرّبي مقاسين لنفس الزوج</b><small>اختاري اتنين وخدي الأنسب.</small></span><span class="dual-switch" aria-hidden="true"><i></i></span>
+        </button>
+      </div>
+
+      <div class="sheet-pair-builder" id="sheetPairBuilder">
+        <div class="sheet-offer-note"><b>زوجين لشخصين؟</b><span>اختاري لون ومقاس كل زوج لوحده — العرض ثابت 1280 شامل الشحن.</span></div>
+        <article class="sheet-pair-card">
+          <div class="sheet-pair-title"><b>الزوج 1</b><small id="sheetPair1Summary">SK-1 • اختاري المقاس</small></div>
+          <div class="sheet-pair-colors"><button class="active" type="button" data-pair-product="1" data-product="SK-1" data-name="أبيض × وردي" data-image="assets/sk-1.jpg">SK-1</button><button type="button" data-pair-product="1" data-product="SK-2" data-name="أسود × أزرق" data-image="assets/sk-2.jpg">SK-2</button></div>
+          <div class="sheet-pair-sizes"><button type="button" data-pair-size="1" data-size="37">37</button><button type="button" data-pair-size="1" data-size="38">38</button><button type="button" data-pair-size="1" data-size="39">39</button><button type="button" data-pair-size="1" data-size="40">40</button><button type="button" data-pair-size="1" data-size="41">41</button></div>
+        </article>
+        <article class="sheet-pair-card">
+          <div class="sheet-pair-title"><b>الزوج 2 <em>+600 بس</em></b><small id="sheetPair2Summary">SK-2 • اختاري المقاس</small></div>
+          <div class="sheet-pair-colors"><button type="button" data-pair-product="2" data-product="SK-1" data-name="أبيض × وردي" data-image="assets/sk-1.jpg">SK-1</button><button class="active" type="button" data-pair-product="2" data-product="SK-2" data-name="أسود × أزرق" data-image="assets/sk-2.jpg">SK-2</button></div>
+          <div class="sheet-pair-sizes"><button type="button" data-pair-size="2" data-size="37">37</button><button type="button" data-pair-size="2" data-size="38">38</button><button type="button" data-pair-size="2" data-size="39">39</button><button type="button" data-pair-size="2" data-size="40">40</button><button type="button" data-pair-size="2" data-size="41">41</button></div>
+        </article>
+      </div>
+    </div>
+
+    <form id="orderForm">
+      <div class="field-grid">
+        <label><span>الاسم</span><input id="name" autocomplete="name" placeholder="اسمك" required></label>
+        <label><span>الموبايل</span><input id="phone" inputmode="tel" autocomplete="tel" placeholder="01xxxxxxxxx" required></label>
+      </div>
+      <label><span>المحافظة</span><select id="governorate" required><option value="">اختاري المحافظة</option><option>القاهرة</option><option>الجيزة</option><option>الإسكندرية</option><option>القليوبية</option><option>الشرقية</option><option>الدقهلية</option><option>الغربية</option><option>المنوفية</option><option>البحيرة</option><option>كفر الشيخ</option><option>دمياط</option><option>بورسعيد</option><option>الإسماعيلية</option><option>السويس</option><option>الفيوم</option><option>بني سويف</option><option>المنيا</option><option>أسيوط</option><option>سوهاج</option><option>قنا</option><option>الأقصر</option><option>أسوان</option><option>البحر الأحمر</option><option>مطروح</option><option>الوادي الجديد</option><option>شمال سيناء</option><option>جنوب سيناء</option></select></label>
+      <label><span>العنوان بالتفصيل</span><textarea id="address" rows="2" placeholder="المنطقة، الشارع، رقم البيت..." required></textarea></label>
+      <label><span>ملاحظات <small>(اختياري)</small></span><textarea id="notes" rows="2" placeholder="مثلاً: الاتصال قبل الوصول"></textarea></label>
+      <p class="form-error" id="formError" role="alert"></p>
+      <div class="submit-guide"><span class="submit-cue" aria-hidden="true"><i></i><i></i></span><button class="submit-order cta-motion" type="submit"><span><small id="submitHint">الدفع عند الاستلام</small><b id="submitPriceText">تأكيد الطلب — 680 جنيه</b></span><span class="cta-dot" aria-hidden="true"></span></button></div>
+    </form>
+  </aside>
+
+  <div class="toast" id="toast" role="status"></div>
   <script src="script.js"></script>
 </body>
 </html>
