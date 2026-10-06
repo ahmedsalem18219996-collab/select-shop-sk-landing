@@ -608,6 +608,8 @@ function openSheet(sheet) {
   }
   sheet.classList.add("show");
   sheet.setAttribute("aria-hidden", "false");
+  const sheetScroll = $(".sheet-scroll", sheet);
+  if (sheetScroll) sheetScroll.scrollTop = 0;
   document.body.classList.add("sheet-open");
   document.documentElement.classList.add("sheet-open");
   requestAnimationFrame(() => $("[data-close-sheet]", sheet)?.focus());
@@ -666,6 +668,24 @@ function updatePurchaseJourney() {
     summary.textContent = hasSize
       ? `${variant.code} • مقاس ${sheetState.sizes.join(" / ")} • ${sheetState.role === "trial" ? "اختيار عند الاستلام" : "للشراء"}`
       : `${variant.code} • اختاري المقاس للمتابعة`;
+  }
+
+  const ready = sheetState?.tryTwo ? sheetState.sizes.length === 2 : sheetState?.sizes?.length === 1;
+  const primaryCta = $("#sheetBuyNow");
+  if (primaryCta && product) {
+    primaryCta.disabled = !ready;
+    primaryCta.setAttribute("aria-disabled", String(!ready));
+    if (!ready) {
+      primaryCta.textContent = sheetState?.tryTwo ? "اختاري المقاسين أولاً" : "اختاري المقاس أولاً";
+    } else if (sheetState.editId) {
+      primaryCta.textContent = "حفظ التعديل";
+    } else if (sheetState.role === "trial") {
+      primaryCta.textContent = "ضيفيه واختاري وقت الاستلام";
+    } else if (sheetState.role === "purchase" && cart.length) {
+      primaryCta.textContent = `ضيفي الزوج — ${money(Math.max(0, product.price - CONFIG.SHIPPING_FEE))}`;
+    } else {
+      primaryCta.textContent = `أضيفي للسلة — ${money(product.price)}`;
+    }
   }
 }
 
@@ -739,14 +759,7 @@ function renderProductSheet() {
     btnAdd.textContent = sheetState.editId ? "إلغاء التعديل" : "تغيير الموديل";
   }
   const btnBuy = $("#sheetBuyNow");
-  if (btnBuy) {
-    btnBuy.textContent = sheetState.editId
-      ? "حفظ التعديل"
-      : sheetState.role === "trial"
-        ? "أضيفيه كاختيار إضافي"
-        : "تأكيد الاختيار";
-    btnBuy.hidden = false;
-  }
+  if (btnBuy) btnBuy.hidden = false;
   updatePurchaseJourney();
 }
 
@@ -870,7 +883,10 @@ function renderCart() {
   if (trialLimit) trialLimit.hidden = !hasTrial;
   const trialAddButton = addMore?.querySelector('[data-add-product-mode="trial"]');
   if (trialAddButton) { trialAddButton.disabled = hasTrial; trialAddButton.setAttribute("aria-disabled", String(hasTrial)); }
-  if (checkoutBtn) checkoutBtn.disabled = !cart.length;
+  if (checkoutBtn) {
+    checkoutBtn.disabled = !cart.length;
+    checkoutBtn.textContent = cart.length ? `إتمام الطلب — ${money(calcTotals(cart).total)}` : "إتمام الطلب";
+  }
 
   if (list) {
     list.innerHTML = cart.map(item => {
@@ -1029,6 +1045,8 @@ function openCheckout(items) {
     }).join("");
   }
   const totals = calcTotals(checkoutState.items);
+  const finalWhatsappText = $(".checkout-cta-wrap .whatsapp b");
+  if (finalWhatsappText) finalWhatsappText.textContent = `إتمام الطلب — ${money(totals.total)}`;
   const savings = $("#checkoutSavings");
   if (savings) {
     savings.innerHTML = payableSummary(checkoutState.items).replace('id="cartTotal"', 'id="checkoutTotal"');
