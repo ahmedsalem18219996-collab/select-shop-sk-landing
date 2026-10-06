@@ -180,8 +180,10 @@ let checkoutState = { items: [] };
 let addProductMode = "purchase";
 let lastFocus = null;
 
+const CART_STORAGE_KEY = location.pathname.includes("/preview-v17/") ? "selectShopCartV17Preview" : "selectShopCart";
+
 try {
-  const saved = JSON.parse(localStorage.getItem("selectShopCart") || "[]");
+  const saved = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]");
   cart = Array.isArray(saved) ? saved.filter(item => {
     const product = PRODUCTS[item.productId];
     const variant = product?.variants.find(entry => entry.id === item.variantId);
@@ -272,7 +274,7 @@ function payableSummary(items) {
 
 function saveCart() {
   normalizeCart();
-  try { localStorage.setItem("selectShopCart", JSON.stringify(cart)); } catch {}
+  try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); } catch {}
   updateCartUI();
 }
 
@@ -472,10 +474,11 @@ function renderCatalog() {
     const product = PRODUCTS[id];
     return `
       <article class="model-card ${id === currentProductId ? "active" : ""}" data-model-card="${id}">
-        <div class="model-card-media">
+        <a class="model-card-media model-card-view" href="${productUrl(id).href}" aria-label="افتحي تفاصيل ${product.name}">
           <img src="${product.hero}" alt="${product.name}" width="900" height="720" loading="lazy">
           <span class="model-card-badge">${product.badge}</span>
-        </div>
+          <span class="view-product-chip">شوفي المنتج</span>
+        </a>
         <div class="model-card-body">
           <div class="model-card-head">
             <h3>${product.name}</h3>
@@ -490,6 +493,7 @@ function renderCatalog() {
           </div>
           <div class="model-card-actions">
             <a class="btn primary" href="?product=${id}" data-select-product="${id}">اختاري الموديل</a>
+            <a class="btn secondary model-view-btn" href="${productUrl(id).href}">شوفي التفاصيل</a>
             <button class="share-link" type="button" data-share-product="${id}" aria-label="مشاركة رابط ${product.name}">
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg>
             </button>
@@ -884,6 +888,7 @@ function renderCart() {
               ` : ""}
             </div>
             <div class="cart-item-tools">
+              <button type="button" data-cart-view="${item.id}">عرض المنتج</button>
               <button type="button" data-cart-edit="${item.id}">تعديل</button>
               <button type="button" data-cart-remove="${item.id}" aria-label="حذف ${product.name}">حذف</button>
             </div>
@@ -928,6 +933,13 @@ function renderCart() {
         saveCart();
         renderCart();
         toast("تم حذف المنتج من السلة");
+      };
+    });
+
+    $$('[data-cart-view]', list).forEach(button => {
+      button.onclick = () => {
+        const item = cart.find(entry => entry.id === button.dataset.cartView);
+        if (item) openProductSheet(item.productId, { editId: item.id, variantId: item.variantId });
       };
     });
 
@@ -1076,6 +1088,19 @@ function ensureV17UI() {
     $("#checkoutSheet")?.before(sheet);
   }
 
+  const cartActions = $("#cartSheet .sheet-actions");
+  if (cartActions && !$("#cartAddDiscounted")) {
+    cartActions.classList.remove("single-action");
+    const addButton = document.createElement("button");
+    addButton.className = "btn secondary cart-add-discounted";
+    addButton.type = "button";
+    addButton.id = "cartAddDiscounted";
+    addButton.innerHTML = `<span><small>محتاجين حاجة تانية؟</small><b>＋ منتج تاني بخصم</b></span>`;
+    const checkout = $("#cartCheckout");
+    if (checkout) cartActions.insertBefore(addButton, checkout);
+    else cartActions.appendChild(addButton);
+  }
+
   const form = $("#checkoutForm");
   if (form && !form.querySelector('[name="inquiry"]')) {
     const notes = form.querySelector('[name="notes"]')?.closest("label");
@@ -1172,6 +1197,12 @@ if (dockBuy) dockBuy.addEventListener("click", () => cart.length ? openCart() : 
 
 $$('[data-add-product-mode]').forEach(button => button.addEventListener("click", () => openAddProductPicker(button.dataset.addProductMode)));
 $$('[data-back-to-cart]').forEach(button => button.addEventListener("click", () => { closeAllSheets(false, false); openCart(); }));
+
+const cartAddDiscounted = $("#cartAddDiscounted");
+if (cartAddDiscounted) cartAddDiscounted.addEventListener("click", () => {
+  if (cart.length) openAddProductPicker("purchase");
+  else openProductSheet(currentProductId, { intent: "buy", variantId: currentVariantByProduct[currentProductId] });
+});
 
 const cartCheckout = $("#cartCheckout");
 if (cartCheckout) cartCheckout.addEventListener("click", () => { if (cart.length) openCheckout(cart); });
