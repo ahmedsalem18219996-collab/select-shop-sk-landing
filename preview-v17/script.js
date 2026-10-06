@@ -242,7 +242,7 @@ function calcTotals(items) {
   };
 }
 
-const roleLabel = item => item.role === "trial" ? "للتجربة والمعاينة فقط" : item.role === "purchase" ? "شراء إضافي مؤكّد" : "الموديل الأساسي للشراء";
+const roleLabel = item => item.role === "trial" ? "اختيار إضافي عند الاستلام" : item.role === "purchase" ? "زوج إضافي بعد الخصم" : "الطلب الأساسي";
 
 function additionalPairPrice(item) {
   return Math.max(0, getProduct(item.productId).price - CONFIG.SHIPPING_FEE);
@@ -255,20 +255,25 @@ function alternativeTotal(items, item) {
 
 function payableSummary(items) {
   const totals = calcTotals(items);
-  const alternatives = items.filter(item => item.role === "trial");
-  const extrasPurchased = items.filter(item => item.role === "purchase");
+  const optionalChoices = items.filter(item => item.role === "trial");
+  const allSelectedTotals = optionalChoices.length
+    ? calcTotals(items.map(item => item.role === "trial" ? { ...item, role: "purchase" } : item))
+    : totals;
   return `
-    <div class="payable-heading">
-      <span>${alternatives.length ? "لو هتاخدي الأساسي فقط" : "الإجمالي عند الاستلام"}</span>
-      <b id="cartTotal">${money(totals.total)}</b>
+    <div class="price-summary-grid">
+      <div><span>الإجمالي قبل الخصم</span><b>${money(totals.subtotal)}</b></div>
+      <div class="discount-row"><span>الخصم</span><b>-${money(totals.discount)}</b></div>
+      <div class="final-row"><span>الإجمالي بعد الخصم</span><b id="cartTotal">${money(totals.total)}</b></div>
     </div>
-    ${alternatives.length ? `
-      <p class="payable-note">الموديل اللي للتجربة <b>مش محسوب في الإجمالي</b>. لو عجبك، هتشوفي السعر الأصلي والسعر بعد الخصم قبل أي تأكيد.</p>
+    ${optionalChoices.length ? `
+      <div class="optional-choice-total">
+        <strong>لو عجبك الاختيار الإضافي واستلمتيه كمان</strong>
+        <div><span>قبل الخصم</span><del>${money(allSelectedTotals.subtotal)}</del></div>
+        <div><span>بعد الخصم</span><b>${money(allSelectedTotals.total)}</b></div>
+        <small>وقت الاستلام اختاري اللي يعجبك. اللي مش مناسب سيبيه مع المندوب ومش هتدفعي ثمنه.</small>
+      </div>
     ` : `<p class="payable-note">السعر النهائي شامل الشحن والمعاينة قبل الدفع.</p>`}
-    ${extrasPurchased.length ? `
-      <p class="purchase-note">✓ تم تطبيق خصم الزوج الإضافي على ${extrasPurchased.length.toLocaleString("ar-EG")} ${extrasPurchased.length === 1 ? "زوج" : "أزواج"}.</p>
-    ` : ""}
-    <small class="delivery-detail">الشحن داخل السعر المعروض، وتجربة موديل أو مقاس إضافي بدون شحن إضافي.</small>
+    <small class="delivery-detail">المبلغ النهائي بيتحدد حسب الأزواج اللي قررتي تستلميها فعلاً.</small>
   `;
 }
 
@@ -534,7 +539,7 @@ function updateCatalogSelection() {
       badge.textContent = items.some(item => item.role === "primary")
         ? "✓ اختيارك الأساسي"
         : items.some(item => item.role === "trial")
-          ? "◇ مضاف للتجربة"
+          ? "◇ اختيار إضافي"
           : id === currentProductId
             ? "● معروض الآن"
             : PRODUCTS[id].badge;
@@ -659,7 +664,7 @@ function updatePurchaseJourney() {
   const summary = $("#selectionSummaryText");
   if (summary && product && variant) {
     summary.textContent = hasSize
-      ? `${variant.code} • مقاس ${sheetState.sizes.join(" / ")} • ${sheetState.role === "trial" ? "للتجربة" : "للشراء"}`
+      ? `${variant.code} • مقاس ${sheetState.sizes.join(" / ")} • ${sheetState.role === "trial" ? "اختيار عند الاستلام" : "للشراء"}`
       : `${variant.code} • اختاري المقاس للمتابعة`;
   }
 }
@@ -715,13 +720,13 @@ function renderProductSheet() {
       <p>الموديل ده هيكون إيه في طلبك؟ اختاري قبل المقاس.</p>
       <div>
         <button type="button" data-intent="trial" class="${sheetState.role === "trial" ? "active" : ""}" aria-pressed="${sheetState.role === "trial"}">
-          ◇ للتجربة والمعاينة فقط
+          ◇ اختيار إضافي عند الاستلام
         </button>
         <button type="button" data-intent="purchase" class="${sheetState.role === "purchase" ? "active" : ""}" aria-pressed="${sheetState.role === "purchase"}">
           ✓ شراء الموديلين معاً
         </button>
       </div>
-      <small>${sheetState.role === "trial" ? "شحن التجربة مجاني؛ هتعايني الاتنين، تحتفظي بالأنسب والبديل يرجع مع المندوب." : "لو قررتي تحتفظي بيه، هتشوفي السعر قبل وبعد ونسبة الخصم بوضوح قبل التأكيد."}</small>
+      <small>${sheetState.role === "trial" ? "اختاري براحتك عند الاستلام: اللي يعجبك استلميه، واللي مش مناسب سيبيه مع المندوب بدون ما تدفعي ثمنه." : "لو قررتي تحتفظي بيه، هتشوفي السعر قبل وبعد ونسبة الخصم بوضوح قبل التأكيد."}</small>
     `;
     $$("[data-intent]", mIntent).forEach(button => button.addEventListener("click", () => {
       sheetState.role = button.dataset.intent;
@@ -738,7 +743,7 @@ function renderProductSheet() {
     btnBuy.textContent = sheetState.editId
       ? "حفظ التعديل"
       : sheetState.role === "trial"
-        ? "أضيفيه للتجربة"
+        ? "أضيفيه كاختيار إضافي"
         : "تأكيد الاختيار";
     btnBuy.hidden = false;
   }
@@ -838,7 +843,7 @@ function updateCartUI() {
   const dockPrice = $("#dockPrice");
   const dockBuy = $("#dockBuy");
   if (count) {
-    if (dockLabel) dockLabel.textContent = totals.trialCount ? `أساسي + ${totals.trialCount} للتجربة` : `${totals.pairCount} للشراء`;
+    if (dockLabel) dockLabel.textContent = totals.trialCount ? `أساسي + ${totals.trialCount} اختيار إضافي` : `${totals.pairCount} للشراء`;
     if (dockPrice) dockPrice.textContent = money(totals.total);
     if (dockBuy) dockBuy.textContent = "إتمام الطلب";
   } else {
@@ -882,7 +887,7 @@ function renderCart() {
             <div class="cart-item-main">
               <span class="role-tag ${item.role}">${roleLabel(item)}</span>
               <b>${product.name}</b>
-              <small>${variant.name} • ${item.sizes.length === 2 ? "تجربة مقاسين" : "مقاس"} ${item.sizes.join(" / ")}</small>
+              <small>${variant.name} • ${item.sizes.length === 2 ? "اختيار بين مقاسين" : "مقاس"} ${item.sizes.join(" / ")}</small>
               ${!isTrial && !isPurchase ? `
                 <div class="cart-primary-price"><b>${money(product.price)}</b><small>شامل الشحن</small></div>
               ` : ""}
@@ -897,15 +902,15 @@ function renderCart() {
           ${isTrial ? `
             <div class="keep-offer">
               <div class="keep-offer-head">
-                <strong>لو عجبك وعايزة تحتفظي بيه</strong>
+                <strong>لو عجبك وقت الاستلام</strong>
                 <span class="discount-badge">خصم ${discountText}</span>
               </div>
               <div class="keep-price">
                 <del>${money(product.price)}</del>
                 <b>${money(discountedPrice)}</b>
               </div>
-              <button type="button" data-buy-both="${item.id}">احتفظي بيه بخصم ${discountText}</button>
-              <small>لو مش مناسب، بيرجع مع المندوب ومش بيتحسب عليكِ كشراء.</small>
+              <button type="button" data-buy-both="${item.id}">استلميه بخصم ${discountText}</button>
+              <small>لو مش مناسب، سيبيه مع المندوب ومش هتدفعي ثمنه.</small>
             </div>
             <div class="cart-role-actions">
               <button type="button" data-make-primary="${item.id}" class="action-swap">خليه المنتج الأساسي بدل الحالي</button>
@@ -919,10 +924,10 @@ function renderCart() {
               <div class="keep-price"><del>${money(product.price)}</del><b>${money(discountedPrice)}</b></div>
             </div>
             <div class="cart-role-actions">
-              <button type="button" data-trial-only="${item.id}">رجّعيه للتجربة فقط</button>
+              <button type="button" data-trial-only="${item.id}">خليه اختيار عند الاستلام</button>
             </div>
           ` : ""}
-          ${item.sizes.length === 2 ? '<span class="trial-badge">هتحتفظي بمقاس واحد فقط والبديل يرجع مع المندوب</span>' : ""}
+          ${item.sizes.length === 2 ? '<span class="trial-badge">اختاري المقاس الأنسب وقت الاستلام وسيبي المقاس التاني مع المندوب</span>' : ""}
         </article>
       `;
     }).join("");
@@ -972,17 +977,17 @@ function renderCart() {
 function renderAddProductPicker(mode = "purchase") {
   addProductMode = mode === "trial" ? "trial" : "purchase";
   const hasTrial = cart.some(item => item.role === "trial");
-  if (addProductMode === "trial" && hasTrial) { toast("عندك موديل للتجربة بالفعل — عدليه من السلة أو أضيفي زوج شراء"); return false; }
+  if (addProductMode === "trial" && hasTrial) { toast("عندك اختيار إضافي بالفعل — عدليه من السلة أو أضيفي زوج شراء"); return false; }
   const note = $("#addProductNote"), grid = $("#addProductGrid"), title = $("#addProductTitle"), kicker = $("#addProductKicker");
-  if (title) title.textContent = addProductMode === "trial" ? "اختاري موديل للتجربة" : "اختاري الزوج الإضافي";
-  if (kicker) kicker.textContent = addProductMode === "trial" ? "تجربة بدون شحن إضافي" : "خصم واضح على الزوج الإضافي";
+  if (title) title.textContent = addProductMode === "trial" ? "اختاري موديل إضافي" : "اختاري الزوج الإضافي";
+  if (kicker) kicker.textContent = addProductMode === "trial" ? "اختاري براحتك عند الاستلام" : "خصم واضح على الزوج الإضافي";
   if (note) note.innerHTML = addProductMode === "trial"
-    ? `<b>◇ للتجربة فقط</b><span>الموديل مش بيتحسب شراء دلوقتي. لو عجبك، تقدري تحتفظي بيه بالسعر المخفض الظاهر في السلة.</span>`
+    ? `<b>◇ اختيار إضافي عند الاستلام</b><span>المندوب يجيبلك الاختيارين. اللي يعجبك استلميه، ولو أخدتي الاتنين يظهر الخصم تلقائيًا.</span>`
     : `<b>＋ زوج شراء إضافي</b><span>اختاري الموديل وبعدها اللون والمقاس. الخصم بيتحسب تلقائي ويظهر قبل التأكيد.</span>`;
   if (grid) {
     grid.innerHTML = PRODUCT_IDS.map(id => {
       const product = PRODUCTS[id], discounted = Math.max(0, product.price - CONFIG.SHIPPING_FEE);
-      return `<button class="add-product-card" type="button" data-picker-product="${id}"><img src="${product.hero}" alt="${product.name}" width="240" height="200" loading="lazy"><span><b>${product.name}</b><small>${product.variants.length} ألوان • ${product.sizeSummary}</small></span><em>${addProductMode === "trial" ? "تجربة مجانية" : `<del>${money(product.price)}</del><strong>${money(discounted)}</strong><small>${extraPairDiscountLabel(id)}</small>`}</em></button>`;
+      return `<button class="add-product-card" type="button" data-picker-product="${id}"><img src="${product.hero}" alt="${product.name}" width="240" height="200" loading="lazy"><span><b>${product.name}</b><small>${product.variants.length} ألوان • ${product.sizeSummary}</small></span><em>${addProductMode === "trial" ? "اختيار عند الاستلام" : `<del>${money(product.price)}</del><strong>${money(discounted)}</strong><small>${extraPairDiscountLabel(id)}</small>`}</em></button>`;
     }).join("");
     $$('[data-picker-product]', grid).forEach(button => button.addEventListener("click", () => {
       const id = button.dataset.pickerProduct;
@@ -1018,7 +1023,7 @@ function openCheckout(items) {
             <b>${product.name} — ${variant.name}</b>
             <small>${item.sizes.length === 2 ? "تجربة مقاسين (للاحتفاظ بواحد)" : "المقاس"}: ${item.sizes.join(" / ")}</small>
           </div>
-          <strong>${item.role === "trial" ? "للتجربة — شحن مجاني" : item.role === "purchase" ? `${money(additionalPairPrice(item))} بعد الخصم` : money(product.price)}</strong>
+          <strong>${item.role === "trial" ? "اختيار عند الاستلام — ادفعيه فقط لو استلمتيه" : item.role === "purchase" ? `${money(additionalPairPrice(item))} بعد الخصم` : money(product.price)}</strong>
         </div>
       `;
     }).join("");
@@ -1059,13 +1064,13 @@ function ensureV17UI() {
     block.innerHTML = `
       <div class="cart-add-more-head">
         <span aria-hidden="true">＋</span>
-        <div><b id="cartAddMoreTitle">عايزة تضيفي حاجة تانية؟</b><small>ضيفي زوج شراء بخصم واضح، أو موديل واحد للتجربة من غير شحن زيادة.</small></div>
+        <div><b id="cartAddMoreTitle">عايزة تضيفي حاجة تانية؟</b><small>ضيفي زوج تاني بخصم واضح، أو اختيار إضافي تشوفيه مع المندوب وتستلمي اللي يعجبك.</small></div>
       </div>
       <div class="cart-add-actions">
         <button type="button" data-add-product-mode="purchase"><b>＋ ضيفي زوج تاني</b><small>السعر القديم + الجديد + نسبة الخصم</small></button>
-        <button type="button" data-add-product-mode="trial"><b>◇ جربي موديل تاني</b><small>للتجربة فقط • مش محسوب شراء</small></button>
+        <button type="button" data-add-product-mode="trial"><b>◇ اختاري موديل تاني</b><small>اللي يعجبك استلميه • من غير التزام</small></button>
       </div>
-      <p class="cart-trial-limit" id="cartTrialLimit" hidden>عندك موديل للتجربة بالفعل. تقدري تعدليه أو تضيفي زوج شراء جديد.</p>`;
+      <p class="cart-trial-limit" id="cartTrialLimit" hidden>عندك اختيار إضافي بالفعل. تقدري تعدليه أو تضيفي زوج شراء جديد.</p>`;
     if (oldUpsell) oldUpsell.replaceWith(block);
     else $("#cartSummary")?.before(block);
   } else if (oldUpsell) {
@@ -1154,7 +1159,7 @@ function commitSheetItem() {
   }
   saveCart();
   celebrateCart();
-  toast(item.role === "trial" ? "أُضيف للتجربة ✓ مش محسوب شراء دلوقتي" : "تم حفظ اختيارك للسلة ✓");
+  toast(item.role === "trial" ? "اتضاف كاختيار عند الاستلام ✓ خدي اللي يعجبك" : "تم حفظ اختيارك للسلة ✓");
   return true;
 }
 
@@ -1226,7 +1231,7 @@ function buildOrderPayload(data, items) {
   const totals = calcTotals(items);
   return { orderId: makeOrderReference(), createdAt: new Date().toISOString(), source: "select-shop-web",
     customer: { name:data.name.trim(), phone:normalizePhone(data.phone), governorate:data.governorate.trim(), area:data.area.trim(), address:data.address.trim(), inquiry:data.inquiry?.trim()||"", courierNotes:data.notes?.trim()||"" },
-    items: items.map(item => { const product=getProduct(item.productId), variant=getVariant(item.productId,item.variantId); return { role:item.role, productId:item.productId, productName:product.name, variantId:item.variantId, sku:variant.code, variantName:variant.name, sizes:[...item.sizes], tryTwoSizes:Boolean(item.tryTwo), listPrice:product.price, payablePrice:item.role==="trial"?0:item.role==="purchase"?additionalPairPrice(item):product.price }; }), totals };
+    items: items.map(item => { const product=getProduct(item.productId), variant=getVariant(item.productId,item.variantId); return { role:item.role === "trial" ? "optional_choice" : item.role, productId:item.productId, productName:product.name, variantId:item.variantId, sku:variant.code, variantName:variant.name, sizes:[...item.sizes], chooseAtDelivery:item.role === "trial", tryTwoSizes:Boolean(item.tryTwo), listPrice:product.price, payablePrice:item.role==="trial"?0:item.role==="purchase"?additionalPairPrice(item):product.price };  }), totals };
 }
 
 async function submitOrderToProf(payload) {
@@ -1270,7 +1275,7 @@ if (checkoutForm) {
     message += `رقم الطلب: ${orderPayload.orderId}\n`;
     message += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-    message += `👟 المنتجات للشراء (${totals.pairCount} زوج):\n`;
+    message += `👟 المنتجات المؤكدة (${totals.pairCount} زوج):\n`;
     purchased.forEach((item, index) => {
       const prod = getProduct(item.productId);
       const vr = getVariant(item.productId, item.variantId);
@@ -1278,7 +1283,7 @@ if (checkoutForm) {
       message += `${index + 1}) ${prod.name} [${tag}]\n`;
       message += `   • كود اللون: ${vr.code} (${vr.name})\n`;
       if (item.sizes.length === 2) {
-        message += `   • المقاس: تجربة مقاسين (${item.sizes.join(" و ")}) — للاحتفاظ بمقاس واحد فقط\n`;
+        message += `   • المقاس: اختيار بين مقاسين (${item.sizes.join(" و ")}) — العميلة تستلم المقاس الأنسب فقط\n`;
       } else {
         message += `   • المقاس: ${item.sizes[0]}\n`;
       }
@@ -1290,36 +1295,40 @@ if (checkoutForm) {
     });
 
     if (trials.length) {
-      message += `🔍 موديلات للتجربة والمعاينة عند الاستلام (غير محسوبة في الإجمالي الآن):\n`;
+      message += `👀 اختيارات إضافية عند الاستلام — العميلة تستلم اللي يعجبها فقط:\n`;
       trials.forEach((item, index) => {
         const prod = getProduct(item.productId);
         const vr = getVariant(item.productId, item.variantId);
-        message += `${index + 1}) ${prod.name} [للتجربة والمعاينة فقط]\n`;
+        message += `${index + 1}) ${prod.name} [اختيار إضافي عند الاستلام]\n`;
         message += `   • كود اللون: ${vr.code} (${vr.name})\n`;
         if (item.sizes.length === 2) {
-          message += `   • المقاس: تجربة مقاسين (${item.sizes.join(" و ")})\n`;
+          message += `   • المقاس: اختيار بين مقاسين (${item.sizes.join(" و ")})\n`;
         } else {
           message += `   • المقاس: ${item.sizes[0]}\n`;
         }
-        message += `   • شحن التجربة: مجاني\n`;
-        message += `   • لو الاحتفاظ به كزوج إضافي: ${money(Math.max(0, prod.price - CONFIG.SHIPPING_FEE))} بعد ${extraPairDiscountLabel(item.productId)} (بدل ${money(prod.price)})\n`;
-        message += `   (غير محسوب كشراء الآن — الخصم يطبق فقط لو قررتي الاحتفاظ به كزوج إضافي)\n\n`;
+        message += `   • معاينة الاختيار مع المندوب بدون التزام\n`;
+        message += `   • لو العميلة استلمته كزوج إضافي: ${money(Math.max(0, prod.price - CONFIG.SHIPPING_FEE))} بعد ${extraPairDiscountLabel(item.productId)} (بدل ${money(prod.price)})\n`;
+        message += `   (لو مش مناسب، يفضل مع المندوب ولا تدفع العميلة ثمنه)\n\n`;
       });
     }
 
     message += `💳 ملخص الحساب:\n`;
     message += `• عدد الأزواج للشراء: ${totals.pairCount}\n`;
     if (totals.trialCount > 0) {
-      message += `• موديلات التجربة: ${totals.trialCount} (غير محسوبة في الإجمالي الآن)\n`;
+      message += `• اختيارات إضافية عند الاستلام: ${totals.trialCount} (الدفع فقط لما يتم استلامها)\n`;
     }
     message += `• شحن الطلب الأساسي: مشمول في السعر\n`;
     if (totals.trialCount > 0) {
-      message += `• شحن موديلات التجربة: مجاني\n`;
+      message += `• الاختيارات الإضافية: بدون تكلفة إضافية لمجرد المعاينة\n`;
     }
-    if (totals.shippingSaving > 0) {
-      message += `• خصم الأزواج الإضافية: مطبق كنسبة مئوية حسب كل موديل\n`;
+    message += `• الإجمالي قبل الخصم: ${money(totals.subtotal)}\n`;
+    message += `• قيمة الخصم: ${money(totals.discount)}\n`;
+    message += `• الإجمالي بعد الخصم: ${money(totals.total)}\n`;
+    if (trials.length) {
+      const allSelectedTotals = calcTotals(checkoutState.items.map(item => item.role === "trial" ? { ...item, role: "purchase" } : item));
+      message += `• لو العميلة استلمت كل الاختيارات: قبل الخصم ${money(allSelectedTotals.subtotal)} — بعد الخصم ${money(allSelectedTotals.total)}\n`;
     }
-    message += `• المبلغ المطلوب عند الاستلام: ${money(totals.total)}\n\n`;
+    message += `• الدفع النهائي حسب الأزواج اللي العميلة قررت تستلمها فعلاً.\n\n`;
 
     message += `👤 بيانات العميل والاستلام:\n`;
     message += `• الاسم: ${data.name.trim()}\n`;
