@@ -497,6 +497,11 @@ function renderCatalog() {
     const product = PRODUCTS[id];
     const index = Math.max(0, Math.min(product.variants.length - 1, cardVariantIndex[id] || 0));
     const variant = product.variants[index];
+    const thumbs = product.variants.slice(0,4).map((item, thumbIndex) => `
+      <button class="card-thumb ${thumbIndex === index ? "active" : ""}" type="button" data-card-thumb-product="${id}" data-card-thumb-index="${thumbIndex}" aria-label="${item.name}">
+        <img src="${item.image}" alt="" loading="lazy">
+      </button>
+    `).join("");
     return `
       <article class="model-card ${id === currentProductId ? "active" : ""}" data-model-card="${id}">
         <div class="model-card-media">
@@ -513,17 +518,18 @@ function renderCatalog() {
             <div class="model-price"><b>${product.price}</b><span>جنيه</span></div>
           </div>
           <p>${product.description}</p>
+          <div>
+            <div class="card-thumbs">${thumbs}</div>
+            <div class="card-variant-name" data-card-label-secondary="${id}">${variant.code} • ${variant.name}</div>
+          </div>
           <div class="model-meta">
             <span>${product.variants.length} ألوان</span>
-            <span>مقاسات ${product.sizeSummary}</span>
+            <span>المقاسات: ${product.sizeSummary}</span>
             <span>الشحن شامل السعر</span>
             <span class="extra-pair-deal">خصم ${discountPercentText(product.price)} على الزوج الإضافي</span>
           </div>
           <div class="model-card-actions">
             <a class="btn primary" href="${productUrl(id, variant.id).href}" data-select-product="${id}">اختاري الموديل</a>
-            <button class="share-link" type="button" data-share-product="${id}" aria-label="مشاركة رابط ${product.name}">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg>
-            </button>
           </div>
         </div>
       </article>
@@ -542,7 +548,6 @@ function renderCatalog() {
       requestAnimationFrame(() => openProductSheet(id, { intent: cart.length ? "trial" : "buy", variantId: variant.id }));
     });
   });
-
   $$('[data-card-prev]').forEach(button => button.addEventListener("click", event => {
     event.preventDefault();
     cycleCardVariant(button.dataset.cardPrev, -1);
@@ -551,18 +556,33 @@ function renderCatalog() {
     event.preventDefault();
     cycleCardVariant(button.dataset.cardNext, 1);
   }));
+  $$('[data-card-thumb-product]').forEach(button => button.addEventListener("click", event => {
+    event.preventDefault();
+    setCardVariant(button.dataset.cardThumbProduct, Number(button.dataset.cardThumbIndex));
+  }));
   $$('[data-card-zoom]').forEach(button => button.addEventListener("click", () => openProductLightbox(button.dataset.cardZoom)));
-  $$('[data-share-product]').forEach(button => button.addEventListener("click", () => shareProduct(button.dataset.shareProduct)));
 }
 
+function setCardVariant(productId, index) {
+  const product = PRODUCTS[productId];
+  if (!product?.variants?.length) return;
+  cardVariantIndex[productId] = Math.max(0, Math.min(product.variants.length - 1, index));
+  refreshCardVariant(productId);
+}
 function cycleCardVariant(productId, direction) {
   const product = PRODUCTS[productId];
   if (!product?.variants?.length) return;
   const length = product.variants.length;
   cardVariantIndex[productId] = ((cardVariantIndex[productId] || 0) + direction + length) % length;
-  const variant = product.variants[cardVariantIndex[productId]];
+  refreshCardVariant(productId);
+}
+function refreshCardVariant(productId) {
+  const product = PRODUCTS[productId];
+  const index = cardVariantIndex[productId] || 0;
+  const variant = product.variants[index] || product.variants[0];
   const image = document.querySelector(`[data-card-image="${productId}"]`);
   const label = document.querySelector(`[data-card-label="${productId}"]`);
+  const secondary = document.querySelector(`[data-card-label-secondary="${productId}"]`);
   const link = document.querySelector(`[data-select-product="${productId}"]`);
   if (image) {
     image.src = variant.image;
@@ -570,9 +590,10 @@ function cycleCardVariant(productId, direction) {
     animateImageSwap(image);
   }
   if (label) label.textContent = variant.name;
+  if (secondary) secondary.textContent = `${variant.code} • ${variant.name}`;
   if (link) link.href = productUrl(productId, variant.id).href;
+  document.querySelectorAll(`[data-card-thumb-product="${productId}"]`).forEach(btn => btn.classList.toggle("active", Number(btn.dataset.cardThumbIndex) === index));
 }
-
 function openProductLightbox(productId) {
   const product = PRODUCTS[productId];
   if (!product) return;
