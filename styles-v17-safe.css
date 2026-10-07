@@ -1700,3 +1700,7 @@ body.theme-night #checkoutSheet textarea{
   color:#f8f4ff !important;
   border-color:#40334c !important;
 }
+
+
+/* ===== SELECT SHOP V26 — Light mode only ===== */
+.theme-toggle{display:none!important}
