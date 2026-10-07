@@ -348,21 +348,13 @@ function setupDockVisibility() {
 }
 
 const SELECT_SHOP_THEME_KEY = "selectShopTheme";
-function applyTheme(theme = "light") {
-  const night = theme === "night";
-  document.body.classList.toggle("theme-night", night);
-  const toggle = $("#themeToggle");
-  const label = $("#themeLabel");
-  const icon = $(".theme-icon", toggle || document);
-  if (label) label.textContent = night ? "Night" : "Light";
-  if (icon) icon.textContent = night ? "☾" : "☀";
-  if (toggle) toggle.setAttribute("aria-label", night ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الليلي");
-  try { localStorage.setItem(SELECT_SHOP_THEME_KEY, night ? "night" : "light"); } catch {}
+function applyTheme() {
+  document.body.classList.remove("theme-night");
+  document.documentElement.style.colorScheme = "light";
+  try { localStorage.setItem(SELECT_SHOP_THEME_KEY, "light"); } catch {}
 }
 function initTheme() {
-  let saved = "light";
-  try { saved = localStorage.getItem(SELECT_SHOP_THEME_KEY) || "light"; } catch {}
-  applyTheme(saved === "night" ? "night" : "light");
+  applyTheme();
 }
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -1295,8 +1287,6 @@ const productLightbox = $("#productLightbox");
 if (productLightbox) productLightbox.addEventListener("click", event => { if (event.target === productLightbox) closeProductLightbox(); });
 document.addEventListener("keydown", event => { if (event.key === "Escape" && productLightbox && !productLightbox.hidden) closeProductLightbox(); });
 
-const themeToggle = $("#themeToggle");
-if (themeToggle) themeToggle.addEventListener("click", () => applyTheme(document.body.classList.contains("theme-night") ? "light" : "night"));
 
 const heroBuy = $("#heroBuy");
 if (heroBuy) heroBuy.addEventListener("click", () => openProductSheet(currentProductId, { intent: "buy", variantId: currentVariantByProduct[currentProductId] }));
