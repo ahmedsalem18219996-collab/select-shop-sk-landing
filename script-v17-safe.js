@@ -498,7 +498,7 @@ function renderCatalog() {
     return `
       <article class="model-card ${id === currentProductId ? "active" : ""}" data-model-card="${id}">
         <div class="model-card-media">
-          <img data-card-image="${id}" src="${variant.image}" alt="${product.name} ${variant.name}" width="900" height="900" loading="lazy">
+          <img class="zoomable-product-image" data-product-zoom-image data-card-image="${id}" src="${variant.image}" alt="${product.name} ${variant.name}" data-zoom-caption="${product.name} — ${variant.code} — ${variant.name}" width="900" height="900" loading="lazy" role="button" tabindex="0" aria-label="تكبير صورة ${product.name}">
           <span class="model-card-badge">${product.badge}</span>
           ${NEW_DESIGN_IDS.has(id) ? `<span class="new-design-mini">NEW</span>` : ""}
           <button class="card-variant-nav prev" type="button" data-card-prev="${id}" aria-label="اللون السابق">›</button>
@@ -581,6 +581,7 @@ function refreshCardVariant(productId) {
   if (image) {
     image.src = variant.image;
     image.alt = `${product.name} ${variant.name}`;
+    image.dataset.zoomCaption = `${product.name} — ${variant.code} — ${variant.name}`;
     animateImageSwap(image);
   }
   if (label) label.textContent = variant.name;
@@ -588,20 +589,23 @@ function refreshCardVariant(productId) {
   if (link) link.href = productUrl(productId, variant.id).href;
   document.querySelectorAll(`[data-card-thumb-product="${productId}"]`).forEach(btn => btn.classList.toggle("active", Number(btn.dataset.cardThumbIndex) === index));
 }
+function openImageLightbox(src, captionText = "") {
+  const box = $("#productLightbox");
+  const image = $("#productLightboxImage");
+  const caption = $("#productLightboxCaption");
+  if (!box || !image || !src) return;
+  image.src = src;
+  image.alt = captionText || "صورة المنتج مكبرة";
+  if (caption) caption.textContent = captionText;
+  box.hidden = false;
+  box.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
 function openProductLightbox(productId) {
   const product = PRODUCTS[productId];
   if (!product) return;
   const variant = product.variants[cardVariantIndex[productId] || 0] || product.variants[0];
-  const box = $("#productLightbox");
-  const image = $("#productLightboxImage");
-  const caption = $("#productLightboxCaption");
-  if (!box || !image) return;
-  image.src = variant.image;
-  image.alt = `${product.name} ${variant.name}`;
-  if (caption) caption.textContent = `${product.name} — ${variant.code} — ${variant.name}`;
-  box.hidden = false;
-  box.setAttribute("aria-hidden", "false");
-  document.body.style.overflow = "hidden";
+  openImageLightbox(variant.image, `${product.name} — ${variant.code} — ${variant.name}`);
 }
 function closeProductLightbox() {
   const box = $("#productLightbox");
@@ -787,6 +791,8 @@ function renderProductSheet() {
   if (image) {
     image.src = variant.image;
     image.alt = `${product.name} ${variant.name}`;
+    image.dataset.zoomCaption = `${product.name} — ${variant.code} — ${variant.name}`;
+    image.setAttribute("aria-label", `تكبير صورة ${product.name} ${variant.name}`);
   }
 
   const vRail = $("#variantRail");
@@ -983,7 +989,7 @@ function renderCart() {
       return `
         <article class="cart-item role-${item.role}" data-cart-id="${item.id}">
           <div class="cart-line-top">
-            <img src="${variant.image}" alt="${variant.code} ${variant.name}" width="180" height="180">
+            <img class="zoomable-product-image" data-product-zoom-image src="${variant.image}" alt="${variant.code} ${variant.name}" data-zoom-caption="${product.name} — ${variant.code} — ${variant.name}" width="180" height="180" role="button" tabindex="0" aria-label="تكبير صورة ${product.name}">
             <div class="cart-item-main">
               <span class="role-tag ${item.role}">${roleLabel(item)}</span>
               <b>${product.name}</b>
@@ -1087,7 +1093,7 @@ function renderAddProductPicker(mode = "purchase") {
   if (grid) {
     grid.innerHTML = PRODUCT_IDS.map(id => {
       const product = PRODUCTS[id], discounted = Math.max(0, product.price - CONFIG.SHIPPING_FEE);
-      return `<button class="add-product-card" type="button" data-picker-product="${id}"><img src="${product.hero}" alt="${product.name}" width="240" height="200" loading="lazy"><span><b>${product.name}</b><small>${product.variants.length} ألوان • ${product.sizeSummary}</small></span><em>${addProductMode === "trial" ? "اختيار عند الاستلام" : `<del>${money(product.price)}</del><strong>${money(discounted)}</strong><small>${extraPairDiscountLabel(id)}</small>`}</em></button>`;
+      return `<button class="add-product-card" type="button" data-picker-product="${id}"><img class="zoomable-product-image" data-product-zoom-image src="${product.hero}" alt="${product.name}" data-zoom-caption="${product.name}" width="240" height="200" loading="lazy" role="button" tabindex="0" aria-label="تكبير صورة ${product.name}"><span><b>${product.name}</b><small>${product.variants.length} ألوان • ${product.sizeSummary}</small></span><em>${addProductMode === "trial" ? "اختيار عند الاستلام" : `<del>${money(product.price)}</del><strong>${money(discounted)}</strong><small>${extraPairDiscountLabel(id)}</small>`}</em></button>`;
     }).join("");
     $$('[data-picker-product]', grid).forEach(button => button.addEventListener("click", () => {
       const id = button.dataset.pickerProduct;
@@ -1279,6 +1285,24 @@ if (addCartBtn) addCartBtn.addEventListener("click", () => {
 const buyNowBtn = $("#sheetBuyNow");
 if (buyNowBtn) buyNowBtn.addEventListener("click", () => {
   if (commitSheetItem()) openCart();
+});
+
+function handleZoomableProductImage(event) {
+  const image = event.target?.closest?.("[data-product-zoom-image]");
+  if (!image) return false;
+  event.preventDefault();
+  event.stopPropagation();
+  if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+  openImageLightbox(image.currentSrc || image.src, image.dataset.zoomCaption || image.alt || "تفاصيل المنتج");
+  return true;
+}
+document.addEventListener("click", handleZoomableProductImage, true);
+document.addEventListener("keydown", event => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const image = event.target?.closest?.("[data-product-zoom-image]");
+  if (!image) return;
+  event.preventDefault();
+  openImageLightbox(image.currentSrc || image.src, image.dataset.zoomCaption || image.alt || "تفاصيل المنتج");
 });
 
 const productLightboxClose = $("#productLightboxClose");
