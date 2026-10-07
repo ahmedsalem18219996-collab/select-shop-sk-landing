@@ -1596,3 +1596,107 @@ body.theme-night .variant-thumb,
 body.theme-night .cart-line-top>img{
   background:#eee8df;
 }
+
+
+/* ===== SELECT SHOP V25 — night sheets hard override + cache refresh ===== */
+/* These selectors intentionally outrank legacy light sheet rules. */
+body.theme-night #productSheet,
+body.theme-night #cartSheet,
+body.theme-night #checkoutSheet,
+body.theme-night #addProductSheet{
+  background:#120e17 !important;
+  color:#f8f4ff !important;
+}
+body.theme-night #productSheet .sheet-head,
+body.theme-night #cartSheet .sheet-head,
+body.theme-night #checkoutSheet .sheet-head,
+body.theme-night #addProductSheet .sheet-head{
+  background:#17121e !important;
+  color:#fff !important;
+  border-bottom-color:#372b42 !important;
+}
+body.theme-night #productSheet .sheet-actions,
+body.theme-night #cartSheet .sheet-actions,
+body.theme-night #checkoutSheet .sheet-actions,
+body.theme-night #addProductSheet .sheet-actions{
+  background:#17121e !important;
+  border-top-color:#372b42 !important;
+}
+body.theme-night #productSheet .sheet-product-hero{
+  background:#1d1725 !important;
+  border-color:#3b3047 !important;
+}
+body.theme-night #productSheet .sheet-product-meta span,
+body.theme-night #productSheet .sheet-product-meta b{
+  color:#fff !important;
+}
+body.theme-night #productSheet .sheet-product-meta small{
+  color:#b8aec2 !important;
+}
+body.theme-night #productSheet .model-intent button{
+  background:#251d2e !important;
+  color:#f4eef8 !important;
+  border-color:#49385a !important;
+}
+body.theme-night #productSheet .model-intent button.active{
+  background:linear-gradient(135deg,#9c78ff,#7855ed) !important;
+  color:#fff !important;
+  border-color:#9c78ff !important;
+}
+body.theme-night #productSheet .variant-btn{
+  background:#211a29 !important;
+  color:#f8f4ff !important;
+  border-color:#40334c !important;
+}
+body.theme-night #productSheet .size-btn{
+  background:#231b2c !important;
+  color:#f4eef8 !important;
+  border-color:#443650 !important;
+  opacity:1 !important;
+}
+body.theme-night #productSheet .size-btn.active{
+  background:linear-gradient(135deg,#9c78ff,#7855ed) !important;
+  color:#fff !important;
+  border-color:#9c78ff !important;
+}
+body.theme-night #productSheet .try-size-toggle{
+  background:#211a29 !important;
+  color:#f8f4ff !important;
+  border-color:#40334c !important;
+}
+body.theme-night #productSheet .try-size-toggle b{
+  color:#fff !important;
+}
+body.theme-night #productSheet .try-size-toggle small{
+  color:#b8aec2 !important;
+}
+body.theme-night #productSheet .purchase-journey{
+  background:#1d1725 !important;
+  border-color:#3b3047 !important;
+}
+body.theme-night #productSheet .purchase-journey>span.active b{
+  background:#201827 !important;
+  color:#b99cff !important;
+}
+body.theme-night #productSheet .btn:disabled,
+body.theme-night #cartSheet .btn:disabled,
+body.theme-night #checkoutSheet .btn:disabled{
+  opacity:.58 !important;
+}
+
+/* Cart/checkout critical surfaces */
+body.theme-night #cartSheet .empty-cart,
+body.theme-night #cartSheet .cart-item,
+body.theme-night #cartSheet .cart-summary,
+body.theme-night #cartSheet .cart-add-more,
+body.theme-night #checkoutSheet .checkout-line{
+  background:#1d1725 !important;
+  color:#f8f4ff !important;
+  border-color:#3b3047 !important;
+}
+body.theme-night #checkoutSheet input,
+body.theme-night #checkoutSheet textarea{
+  background:#211a29 !important;
+  color:#f8f4ff !important;
+  border-color:#40334c !important;
+}
