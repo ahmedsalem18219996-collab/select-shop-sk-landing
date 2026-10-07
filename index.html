@@ -17,7 +17,7 @@
   <link rel="canonical" href="https://ahmedsalem18219996-collab.github.io/select-shop-sk-landing/">
   <title>SELECT SHOP | Women's Sneakers</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23684fd3'/%3E%3Cpath d='M15 41h34v7H15zm3-25h29v7H18zm-3 12h26v7H15z' fill='%23ffffff'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles-v17-safe.css?v=26">
+  <link rel="stylesheet" href="styles-v17-safe.css?v=27">
 </head>
 <body>
   <a class="skip-link" href="#main">تخطي إلى المحتوى</a>
@@ -324,6 +324,7 @@
       <div class="checkout-items" id="checkoutItems"></div>
       <div class="checkout-savings" id="checkoutSavings"></div>
       <form id="checkoutForm" novalidate>
+        <p class="form-error" id="formError" role="alert" aria-live="assertive" hidden></p>
         <label>
           <span>الاسم بالكامل</span>
           <input name="name" autocomplete="name" required placeholder="مثال: سارة محمد">
@@ -335,7 +336,36 @@
         <div class="form-row">
           <label>
             <span>المحافظة</span>
-            <input name="governorate" required placeholder="مثال: القاهرة">
+            <select name="governorate" required aria-label="اختاري المحافظة">
+              <option value="" selected disabled>اختاري المحافظة</option>
+              <option value="القاهرة">القاهرة</option>
+              <option value="الجيزة">الجيزة</option>
+              <option value="الإسكندرية">الإسكندرية</option>
+              <option value="القليوبية">القليوبية</option>
+              <option value="الشرقية">الشرقية</option>
+              <option value="الدقهلية">الدقهلية</option>
+              <option value="الغربية">الغربية</option>
+              <option value="المنوفية">المنوفية</option>
+              <option value="البحيرة">البحيرة</option>
+              <option value="كفر الشيخ">كفر الشيخ</option>
+              <option value="دمياط">دمياط</option>
+              <option value="بورسعيد">بورسعيد</option>
+              <option value="الإسماعيلية">الإسماعيلية</option>
+              <option value="السويس">السويس</option>
+              <option value="شمال سيناء">شمال سيناء</option>
+              <option value="جنوب سيناء">جنوب سيناء</option>
+              <option value="الفيوم">الفيوم</option>
+              <option value="بني سويف">بني سويف</option>
+              <option value="المنيا">المنيا</option>
+              <option value="أسيوط">أسيوط</option>
+              <option value="سوهاج">سوهاج</option>
+              <option value="قنا">قنا</option>
+              <option value="الأقصر">الأقصر</option>
+              <option value="أسوان">أسوان</option>
+              <option value="البحر الأحمر">البحر الأحمر</option>
+              <option value="الوادي الجديد">الوادي الجديد</option>
+              <option value="مطروح">مطروح</option>
+            </select>
           </label>
           <label>
             <span>المنطقة / الحي</span>
@@ -350,7 +380,6 @@
           <span>ملاحظات للمندوب (اختياري)</span>
           <textarea name="notes" rows="2" placeholder="أي تفاصيل خاصة بوقت الاستلام..."></textarea>
         </label>
-        <p class="form-error" id="formError" role="alert" aria-live="assertive"></p>
       </form>
       <div class="checkout-trust-notice">
         <p>🔒 سيتم تحويلك لواتساب SELECT SHOP لتأكيد الطلب • الدفع عند الاستلام بعد المعاينة واختيار اللي يناسبك مع المندوب.</p>
@@ -374,6 +403,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="script-v17-safe.js?v=26"></script>
+  <script src="script-v17-safe.js?v=27"></script>
 </body>
 </html>
