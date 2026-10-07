@@ -1354,24 +1354,57 @@ async function submitOrderToProf(payload) {
 
 /* WhatsApp Checkout Submission */
 const checkoutForm = $("#checkoutForm");
+const checkoutValidationLiveFix = event => {
+  const field = event.target.closest?.("input, select, textarea");
+  if (!field || !field.closest("#checkoutForm")) return;
+  field.classList.remove("field-invalid");
+  field.removeAttribute("aria-invalid");
+  const err = $("#formError");
+  if (err && !err.hidden) {
+    err.textContent = "راجعي البيانات المحددة بالأحمر، وبعدها اضغطي إتمام الطلب مرة تانية.";
+  }
+};
 if (checkoutForm) {
+  checkoutForm.addEventListener("input", checkoutValidationLiveFix);
+  checkoutForm.addEventListener("change", checkoutValidationLiveFix);
   checkoutForm.addEventListener("submit", async event => {
     event.preventDefault();
-    const data = Object.fromEntries(new FormData(event.currentTarget).entries());
-    
-    if (!data.name?.trim() || !validPhone(data.phone) || !data.governorate?.trim() || !data.area?.trim() || !data.address?.trim()) {
-      const err = $("#formError");
-      if (err) err.textContent = "يرجى كتابة الاسم، ورقم موبايل صحيح (01xxxxxxxxx)، والمحافظة، والمنطقة، والعنوان بالتفصيل.";
-      const firstInvalid = !data.name?.trim()
-        ? event.currentTarget.elements.name
-        : !validPhone(data.phone)
-          ? event.currentTarget.elements.phone
-          : !data.governorate?.trim()
-            ? event.currentTarget.elements.governorate
-            : !data.area?.trim()
-              ? event.currentTarget.elements.area
-              : event.currentTarget.elements.address;
-      firstInvalid?.focus();
+    const form = event.currentTarget;
+    const data = Object.fromEntries(new FormData(form).entries());
+    const err = $("#formError");
+
+    $("input, select, textarea", form).forEach(field => {
+      field.classList.remove("field-invalid");
+      field.removeAttribute("aria-invalid");
+    });
+    if (err) {
+      err.hidden = true;
+      err.textContent = "";
+    }
+
+    const validationErrors = [];
+    if (!data.name?.trim()) validationErrors.push({ field: form.elements.name, label: "الاسم بالكامل" });
+    if (!validPhone(data.phone)) validationErrors.push({ field: form.elements.phone, label: "رقم موبايل صحيح يبدأ بـ 01" });
+    if (!data.governorate?.trim()) validationErrors.push({ field: form.elements.governorate, label: "المحافظة" });
+    if (!data.area?.trim()) validationErrors.push({ field: form.elements.area, label: "المنطقة / الحي" });
+    if (!data.address?.trim()) validationErrors.push({ field: form.elements.address, label: "العنوان بالتفصيل" });
+
+    if (validationErrors.length) {
+      validationErrors.forEach(({ field }) => {
+        field?.classList.add("field-invalid");
+        field?.setAttribute("aria-invalid", "true");
+      });
+
+      if (err) {
+        err.textContent = `من فضلك كمّلي البيانات دي قبل إتمام الطلب: ${validationErrors.map(item => item.label).join("، ")}.`;
+        err.hidden = false;
+      }
+
+      const firstInvalid = validationErrors[0]?.field;
+      if (firstInvalid) {
+        firstInvalid.focus({ preventScroll: true });
+        firstInvalid.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+      }
       return;
     }
 
