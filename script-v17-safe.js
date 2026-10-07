@@ -172,6 +172,7 @@ function readRoute() {
 const initialRoute = readRoute();
 let currentProductId = initialRoute.productId;
 let currentVariantByProduct = Object.fromEntries(PRODUCT_IDS.map(id => [id, PRODUCTS[id].variants[0].id]));
+let cardVariantIndex = Object.fromEntries(PRODUCT_IDS.map(id => [id, 0]));
 currentVariantByProduct[currentProductId] = initialRoute.variantId;
 
 let cart = [];
@@ -345,6 +346,23 @@ function setupDockVisibility() {
   dockObserver.observe(heroActions);
 }
 
+const SELECT_SHOP_THEME_KEY = "selectShopTheme";
+function applyTheme(theme = "light") {
+  const night = theme === "night";
+  document.body.classList.toggle("theme-night", night);
+  const toggle = $("#themeToggle");
+  const label = $("#themeLabel");
+  const icon = $(".theme-icon", toggle || document);
+  if (label) label.textContent = night ? "Night" : "Light";
+  if (icon) icon.textContent = night ? "☾" : "☀";
+  if (toggle) toggle.setAttribute("aria-label", night ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الليلي");
+  try { localStorage.setItem(SELECT_SHOP_THEME_KEY, night ? "night" : "light"); } catch {}
+}
+function initTheme() {
+  let saved = "light";
+  try { saved = localStorage.getItem(SELECT_SHOP_THEME_KEY) || "light"; } catch {}
+  applyTheme(saved === "night" ? "night" : "light");
+}
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function animateImageSwap(image) {
@@ -477,13 +495,18 @@ function renderCatalog() {
   if (!rail) return;
   rail.innerHTML = PRODUCT_IDS.map(id => {
     const product = PRODUCTS[id];
+    const index = Math.max(0, Math.min(product.variants.length - 1, cardVariantIndex[id] || 0));
+    const variant = product.variants[index];
     return `
       <article class="model-card ${id === currentProductId ? "active" : ""}" data-model-card="${id}">
-        <a class="model-card-media model-card-view" href="${productUrl(id).href}" aria-label="افتحي تفاصيل ${product.name}">
-          <img src="${product.hero}" alt="${product.name}" width="900" height="720" loading="lazy">
+        <div class="model-card-media">
+          <img data-card-image="${id}" src="${variant.image}" alt="${product.name} ${variant.name}" width="900" height="900" loading="lazy">
           <span class="model-card-badge">${product.badge}</span>
-          <span class="view-product-chip">شوفي المنتج</span>
-        </a>
+          <button class="card-variant-nav prev" type="button" data-card-prev="${id}" aria-label="اللون السابق">›</button>
+          <button class="card-variant-nav next" type="button" data-card-next="${id}" aria-label="اللون التالي">‹</button>
+          <span class="card-variant-label" data-card-label="${id}">${variant.name}</span>
+          <button class="card-zoom" type="button" data-card-zoom="${id}">تكبير</button>
+        </div>
         <div class="model-card-body">
           <div class="model-card-head">
             <h3>${product.name}</h3>
@@ -493,12 +516,11 @@ function renderCatalog() {
           <div class="model-meta">
             <span>${product.variants.length} ألوان</span>
             <span>مقاسات ${product.sizeSummary}</span>
-            <span>شامل الشحن</span>
-            <span class="extra-pair-deal">زوج إضافي: ${extraPairDiscountLabel(product.id)}</span>
+            <span>الشحن شامل السعر</span>
+            <span class="extra-pair-deal">خصم ${discountPercentText(product.price)} على الزوج الإضافي</span>
           </div>
           <div class="model-card-actions">
-            <a class="btn primary" href="?product=${id}" data-select-product="${id}">اختاري الموديل</a>
-            <a class="btn secondary model-view-btn" href="${productUrl(id).href}">شوفي التفاصيل</a>
+            <a class="btn primary" href="${productUrl(id, variant.id).href}" data-select-product="${id}">اختاري الموديل</a>
             <button class="share-link" type="button" data-share-product="${id}" aria-label="مشاركة رابط ${product.name}">
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4"/></svg>
             </button>
@@ -509,22 +531,69 @@ function renderCatalog() {
   }).join("");
 
   $$('[data-select-product]').forEach(link => {
-    link.href = productUrl(link.dataset.selectProduct).href;
     link.addEventListener("click", event => {
       if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
       event.preventDefault();
       const id = link.dataset.selectProduct;
+      const product = PRODUCTS[id];
+      const variant = product.variants[cardVariantIndex[id] || 0] || product.variants[0];
+      currentVariantByProduct[id] = variant.id;
       selectProduct(id, { push: true, scrollTop: false });
-      requestAnimationFrame(() => openProductSheet(id, { intent: cart.length ? "trial" : "buy", variantId: currentVariantByProduct[id] }));
+      requestAnimationFrame(() => openProductSheet(id, { intent: cart.length ? "trial" : "buy", variantId: variant.id }));
     });
   });
 
-  $$('[data-share-product]').forEach(button => {
-    button.addEventListener("click", () => shareProduct(button.dataset.shareProduct));
-  });
+  $$('[data-card-prev]').forEach(button => button.addEventListener("click", event => {
+    event.preventDefault();
+    cycleCardVariant(button.dataset.cardPrev, -1);
+  }));
+  $$('[data-card-next]').forEach(button => button.addEventListener("click", event => {
+    event.preventDefault();
+    cycleCardVariant(button.dataset.cardNext, 1);
+  }));
+  $$('[data-card-zoom]').forEach(button => button.addEventListener("click", () => openProductLightbox(button.dataset.cardZoom)));
+  $$('[data-share-product]').forEach(button => button.addEventListener("click", () => shareProduct(button.dataset.shareProduct)));
+}
 
-  rail.addEventListener("scroll", syncRailStatus, { passive: true });
-  requestAnimationFrame(syncRailStatus);
+function cycleCardVariant(productId, direction) {
+  const product = PRODUCTS[productId];
+  if (!product?.variants?.length) return;
+  const length = product.variants.length;
+  cardVariantIndex[productId] = ((cardVariantIndex[productId] || 0) + direction + length) % length;
+  const variant = product.variants[cardVariantIndex[productId]];
+  const image = document.querySelector(`[data-card-image="${productId}"]`);
+  const label = document.querySelector(`[data-card-label="${productId}"]`);
+  const link = document.querySelector(`[data-select-product="${productId}"]`);
+  if (image) {
+    image.src = variant.image;
+    image.alt = `${product.name} ${variant.name}`;
+    animateImageSwap(image);
+  }
+  if (label) label.textContent = variant.name;
+  if (link) link.href = productUrl(productId, variant.id).href;
+}
+
+function openProductLightbox(productId) {
+  const product = PRODUCTS[productId];
+  if (!product) return;
+  const variant = product.variants[cardVariantIndex[productId] || 0] || product.variants[0];
+  const box = $("#productLightbox");
+  const image = $("#productLightboxImage");
+  const caption = $("#productLightboxCaption");
+  if (!box || !image) return;
+  image.src = variant.image;
+  image.alt = `${product.name} ${variant.name}`;
+  if (caption) caption.textContent = `${product.name} — ${variant.code} — ${variant.name}`;
+  box.hidden = false;
+  box.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+function closeProductLightbox() {
+  const box = $("#productLightbox");
+  if (!box) return;
+  box.hidden = true;
+  box.setAttribute("aria-hidden", "true");
+  if (!document.body.classList.contains("sheet-open")) document.body.style.overflow = "";
 }
 
 function updateCatalogSelection() {
@@ -1197,6 +1266,15 @@ if (buyNowBtn) buyNowBtn.addEventListener("click", () => {
   if (commitSheetItem()) openCart();
 });
 
+const productLightboxClose = $("#productLightboxClose");
+if (productLightboxClose) productLightboxClose.addEventListener("click", closeProductLightbox);
+const productLightbox = $("#productLightbox");
+if (productLightbox) productLightbox.addEventListener("click", event => { if (event.target === productLightbox) closeProductLightbox(); });
+document.addEventListener("keydown", event => { if (event.key === "Escape" && productLightbox && !productLightbox.hidden) closeProductLightbox(); });
+
+const themeToggle = $("#themeToggle");
+if (themeToggle) themeToggle.addEventListener("click", () => applyTheme(document.body.classList.contains("theme-night") ? "light" : "night"));
+
 const heroBuy = $("#heroBuy");
 if (heroBuy) heroBuy.addEventListener("click", () => openProductSheet(currentProductId, { intent: "buy", variantId: currentVariantByProduct[currentProductId] }));
 
@@ -1419,6 +1497,7 @@ window.addEventListener("resize", syncViewport);
 window.visualViewport?.addEventListener("resize", syncViewport);
 window.visualViewport?.addEventListener("scroll", syncViewport);
 
+initTheme();
 renderCatalog();
 const skipLink = document.querySelector('.skip-link');
 if (skipLink) skipLink.href = `${location.pathname}${location.search}#main`;
