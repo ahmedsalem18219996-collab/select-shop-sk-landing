@@ -1745,3 +1745,47 @@ body.theme-night #checkoutSheet textarea{
   #checkoutForm select{min-height:46px;font-size:11px}
   .form-error{font-size:9.5px;padding:10px 11px}
 }
+
+
+/* ===== SELECT SHOP V28 — tap any product image to enlarge ===== */
+.zoomable-product-image{
+  cursor:zoom-in;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:rgba(128,87,245,.12);
+}
+.zoomable-product-image:focus-visible{
+  outline:3px solid rgba(128,87,245,.28);
+  outline-offset:-3px;
+  border-radius:14px;
+}
+.model-card-media>.zoomable-product-image,
+.sheet-media>.zoomable-product-image,
+.cart-line-top>.zoomable-product-image,
+.add-product-card>.zoomable-product-image{
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+@media(hover:hover){
+  .model-card-media>.zoomable-product-image:hover,
+  .sheet-media>.zoomable-product-image:hover,
+  .cart-line-top>.zoomable-product-image:hover,
+  .add-product-card>.zoomable-product-image:hover{
+    transform:scale(1.018);
+  }
+}
+.product-lightbox{
+  cursor:zoom-out;
+}
+.product-lightbox figure{
+  width:min(94vw,900px);
+}
+.product-lightbox img{
+  width:auto;
+  max-width:100%;
+  max-height:80vh;
+  cursor:default;
+}
+.product-lightbox figcaption{
+  max-width:min(92vw,760px);
+  text-align:center;
+  line-height:1.5;
+}
