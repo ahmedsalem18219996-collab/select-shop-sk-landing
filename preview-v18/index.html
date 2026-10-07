@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f7f4ee" />
+  <title>SELECT SHOP — V18 Mobile Checkout Preview</title>
+  <meta name="description" content="نسخة تجريبية لرحلة شراء SELECT SHOP على الموبايل." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="preview-ribbon" aria-label="نسخة تجريبية">V18 PREVIEW — غير منشورة كنسخة نهائية</div>
+
+  <header class="topbar">
+    <button class="icon-btn cart-btn" id="openCartBtn" type="button" aria-label="فتح السلة">
+      <span class="cart-icon">🛍</span>
+      <span>السلة</span>
+      <span class="count-badge" id="cartCount">0</span>
+    </button>
+    <a class="brand" href="#top" aria-label="SELECT SHOP">
+      <strong>SELECT <em>SHOP</em></strong>
+      <small>CURATED SNEAKERS</small>
+    </a>
+  </header>
+
+  <main id="top">
+    <section class="trust-strip" aria-label="مزايا الطلب">
+      <span>شحن شامل</span><i></i><span>معاينة عند الاستلام</span><i></i><span>الدفع عند الاستلام</span>
+    </section>
+
+    <section class="hero shell" id="hero">
+      <div class="hero-copy">
+        <span class="eyebrow" id="familyBadge">الأكثر طلبًا</span>
+        <h1 id="familyTitle">اختاري الكوتشي اللي يناسب يومك.</h1>
+        <p id="familyDescription">موديلات خفيفة ومريحة، ومقاسات واضحة من غير لف كتير.</p>
+        <div class="hero-price-row">
+          <div>
+            <small>السعر شامل الشحن</small>
+            <strong id="familyPrice">680 جنيه</strong>
+          </div>
+          <button class="primary-btn hero-buy" id="heroBuyBtn" type="button">اختاري الموديل والمقاس</button>
+        </div>
+      </div>
+      <button class="hero-media" id="heroMediaBtn" type="button" aria-label="فتح المنتج">
+        <img id="familyHero" src="../assets/sk-1.jpg" alt="SK Sneakers" />
+        <span class="media-chip">اضغطي للصورة والتفاصيل</span>
+      </button>
+    </section>
+
+    <section class="shell family-nav-section" aria-labelledby="familyNavTitle">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">اختيار أسرع</span>
+          <h2 id="familyNavTitle">اختاري المجموعة</h2>
+        </div>
+        <span class="swipe-hint">اسحبي ←</span>
+      </div>
+      <div class="family-tabs" id="familyTabs" role="tablist"></div>
+    </section>
+
+    <section class="shell variants-section" aria-labelledby="variantsTitle">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">الموديلات المتاحة</span>
+          <h2 id="variantsTitle">شوفي المنتج قبل ما تطلبي</h2>
+        </div>
+        <span class="model-count" id="modelCount"></span>
+      </div>
+      <div class="variant-grid" id="variantGrid"></div>
+    </section>
+
+    <section class="shell reassurance">
+      <div class="reassurance-card">
+        <span class="reassurance-icon">✓</span>
+        <div>
+          <strong>محتارة بين مقاسين؟</strong>
+          <p>من شاشة المقاس تقدري تختاري مقاس إضافي ييجي مع المندوب، واستلمي اللي يعجبك بس.</p>
+        </div>
+      </div>
+      <div class="reassurance-card">
+        <span class="reassurance-icon">%</span>
+        <div>
+          <strong>زوج تاني = خصم مباشر</strong>
+          <p>السلة بتعرض الإجمالي قبل الخصم وبعده بوضوح قبل ما تكملي الطلب.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="mobile-dock" id="mobileDock">
+    <button class="secondary-btn" id="dockCartBtn" type="button">السلة <span id="dockCount">0</span></button>
+    <button class="primary-btn" id="dockBuyBtn" type="button">اختاري واطلبي</button>
+  </div>
+
+  <div class="overlay" id="overlay" hidden></div>
+
+  <section class="sheet product-sheet" id="productSheet" aria-hidden="true" aria-labelledby="productSheetTitle">
+    <div class="sheet-bar">
+      <button class="close-btn" data-close="product" type="button" aria-label="إغلاق">×</button>
+      <div class="step-mini"><span class="active">1 المنتج</span><span>2 المقاس</span><span>3 السلة</span></div>
+    </div>
+    <div class="sheet-scroll">
+      <div class="product-summary">
+        <img id="sheetImage" src="../assets/sk-1.jpg" alt="" />
+        <div>
+          <span class="eyebrow" id="sheetFamily">SK</span>
+          <h2 id="productSheetTitle">SK-1</h2>
+          <p id="sheetVariantName">أبيض × وردي</p>
+          <div class="sheet-price"><span id="sheetOldPrice" class="old-price" hidden></span><strong id="sheetPrice">680 جنيه</strong><span id="sheetDiscountBadge" class="discount-badge" hidden></span></div>
+        </div>
+      </div>
+
+      <div class="choice-block">
+        <div class="choice-title"><strong>1. اختاري الموديل</strong><span id="variantChoiceState">اختيارك الحالي</span></div>
+        <div class="variant-rail" id="sheetVariantRail"></div>
+      </div>
+
+      <div class="choice-block">
+        <div class="choice-title"><strong>2. اختاري المقاس</strong><span id="sizeHelp">اختاري مقاس واحد</span></div>
+        <div class="size-grid" id="sizeGrid"></div>
+        <button class="alt-size-toggle" id="altSizeToggle" type="button" disabled>
+          <span>محتارة بين مقاسين؟</span>
+          <small>اختاري مقاس تاني ييجي مع المندوب — واستلمي اللي يعجبك</small>
+        </button>
+        <div class="alt-size-panel" id="altSizePanel" hidden>
+          <div class="choice-title"><strong>المقاس الإضافي للاختيار</strong><button id="clearAltSize" type="button">إلغاء</button></div>
+          <div class="size-grid compact" id="altSizeGrid"></div>
+          <p class="microcopy">المقاس الإضافي لا يزود الإجمالي. الطلب محسوب على زوج واحد فقط.</p>
+        </div>
+      </div>
+
+      <div class="product-notes">
+        <span>✓ السعر شامل الشحن</span>
+        <span>✓ معاينة قبل الدفع</span>
+        <span>✓ الدفع عند الاستلام</span>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <div class="selection-status" id="selectionStatus">اختاري المقاس عشان نكمّل</div>
+      <button class="primary-btn full" id="addToCartBtn" type="button" disabled>اختاري المقاس أولًا</button>
+    </div>
+  </section>
+
+  <section class="sheet cart-sheet" id="cartSheet" aria-hidden="true" aria-labelledby="cartTitle">
+    <div class="sheet-bar">
+      <button class="close-btn" data-close="cart" type="button" aria-label="إغلاق">×</button>
+      <div>
+        <span class="eyebrow">خطوة 2 من 3</span>
+        <h2 id="cartTitle">راجعي طلبك</h2>
+      </div>
+    </div>
+    <div class="sheet-scroll cart-scroll">
+      <div id="cartEmpty" class="empty-state" hidden>
+        <div class="empty-icon">🛍</div>
+        <h3>السلة لسه فاضية</h3>
+        <p>اختاري موديل ومقاس، وارجعي هنا نكمّل الطلب.</p>
+        <button class="primary-btn" id="emptyBrowseBtn" type="button">شوفي الموديلات</button>
+      </div>
+      <div id="cartContent">
+        <div class="cart-items" id="cartItems"></div>
+
+        <button class="upsell-card" id="addAnotherBtn" type="button">
+          <span class="upsell-icon">＋</span>
+          <span><strong>ضيفي زوج تاني بخصم 80 جنيه</strong><small>اختاري أي موديل — الخصم يتحسب تلقائي</small></span>
+          <b>←</b>
+        </button>
+
+        <div class="totals-card">
+          <div><span>الإجمالي قبل الخصم</span><strong id="subtotalBefore">0 جنيه</strong></div>
+          <div class="discount-line"><span>الخصم</span><strong id="discountTotal">-0 جنيه</strong></div>
+          <div class="grand-total"><span>الإجمالي بعد الخصم</span><strong id="subtotalAfter">0 جنيه</strong></div>
+          <p id="savingsMessage">الخصم يظهر تلقائيًا عند إضافة زوج تاني.</p>
+        </div>
+
+        <div class="cart-confidence">
+          <span>الدفع عند الاستلام</span>
+          <span>معاينة قبل الدفع</span>
+          <span>الشحن شامل</span>
+        </div>
+      </div>
+    </div>
+    <div class="sheet-footer cart-actions" id="cartActions">
+      <button class="secondary-btn full" id="continueShoppingBtn" type="button">كمّلي تسوق</button>
+      <button class="primary-btn full" id="goCheckoutBtn" type="button">كمّلي بيانات الطلب</button>
+    </div>
+  </section>
+
+  <section class="sheet checkout-sheet" id="checkoutSheet" aria-hidden="true" aria-labelledby="checkoutTitle">
+    <div class="sheet-bar">
+      <button class="back-btn" id="checkoutBackBtn" type="button" aria-label="رجوع">→</button>
+      <div>
+        <span class="eyebrow">خطوة 3 من 3</span>
+        <h2 id="checkoutTitle">بيانات الاستلام</h2>
+      </div>
+      <button class="close-btn" data-close="checkout" type="button" aria-label="إغلاق">×</button>
+    </div>
+    <form class="sheet-scroll checkout-form" id="checkoutForm">
+      <div class="checkout-total-preview">
+        <span>إجمالي طلبك بعد الخصم</span>
+        <strong id="checkoutTotal">0 جنيه</strong>
+        <small id="checkoutSaving"></small>
+      </div>
+
+      <label>الاسم
+        <input name="name" autocomplete="name" required placeholder="اكتبي الاسم" />
+      </label>
+      <label>رقم الموبايل
+        <input name="phone" inputmode="tel" autocomplete="tel" required placeholder="01xxxxxxxxx" />
+      </label>
+      <div class="form-row">
+        <label>المحافظة
+          <select name="governorate" required>
+            <option value="">اختاري</option>
+            <option>القاهرة</option><option>الجيزة</option><option>الإسكندرية</option><option>القليوبية</option>
+            <option>الشرقية</option><option>الدقهلية</option><option>الغربية</option><option>المنوفية</option>
+            <option>البحيرة</option><option>كفر الشيخ</option><option>دمياط</option><option>بورسعيد</option>
+            <option>الإسماعيلية</option><option>السويس</option><option>الفيوم</option><option>بني سويف</option>
+            <option>المنيا</option><option>أسيوط</option><option>سوهاج</option><option>قنا</option>
+            <option>الأقصر</option><option>أسوان</option><option>البحر الأحمر</option><option>مطروح</option>
+            <option>الوادي الجديد</option><option>شمال سيناء</option><option>جنوب سيناء</option>
+          </select>
+        </label>
+        <label>المنطقة
+          <input name="area" required placeholder="المنطقة" />
+        </label>
+      </div>
+      <label>العنوان بالتفصيل
+        <textarea name="address" required rows="3" placeholder="الشارع، رقم العمارة، الدور، علامة مميزة"></textarea>
+      </label>
+      <label>عندك استفسار؟ <span class="optional">اختياري</span>
+        <textarea name="inquiry" rows="2" placeholder="اكتبي أي سؤال أو استفسار عن الطلب"></textarea>
+      </label>
+      <label>ملاحظات للمندوب <span class="optional">اختياري</span>
+        <textarea name="courierNotes" rows="2" placeholder="مثلاً: الاتصال قبل الوصول"></textarea>
+      </label>
+
+      <div class="final-order-summary" id="finalOrderSummary"></div>
+      <div class="form-spacer"></div>
+    </form>
+    <div class="sheet-footer checkout-actions">
+      <p>بالضغط على التأكيد هيفتح واتساب برسالة الطلب جاهزة.</p>
+      <button class="primary-btn full" id="submitOrderBtn" type="submit" form="checkoutForm">تأكيد الطلب على واتساب</button>
+    </div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
