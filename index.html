@@ -36,6 +36,7 @@
       <span class="wordmark-type"><strong><i>SELECT</i><em>SHOP</em></strong><small>CURATED SNEAKERS</small></span>
       <span class="wordmark-dot" aria-hidden="true"></span>
     </a>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="تبديل الوضع الليلي"><span class="theme-icon" aria-hidden="true">☀</span><b id="themeLabel">Light</b></button>
     <button class="cart-trigger" type="button" data-open-cart aria-label="فتح السلة، 0 منتجات">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.4L21 8H7"/><circle cx="10" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg>
       <span>السلة</span><b id="cartCount">0</b>
@@ -43,62 +44,30 @@
   </header>
 
   <main id="main">
-    <section class="hero shell" id="top" aria-labelledby="heroTitle">
-      <div class="hero-copy reveal">
-        <div class="eyebrow">
-          <span></span>
-          <b id="heroBadge">الأكثر طلبًا</b>
-          <small id="heroCode">SK SNEAKERS</small>
+    <section class="hero storefront-hero shell" id="top" aria-labelledby="storeHeroTitle">
+      <div class="hero-lifestyle reveal">
+        <div class="hero-person-wrap" aria-hidden="true">
+          <img class="hero-person" src="https://unsplash.com/photos/pBW4sptQslI/download?force=true&w=1200" alt="" loading="eager" fetchpriority="high">
+          <span class="hero-float hero-float-one">NEW SEASON</span>
+          <span class="hero-float hero-float-two">SELECT SHOP</span>
         </div>
-        <h1 id="heroTitle">راحة تحسيها.<br><em>ستايل يبان.</em></h1>
-        <p class="hero-lead" id="heroDescription"></p>
-
-        <div class="hero-price-row">
-          <div>
-            <small>السعر شامل التوصيل والمعاينة</small>
-            <strong id="heroPrice">680</strong>
-            <span>جنيه</span>
-          </div>
-          <p>اختاري أكتر من موديل<br><b>واستلمي اللي يعجبك</b></p>
-          <div class="discount-pill" id="heroDiscountPill" aria-live="polite">خصم ١٢٪ على الزوج الإضافي</div>
-        </div>
-
-        <div class="hero-actions">
-          <div class="guided-buy">
-            <span class="outside-arrows" aria-hidden="true"><i></i><i></i></span>
-            <button class="btn primary big" type="button" id="heroBuy">
-              <span>
-                <small id="heroBuyMeta">اختيار المقاس واللون • 680 جنيه</small>
-                <b>اختاري المقاس واطلبي</b>
-              </span>
+        <div class="hero-lifestyle-copy">
+          <span class="hero-kicker">SELECT SHOP • SNEAKERS</span>
+          <h1 id="storeHeroTitle">كل الموديلات قدامك.<br><em>اختاري واطلبي بسرعة.</em></h1>
+          <p>موديلات مختارة، ألوان ومقاسات واضحة، معاينة قبل الدفع ودفع عند الاستلام.</p>
+          <div class="hero-actions">
+            <button class="btn primary big" type="button" id="heroAdd">
+              <span><small>كل الموديلات في شاشة واحدة</small><b>تصفحي الموديلات الآن</b></span>
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </button>
+            <button class="btn secondary" type="button" id="heroBuy">اختاري SK بسرعة</button>
           </div>
-          <button class="btn secondary" type="button" id="heroAdd">شاهدي باقي الموديلات</button>
-        </div>
-
-        <div class="hero-trust" aria-label="مزايا الطلب">
-          <span><b id="heroSizes">37–41</b><small>المقاسات المتاحة</small></span>
-          <span><b>اختيار إضافي براحتك</b><small>ادفعي بس للي هتستلميه</small></span>
-          <span><b>عايني قبل الدفع</b><small>الدفع عند الاستلام</small></span>
-        </div>
-      </div>
-
-      <div class="hero-visual reveal">
-        <div class="product-stage" data-premium-spotlight>
-          <div class="stage-top">
-            <span id="heroVariantCode">SK-1</span>
-            <small id="heroVariantName">أبيض × وردي</small>
-          </div>
-          <div class="stage-image">
-            <img id="heroProductImage" src="assets/sk-1.jpg" alt="SK-1 أبيض وردي" width="1200" height="1200" draggable="false">
-          </div>
-          <div class="stage-bottom">
-            <span>SELECT • COLLECTION</span>
-            <span>معاينة واختيار مع المندوب</span>
+          <div class="hero-benefits" aria-label="مزايا الطلب">
+            <span><b>معاينة قبل الدفع</b><small>شوّفي المقاس والجودة الأول</small></span>
+            <span><b>الشحن شامل السعر</b><small>السعر واضح قبل التأكيد</small></span>
+            <span><b>دفع عند الاستلام</b><small>بدون دفع أونلاين</small></span>
           </div>
         </div>
-        <div class="hero-variants" id="heroVariants" aria-label="ألوان وموديلات المنتج"></div>
       </div>
     </section>
 
@@ -119,9 +88,9 @@
 
     <section class="model-browser shell" id="catalog" aria-labelledby="catalogTitle">
       <div class="section-heading reveal">
-        <span>كولكشن السنيكرز الكامل</span>
-        <h2 id="catalogTitle">اختاري الأساسي.<br>وجرّبي اللي محيّرك.</h2>
-        <p>اسحبي لتصفح باقي الموديلات. اختاري موديلك الأساسي، وتقدري تضيفي موديل تاني مع الطلب؛ وقت الاستلام اختاري اللي يعجبك وسيبي الباقي مع المندوب.</p>
+        <span>SELECT SHOP COLLECTION</span>
+        <h2 id="catalogTitle">الموديلات</h2>
+        <p>اختاري أي موديل وشوفي ألوانه من الأسهم داخل الكارت، وبعدها حددي اللون والمقاس بسهولة.</p>
       </div>
       <div class="browser-controls reveal">
         <div class="browser-status">
@@ -382,6 +351,11 @@
       </button>
     </div>
   </section>
+
+  <div class="product-lightbox" id="productLightbox" hidden aria-hidden="true">
+    <button class="product-lightbox-close" id="productLightboxClose" type="button" aria-label="إغلاق الصورة">×</button>
+    <figure><img id="productLightboxImage" src="" alt=""><figcaption id="productLightboxCaption"></figcaption></figure>
+  </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="script-v17-safe.js"></script>
