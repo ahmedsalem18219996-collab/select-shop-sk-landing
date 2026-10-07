@@ -92,6 +92,7 @@ const PRODUCTS = Object.freeze({
 window.SELECT_SHOP_PRODUCTS = PRODUCTS;
 
 const PRODUCT_IDS = Object.keys(PRODUCTS);
+const NEW_DESIGN_IDS = new Set(["eqwal", "wk"]);
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const money = value => `${Number(value).toLocaleString("ar-EG")} جنيه`;
@@ -507,6 +508,7 @@ function renderCatalog() {
         <div class="model-card-media">
           <img data-card-image="${id}" src="${variant.image}" alt="${product.name} ${variant.name}" width="900" height="900" loading="lazy">
           <span class="model-card-badge">${product.badge}</span>
+          ${NEW_DESIGN_IDS.has(id) ? `<span class="new-design-mini">NEW</span>` : ""}
           <button class="card-variant-nav prev" type="button" data-card-prev="${id}" aria-label="اللون السابق">›</button>
           <button class="card-variant-nav next" type="button" data-card-next="${id}" aria-label="اللون التالي">‹</button>
           <span class="card-variant-label" data-card-label="${id}">${variant.name}</span>
