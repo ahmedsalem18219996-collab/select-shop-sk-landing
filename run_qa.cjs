@@ -218,18 +218,53 @@ async function runQA() {
         const activeProduct = document.body.dataset.product;
         const heroTitle = document.querySelector('#heroCode')?.textContent;
         const heroPrice = document.querySelector('#heroPrice')?.textContent;
+        const browserCurrent = document.querySelector('#browserCurrent')?.textContent;
         const toastText = document.querySelector('#toast')?.textContent;
         return {
           found: true,
           activeProduct,
           heroTitle,
           heroPrice,
+          browserCurrent,
           toastText
         };
       })()
     `);
-    const alexSwitchOk = switchRes.activeProduct === 'alex' && (switchRes.heroPrice.includes('540') || switchRes.heroPrice.includes('٥٤٠'));
+    const alexSwitchOk = switchRes.activeProduct === 'alex' && switchRes.browserCurrent === 'ALEX';
     record('View Product ("عرض الموديل") switches product', alexSwitchOk, JSON.stringify(switchRes));
+
+    // 4b. Product views are GA4 ecommerce events, deduplicated once per model per session.
+    const analyticsRes = await cdp.eval(`
+      (() => {
+        const events = [];
+        const listener = event => events.push(event.detail);
+        window.addEventListener('selectshop:analytics', listener);
+        trackProductView(PRODUCTS.eqwal, 'qa_first');
+        trackProductView(PRODUCTS.eqwal, 'qa_duplicate');
+        window.removeEventListener('selectshop:analytics', listener);
+        const payload = ga4Payload('view_item', {
+          item_id: 'eqwal',
+          item_name: 'EQWAL',
+          item_category: 'Sneakers',
+          value: 680,
+          currency: 'EGP'
+        });
+        return {
+          events,
+          viewed: JSON.parse(sessionStorage.getItem('selectShopViewedModels:v1') || '[]'),
+          payload
+        };
+      })()
+    `);
+    const viewDedupOk = analyticsRes.events.length === 1
+      && analyticsRes.events[0].name === 'view_item'
+      && analyticsRes.viewed.includes('sk')
+      && analyticsRes.viewed.includes('alex')
+      && analyticsRes.viewed.includes('eqwal');
+    record('Product view fires once per model per session', viewDedupOk, JSON.stringify(analyticsRes.viewed));
+    const ga4ItemsOk = analyticsRes.payload.items?.[0]?.item_id === 'eqwal'
+      && analyticsRes.payload.items?.[0]?.item_name === 'EQWAL';
+    record('GA4 view_item uses the standard ecommerce items payload', ga4ItemsOk, JSON.stringify(analyticsRes.payload.items));
 
     // 5. Test valid sizes logic per product & variant
     const sizesRes = await cdp.eval(`

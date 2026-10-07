@@ -5,7 +5,7 @@ const SHOP_WHATSAPP_NUMBER = "201289437444";
 
 const CONFIG = Object.freeze({
   WHATSAPP_NUMBER: SHOP_WHATSAPP_NUMBER,
-  GA4_ID: "G-XXXXXXXXXX",
+  GA4_ID: "G-NB8PZCX35Z",
   META_PIXEL_ID: "000000000000000",
   SHIPPING_FEE: 80,
   PROF_BRIDGE_URL: "" // يظل فارغاً حتى نحصل على API/Integration رسمي من Prof
@@ -305,10 +305,35 @@ function bootAnalytics() {
   }
 }
 
+const PRODUCT_VIEW_SESSION_KEY = "selectShopViewedModels:v1";
+const viewedProductIds = new Set((() => {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(PRODUCT_VIEW_SESSION_KEY) || "[]");
+    return Array.isArray(saved) ? saved.filter(id => typeof id === "string") : [];
+  } catch {
+    return [];
+  }
+})());
+
+function ga4Payload(name, payload) {
+  if (!payload.item_id || !["view_item", "add_to_cart"].includes(name)) return payload;
+  return {
+    ...payload,
+    items: [{
+      item_id: payload.item_id,
+      item_name: payload.item_name,
+      item_category: payload.item_category || "Sneakers",
+      item_variant: payload.item_variant,
+      price: payload.value,
+      quantity: payload.quantity || 1
+    }]
+  };
+}
+
 function track(name, payload = {}) {
   window.dispatchEvent(new CustomEvent("selectshop:analytics", { detail: { name, payload } }));
   try {
-    if (window.gtag) window.gtag("event", name, payload);
+    if (window.gtag) window.gtag("event", name, ga4Payload(name, payload));
     if (window.fbq) {
       const standard = { view_item: "ViewContent", add_to_cart: "AddToCart", begin_checkout: "InitiateCheckout", whatsapp_click: "Contact" }[name];
       const metaPayload = { content_name: payload.item_name, content_ids: payload.item_id ? [payload.item_id] : undefined, value: payload.value, currency: "EGP" };
@@ -316,6 +341,20 @@ function track(name, payload = {}) {
       else window.fbq("trackCustom", name, metaPayload);
     }
   } catch {}
+}
+
+function trackProductView(product, viewContext) {
+  if (!product || viewedProductIds.has(product.id)) return;
+  viewedProductIds.add(product.id);
+  try { sessionStorage.setItem(PRODUCT_VIEW_SESSION_KEY, JSON.stringify([...viewedProductIds])); } catch {}
+  track("view_item", {
+    item_id: product.id,
+    item_name: product.name,
+    item_category: "Sneakers",
+    value: product.price,
+    currency: "EGP",
+    view_context: viewContext
+  });
 }
 
 function syncViewport() {
@@ -438,7 +477,7 @@ function renderHero({ announce = true } = {}) {
 
   updateCatalogSelection();
   updateCartUI();
-  if (announce) track("view_item", { item_id: product.id, item_name: product.name, value: product.price, currency: "EGP" });
+  if (announce) trackProductView(product, "model_switch");
 }
 
 function updateHeroImage(variant, animate = true) {
@@ -735,7 +774,7 @@ function openProductSheet(productId, { intent = "buy", editId = null, variantId 
   };
   renderProductSheet();
   openSheet($("#productSheet"));
-  track("view_item", { item_id: product.id, item_name: product.name, value: product.price, currency: "EGP" });
+  trackProductView(product, "product_sheet");
 }
 
 function updatePurchaseJourney() {
@@ -1574,7 +1613,7 @@ if (skipLink) skipLink.href = `${location.pathname}${location.search}#main`;
 renderHero({ announce: false });
 updateCartUI();
 bootAnalytics();
-track("view_item", { item_id: currentProductId, item_name: getProduct(currentProductId).name, value: getProduct(currentProductId).price, currency: "EGP" });
+trackProductView(getProduct(currentProductId), "page_load");
 syncViewport();
 syncProgress();
 setupDockVisibility();
