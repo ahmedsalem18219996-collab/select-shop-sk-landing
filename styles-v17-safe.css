@@ -1258,3 +1258,20 @@ body.theme-night .home-nav-link{
     font-size:9px;
   }
 }
+
+
+/* ===== SELECT SHOP V22 — product image clarity fix ===== */
+.model-card:not(.is-near){
+  opacity:1 !important;
+}
+.model-card-media::after{
+  display:none !important;
+  content:none !important;
+  animation:none !important;
+}
+.model-card-media>img,
+.model-card-media img{
+  opacity:1 !important;
+  filter:none !important;
+  mix-blend-mode:normal !important;
+}
