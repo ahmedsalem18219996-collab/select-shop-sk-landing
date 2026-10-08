@@ -1620,7 +1620,7 @@ function checkoutMessage(data, items, orderId) {
   rows.push("معاينة قبل الدفع");
   return rows.join("\n");
 }
-function whatsappOrderUrl(message) { return "https://wa.me/" + SHOP_WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message); }
+function whatsappOrderUrl(message) { return "https://wa.me/" + SHOP_WHATSAPP_NUMBER + "?text=" + encodeURIComponent("[تجربة تصميم SELECT SHOP — ليس طلبًا حقيقيًا]\n" + message); }
 function whatsappCartFallback(items) {
   return "مرحبًا SELECT SHOP، عايزة أساعدوني أكمّل الطلب:\n" + items.map(x=>getProduct(x.productId).name+" "+getVariant(x.productId,x.variantId).code+" مقاس "+x.sizes.join("/")).join("\n");
 }
