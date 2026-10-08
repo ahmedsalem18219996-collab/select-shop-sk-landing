@@ -309,6 +309,14 @@ const viewedProductIds = new Set((() => {
   }
 })());
 
+const PRODUCT_VARIANT_VIEW_SESSION_KEY = "selectShopViewedVariants:v1";
+const viewedVariantIds = new Set((() => {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(PRODUCT_VARIANT_VIEW_SESSION_KEY) || "[]");
+    return Array.isArray(saved) ? saved.filter(id => typeof id === "string") : [];
+  } catch { return []; }
+})());
+
 function ga4Payload(name, payload) {
   if (!payload.item_id || !["view_item", "add_to_cart"].includes(name)) return payload;
   return {
@@ -333,16 +341,29 @@ function track(name, payload = {}) {
 }
 
 function trackProductView(product, viewContext) {
-  if (product && (viewContext !== "page_load" || /\/product\//.test(location.pathname))) {
-    const variantId = viewContext === "product_sheet" ? sheetState.variantId : currentVariantByProduct[product.id];
-    window.SELECT_SHOP_META?.view(product, getVariant(product.id, variantId));
+  if (!product) return;
+  const variantId = viewContext === "product_sheet" && sheetState.productId === product.id
+    ? sheetState.variantId
+    : currentVariantByProduct[product.id];
+  const variant = getVariant(product.id, variantId);
+  if (viewContext !== "page_load" || /\/product\//.test(location.pathname)) {
+    window.SELECT_SHOP_META?.view(product, variant);
   }
-  if (!product || viewedProductIds.has(product.id)) return;
-  viewedProductIds.add(product.id);
-  try { sessionStorage.setItem(PRODUCT_VIEW_SESSION_KEY, JSON.stringify([...viewedProductIds])); } catch {}
+  if (!viewedProductIds.has(product.id)) {
+    viewedProductIds.add(product.id);
+    try { sessionStorage.setItem(PRODUCT_VIEW_SESSION_KEY, JSON.stringify([...viewedProductIds])); } catch {}
+  }
+  // Count each color once per browser session, including direct product links.
+  // item_name groups variants by parent model in GA4 Item name reports.
+  if (viewedVariantIds.has(variant.id)) return;
+  viewedVariantIds.add(variant.id);
+  try { sessionStorage.setItem(PRODUCT_VARIANT_VIEW_SESSION_KEY, JSON.stringify([...viewedVariantIds])); } catch {}
   track("view_item", {
-    item_id: product.id,
+    item_id: variant.id,
     item_name: product.name,
+    item_variant: variant.code,
+    product_id: product.id,
+    variant_name: variant.name,
     item_category: "Sneakers",
     value: product.price,
     currency: "EGP",
@@ -498,7 +519,7 @@ function setHeroVariant(variantId) {
     button.setAttribute("aria-pressed", String(active));
   });
   updateHeroImage(variant);
-  window.SELECT_SHOP_META?.view(product, variant);
+  trackProductView(product, "variant_switch");
   renderCampaignProductLanding(product, variant);
   if (document.body.dataset.page !== "product") {
     $("#heroVariants .hero-variant.active")?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest", inline: "center" });
@@ -903,7 +924,10 @@ function selectSheetVariant(variantId) {
   renderProductSheet();
   animateImageSwap($("#sheetProductImage"));
   if (product.id === currentProductId) setHeroVariant(variant.id);
-  else track("select_color", { item_id: `${product.id}:${variant.id}`, item_name: `${product.name} ${variant.name}`, value: product.price, currency: "EGP" });
+  else {
+    trackProductView(product, "product_sheet");
+    track("select_color", { item_id: `${product.id}:${variant.id}`, item_name: `${product.name} ${variant.name}`, value: product.price, currency: "EGP" });
+  }
 }
 
 function renderSizes() {
