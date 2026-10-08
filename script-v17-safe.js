@@ -181,15 +181,31 @@ let checkoutState = { items: [] };
 let addProductMode = "purchase";
 let lastFocus = null;
 
-const CART_STORAGE_KEY = location.pathname.includes("/preview-v17/") ? "selectShopCartV17Preview" : "selectShopCart";
+// v2 intentionally does not import the old cart key: it contained stale testing selections.
+// A customer's NEW cart persists for seven days, across the product landing pages and home.
+const LEGACY_CART_STORAGE_KEY = location.pathname.includes("/preview-v17/") ? "selectShopCartV17Preview" : "selectShopCart";
+const CART_STORAGE_KEY = LEGACY_CART_STORAGE_KEY + ":v2";
+const CART_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+const WHATSAPP_HANDOFF_KEY = "selectShopWhatsAppHandoff:v1";
+
+function validSavedCartItem(item) {
+  const product = PRODUCTS[item?.productId];
+  const variant = product?.variants.find(entry => entry.id === item.variantId);
+  return Boolean(
+    product && variant && typeof item.id === "string" && item.id.length <= 80 &&
+    Array.isArray(item.sizes) && item.sizes.length >= 1 && item.sizes.length <= 2 &&
+    item.sizes.every(size => variant.sizes.includes(Number(size)))
+  );
+}
 
 try {
-  const saved = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]");
-  cart = Array.isArray(saved) ? saved.filter(item => {
-    const product = PRODUCTS[item.productId];
-    const variant = product?.variants.find(entry => entry.id === item.variantId);
-    return variant && Array.isArray(item.sizes) && item.sizes.length >= 1 && item.sizes.length <= 2 && item.sizes.every(size => variant.sizes.includes(Number(size)));
-  }) : [];
+  const saved = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "null");
+  const current = saved?.version === 2 && Number.isFinite(saved.savedAt) &&
+    saved.savedAt <= Date.now() && Date.now() - saved.savedAt <= CART_TTL_MS;
+  cart = current && Array.isArray(saved.items) ? saved.items.filter(validSavedCartItem) : [];
+  // Clear legacy test carts on this one-time migration, not new active v2 selections.
+  localStorage.removeItem(LEGACY_CART_STORAGE_KEY);
+  if (!current) localStorage.removeItem(CART_STORAGE_KEY);
 } catch { cart = []; }
 normalizeCart();
 
@@ -280,8 +296,62 @@ function payableSummary(items) {
 
 function saveCart() {
   normalizeCart();
-  try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); } catch {}
+  try {
+    if (cart.length) localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({
+      version: 2, savedAt: Date.now(), items: cart
+    }));
+    else localStorage.removeItem(CART_STORAGE_KEY);
+  } catch {}
   updateCartUI();
+}
+
+function clearCart() {
+  cart = [];
+  checkoutState = { items: [] };
+  saveCart();
+  renderCart();
+}
+function pendingWhatsAppHandoff() {
+  try {
+    const pending = JSON.parse(sessionStorage.getItem(WHATSAPP_HANDOFF_KEY) || "null");
+    if (!pending || !Array.isArray(pending.itemIds) ||
+        !pending.itemIds.length || Date.now() - pending.startedAt > 60 * 60 * 1000 ||
+        pending.startedAt > Date.now()) {
+      sessionStorage.removeItem(WHATSAPP_HANDOFF_KEY);
+      return null;
+    }
+    return pending;
+  } catch { return null; }
+}
+function saveWhatsAppHandoff(items, orderId) {
+  try {
+    sessionStorage.setItem(WHATSAPP_HANDOFF_KEY, JSON.stringify({
+      orderId, startedAt: Date.now(), itemIds: items.map(item => item.id).filter(Boolean)
+    }));
+  } catch {}
+}
+function dismissWhatsAppHandoff() {
+  try { sessionStorage.removeItem(WHATSAPP_HANDOFF_KEY); } catch {}
+  const notice = $("#whatsappReturnNotice");
+  if (notice) notice.hidden = true;
+}
+function offerWhatsAppReturnConfirmation() {
+  const notice = $("#whatsappReturnNotice");
+  if (!notice) return;
+  const pending = pendingWhatsAppHandoff();
+  notice.hidden = !pending || !cart.some(item => pending.itemIds.includes(item.id));
+}
+function completeWhatsAppHandoff() {
+  const pending = pendingWhatsAppHandoff();
+  if (!pending) return dismissWhatsAppHandoff();
+  // Only the selections that were sent to WhatsApp are removed.
+  // Any new selections the customer added after the handoff remain in the cart.
+  const selected = new Set(pending.itemIds);
+  cart = cart.filter(item => !selected.has(item.id));
+  saveCart();
+  renderCart();
+  dismissWhatsAppHandoff();
+  toast("تم تأكيد إرسال الطلب وإفراغ المنتجات المرسلة من السلة ✓");
 }
 
 /* Analytics */
@@ -1023,6 +1093,8 @@ function renderCart() {
   const trialLimit = $("#cartTrialLimit");
   const empty = $("#emptyCart");
   const checkoutBtn = $("#cartCheckout");
+  const clearCartBtn = $("#cartClear");
+  if (clearCartBtn) clearCartBtn.hidden = !cart.length;
 
   const hasTrial = cart.some(item => item.role === "trial");
   if (empty) empty.hidden = Boolean(cart.length);
@@ -1432,6 +1504,21 @@ if (cartAddDiscounted) cartAddDiscounted.addEventListener("click", () => {
 
 const cartCheckout = $("#cartCheckout");
 if (cartCheckout) cartCheckout.addEventListener("click", () => { if (cart.length) openCheckout(cart); });
+const cartClearButton = $("#cartClear");
+if (cartClearButton) cartClearButton.addEventListener("click", () => {
+  if (!cart.length) return;
+  if (!window.confirm("تمسحي كل المنتجات من السلة؟")) return;
+  clearCart();
+  dismissWhatsAppHandoff();
+  toast("السلة بقت فاضية ✓");
+});
+$("#whatsappReturnConfirmed")?.addEventListener("click", completeWhatsAppHandoff);
+$("#whatsappReturnKeep")?.addEventListener("click", dismissWhatsAppHandoff);
+window.addEventListener("pageshow", offerWhatsAppReturnConfirmation);
+window.addEventListener("focus", offerWhatsAppReturnConfirmation);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) offerWhatsAppReturnConfirmation();
+});
 
 $$('[data-close-and-shop]').forEach(button => button.addEventListener("click", () => {
   closeAllSheets();
@@ -1569,6 +1656,7 @@ if (checkoutForm) {
     try { track("whatsapp_click", { value: totals.total, currency: "EGP", items: totals.pairCount, order_id: orderPayload.orderId }); } catch {}
 
     const targetUrl = whatsappOrderUrl(message);
+    saveWhatsAppHandoff(checkoutState.items, orderPayload.orderId);
     const fallback = $("#whatsappFallback");
     if (fallback) {
       fallback.href = targetUrl;
@@ -1658,6 +1746,7 @@ syncProgress();
 setupDockVisibility();
 setupPremiumMotion();
 requestAnimationFrame(() => document.body.classList.add("loaded"));
+offerWhatsAppReturnConfirmation();
 
 
 /* Campaign-specific product first view — shared canonical catalog and cart */

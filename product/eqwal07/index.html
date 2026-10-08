@@ -17,7 +17,7 @@
   <link rel="canonical" href="https://selectshopeg.com/product/eqwal07/">
   <title>EQWAL07 — EQWAL Street | SELECT SHOP</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23684fd3'/%3E%3Cpath d='M15 41h34v7H15zm3-25h29v7H18zm-3 12h26v7H15z' fill='%23ffffff'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles-v17-safe.css?v=ads-checkout-20261008-e82c078d">
+  <link rel="stylesheet" href="styles-v17-safe.css?v=cart-v2-20261008a">
   <script src="meta-pixel.js?v=bf26a35ecb24"></script>
 </head>
 <body>
@@ -268,6 +268,7 @@
       <div>
         <small>اختيارك واضح قبل التأكيد</small>
         <h2 id="cartSheetTitle">راجعي طلبك</h2>
+        <button type="button" class="cart-clear-button" id="cartClear" hidden>تفريغ السلة</button>
       </div>
       <div class="sheet-head-actions">
         <a class="sheet-home-link" href="./" aria-label="الرجوع إلى الصفحة الرئيسية">
@@ -409,7 +410,15 @@
     <figure><img id="productLightboxImage" src="" alt=""><figcaption id="productLightboxCaption"></figcaption></figure>
   </div>
 
+  <div id="whatsappReturnNotice" class="whatsapp-return-notice" role="region" aria-label="تأكيد إرسال الطلب على واتساب" hidden>
+    <strong>رجعتي من واتساب؟</strong>
+    <p>هل بعتي رسالة الأوردر فعلًا؟ لو بعتّيها، هنفضّي المنتجات دي من السلة. ولو لسه، هنحتفظ بيها.</p>
+    <div class="whatsapp-return-actions">
+      <button type="button" id="whatsappReturnConfirmed">أيوه، بعت الطلب</button>
+      <button type="button" id="whatsappReturnKeep">لسه، احتفظي بالسلة</button>
+    </div>
+  </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="script-v17-safe.js?v=ads-checkout-20261008-e82c078d"></script>
+  <script src="script-v17-safe.js?v=cart-v2-20261008a"></script>
 </body>
 </html>
