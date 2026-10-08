@@ -1627,6 +1627,7 @@ function renderCampaignProductLanding(product, variant){
   hero.hidden = isProductPage;
   const previous = document.querySelector(".campaign-product-first");
   if (!isProductPage) { previous?.remove(); return; }
+  const maxExtraDiscount = Math.max(...Object.values(PRODUCTS).map(item => discountPercentForPrice(item.price))).toLocaleString("ar-EG");
   const section=document.createElement("section");
   section.className="campaign-product-first shell";
   section.setAttribute("aria-label",product.name+" "+variant.code);
@@ -1640,7 +1641,7 @@ function renderCampaignProductLanding(product, variant){
       <p>${product.description}</p>
       <div class="campaign-product-price">${money(product.price)} <small>شامل الشحن • معاينة قبل الدفع</small></div>
       <button class="btn primary campaign-product-buy" type="button">اختاري المقاس واطلبي الآن</button>
-      <a href="${new URL("#catalog", APP_BASE).href}" class="campaign-product-browse">شاهدي باقي الموديلات ←</a>
+      <a href="${new URL("#catalog", APP_BASE).href}" class="campaign-product-browse"><span>شوفي باقي الموديلات <i aria-hidden="true">←</i></span><small>واستفيدي بخصم حتى ${maxExtraDiscount}٪ على الزوج الإضافي</small></a>
     </div>`;
   if (previous) previous.replaceWith(section);
   else hero.before(section);
@@ -1667,7 +1668,12 @@ function renderCampaignProductLanding(product, variant){
    .campaign-product-price{font-size:26px;font-weight:900;margin:18px 0;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
    .campaign-product-price small{font-size:12px;font-weight:500;color:#726c78}
    .campaign-product-buy{min-height:54px;width:100%;font-weight:900}
-   .campaign-product-browse{display:inline-block;margin-top:16px;color:#6657e8;font-weight:800;font-size:13px}
+   .campaign-product-browse{display:flex;flex-direction:column;align-items:center;gap:5px;margin-top:12px;padding:13px 16px;border:1px solid #c9bcf5;border-radius:16px;background:#f4efff;color:#5740c5;font-weight:800;font-size:14px;text-decoration:none;transition:background .18s,border-color .18s}
+   .campaign-product-browse span{display:flex;align-items:center;gap:10px}
+   .campaign-product-browse i{font-style:normal}
+   .campaign-product-browse small{font-size:12px;font-weight:600;line-height:1.6;text-align:center}
+   .campaign-product-browse:hover{background:#ebe2ff;border-color:#8e76df}
+   .campaign-product-browse:focus-visible{outline:3px solid #6657e8;outline-offset:3px}
    @media(max-width:700px){
     .campaign-product-first{grid-template-columns:1fr;gap:10px;padding-block:12px 22px}
     .campaign-product-media img{max-height:min(43vh,330px)}
