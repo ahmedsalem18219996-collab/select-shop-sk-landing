@@ -1212,7 +1212,10 @@ function openCheckout(items) {
   }
   const err = $("#formError"); if (err) err.textContent = "";
   const whatsappFallback = $("#whatsappFallback");
-  if (whatsappFallback) { whatsappFallback.hidden = true; whatsappFallback.removeAttribute("href"); }
+  if (whatsappFallback) {
+    whatsappFallback.href = whatsappOrderUrl(whatsappCartFallback(checkoutState.items));
+    whatsappFallback.hidden = false;
+  }
   openSheet($("#checkoutSheet"));
   // Jump to required fields, which otherwise sit below the order summary on mobile.
   requestAnimationFrame(() => {
@@ -1461,6 +1464,33 @@ async function submitOrderToProf(payload) {
   } catch (error) { console.warn("Prof bridge unavailable; using WhatsApp fallback.", error); return { sent:false, reason:"bridge-error" }; }
 }
 
+// Short orders reduce URL length in Facebook and Instagram in-app browsers.
+function checkoutMessage(data, items, orderId) {
+  const total = calcTotals(items), bought = items.filter(x => x.role !== "trial"), trials = items.filter(x => x.role === "trial");
+  const rows = ["طلب جديد SELECT SHOP", "رقم الطلب: " + orderId, "المنتجات:"];
+  const sizes = x => x.sizes.length === 2 ? "تجربة " + x.sizes.join("/") + " (الاحتفاظ بمقاس واحد)" : "مقاس " + x.sizes.join("/");
+  bought.forEach((x,i) => {
+    const p=getProduct(x.productId), v=getVariant(x.productId,x.variantId);
+    rows.push((i+1) + "- " + p.name + " | " + v.code + " (" + v.name + ") | " + sizes(x) + " | " + money(x.role==="purchase" ? additionalPairPrice(x) : p.price));
+  });
+  trials.forEach((x,i) => {
+    const p=getProduct(x.productId),v=getVariant(x.productId,x.variantId);
+    rows.push("اختيار إضافي للتجربة " + (i+1) + ": " + p.name + " | " + v.code + " (" + v.name + ") | " + sizes(x) + " | عند الاحتفاظ به: " + money(additionalPairPrice(x)));
+  });
+  rows.push("الإجمالي: " + money(total.total) + " شامل الشحن");
+  if(total.discount)rows.push("خصم الزوج الإضافي: " + money(total.discount));
+  if(trials.length)rows.push("التجربة دون التزام، والدفع للأزواج المستلمة فقط");
+  rows.push("الاسم: " + data.name.trim(), "موبايل: " + normalizePhone(data.phone), "المحافظة: " + data.governorate.trim(), "المنطقة: " + data.area.trim(), "العنوان: " + data.address.trim());
+  if(data.notes?.trim()) rows.push("ملاحظات: " + data.notes.trim().slice(0,250));
+  if(data.inquiry?.trim()) rows.push("استفسار: " + data.inquiry.trim().slice(0,250));
+  rows.push("معاينة قبل الدفع");
+  return rows.join("\n");
+}
+function whatsappOrderUrl(message) { return "https://wa.me/" + SHOP_WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message); }
+function whatsappCartFallback(items) {
+  return "مرحبًا SELECT SHOP، عايزة أساعدوني أكمّل الطلب:\n" + items.map(x=>getProduct(x.productId).name+" "+getVariant(x.productId,x.variantId).code+" مقاس "+x.sizes.join("/")).join("\n");
+}
+
 /* WhatsApp Checkout Submission */
 const checkoutForm = $("#checkoutForm");
 const checkoutValidationLiveFix = event => {
@@ -1525,74 +1555,7 @@ if (checkoutForm) {
     const trials = checkoutState.items.filter(i => i.role === "trial");
     const orderPayload = buildOrderPayload(data, checkoutState.items);
 
-    let message = `🛍️ طلب جديد — SELECT SHOP\n`;
-    message += `رقم الطلب: ${orderPayload.orderId}\n`;
-    message += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
-
-    message += `👟 المنتجات المؤكدة (${totals.pairCount} زوج):\n`;
-    purchased.forEach((item, index) => {
-      const prod = getProduct(item.productId);
-      const vr = getVariant(item.productId, item.variantId);
-      const tag = item.role === "primary" ? "الموديل الأساسي" : "شراء إضافي مؤكد";
-      message += `${index + 1}) ${prod.name} [${tag}]\n`;
-      message += `   • كود اللون: ${vr.code} (${vr.name})\n`;
-      if (item.sizes.length === 2) {
-        message += `   • المقاس: اختيار بين مقاسين (${item.sizes.join(" و ")}) — العميلة تستلم المقاس الأنسب فقط\n`;
-      } else {
-        message += `   • المقاس: ${item.sizes[0]}\n`;
-      }
-      if (item.role === "purchase") {
-        message += `   • سعر الزوج الإضافي بعد ${extraPairDiscountLabel(item.productId)}: ${money(Math.max(0, prod.price - CONFIG.SHIPPING_FEE))} (بدل ${money(prod.price)})\n\n`;
-      } else {
-        message += `   • السعر: ${money(prod.price)} شامل الشحن\n\n`;
-      }
-    });
-
-    if (trials.length) {
-      message += `👀 اختيارات إضافية عند الاستلام — العميلة تستلم اللي يعجبها فقط:\n`;
-      trials.forEach((item, index) => {
-        const prod = getProduct(item.productId);
-        const vr = getVariant(item.productId, item.variantId);
-        message += `${index + 1}) ${prod.name} [اختيار إضافي عند الاستلام]\n`;
-        message += `   • كود اللون: ${vr.code} (${vr.name})\n`;
-        if (item.sizes.length === 2) {
-          message += `   • المقاس: اختيار بين مقاسين (${item.sizes.join(" و ")})\n`;
-        } else {
-          message += `   • المقاس: ${item.sizes[0]}\n`;
-        }
-        message += `   • معاينة الاختيار مع المندوب بدون التزام\n`;
-        message += `   • لو العميلة استلمته كزوج إضافي: ${money(Math.max(0, prod.price - CONFIG.SHIPPING_FEE))} بعد ${extraPairDiscountLabel(item.productId)} (بدل ${money(prod.price)})\n`;
-        message += `   (لو مش مناسب، يفضل مع المندوب ولا تدفع العميلة ثمنه)\n\n`;
-      });
-    }
-
-    message += `💳 ملخص الحساب:\n`;
-    message += `• عدد الأزواج للشراء: ${totals.pairCount}\n`;
-    if (totals.trialCount > 0) {
-      message += `• اختيارات إضافية عند الاستلام: ${totals.trialCount} (الدفع فقط لما يتم استلامها)\n`;
-    }
-    message += `• شحن الطلب الأساسي: مشمول في السعر\n`;
-    if (totals.trialCount > 0) {
-      message += `• الاختيارات الإضافية: بدون تكلفة إضافية لمجرد المعاينة\n`;
-    }
-    message += `• الإجمالي قبل الخصم: ${money(totals.subtotal)}\n`;
-    message += `• قيمة الخصم: ${money(totals.discount)}\n`;
-    message += `• الإجمالي بعد الخصم: ${money(totals.total)}\n`;
-    if (trials.length) {
-      const allSelectedTotals = calcTotals(checkoutState.items.map(item => item.role === "trial" ? { ...item, role: "purchase" } : item));
-      message += `• لو العميلة استلمت كل الاختيارات: قبل الخصم ${money(allSelectedTotals.subtotal)} — بعد الخصم ${money(allSelectedTotals.total)}\n`;
-    }
-    message += `• الدفع النهائي حسب الأزواج اللي العميلة قررت تستلمها فعلاً.\n\n`;
-
-    message += `👤 بيانات العميل والاستلام:\n`;
-    message += `• الاسم: ${data.name.trim()}\n`;
-    message += `• رقم الموبايل: ${normalizePhone(data.phone)}\n`;
-    message += `• المحافظة: ${data.governorate.trim()}\n`;
-    message += `• المنطقة: ${data.area.trim()}\n`;
-    message += `• العنوان بالتفصيل: ${data.address.trim()}\n`;
-    if (data.inquiry?.trim()) { message += `• استفسار العميل: ${data.inquiry.trim()}\n`; }
-    if (data.notes?.trim()) { message += `• ملاحظات للمندوب: ${data.notes.trim()}\n`; }
-    message += `\n✨ تم إنشاء الطلب عبر موقع SELECT SHOP`;
+    const message = checkoutMessage(data, checkoutState.items, orderPayload.orderId);
 
     // Do not block WhatsApp navigation on analytics or optional integrations.
     try { localStorage.setItem("selectShopLastOrder", JSON.stringify({ ...orderPayload, status: "whatsapp-prepared" })); } catch {}
@@ -1603,12 +1566,16 @@ if (checkoutForm) {
       Promise.resolve(window.SELECT_SHOP_META?.finish(orderPayload, {}))
         .catch(error => console.warn("Meta lead tracking error:", error));
     } catch (error) { console.warn("Meta lead tracking error:", error); }
-    track("whatsapp_click", { value: totals.total, currency: "EGP", items: totals.pairCount, order_id: orderPayload.orderId });
+    try { track("whatsapp_click", { value: totals.total, currency: "EGP", items: totals.pairCount, order_id: orderPayload.orderId }); } catch {}
 
-    const targetUrl = `https://wa.me/${SHOP_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    const targetUrl = whatsappOrderUrl(message);
     const fallback = $("#whatsappFallback");
-    if (fallback) fallback.href = targetUrl;
-    toast("جاري فتح واتساب برسالة الطلب المجهزة…");
+    if (fallback) {
+      fallback.href = targetUrl;
+      fallback.hidden = false;
+      fallback.textContent = "واتساب ما فتحش؟ اضغطي هنا لإرسال طلبك";
+    }
+    try { toast("جاري فتح واتساب برسالة الطلب المجهزة…"); } catch {}
     try {
       window.location.assign(targetUrl);
     } catch (error) {
