@@ -30,7 +30,7 @@
 <p class="intro">مسدس غسيل لاسلكي يسحب المياه من جردل، مع بطاريتين قابلتين للشحن علشان تتحرك براحتك في الجراج أو قدام البيت.</p>
 <div class="price"><strong>999 جنيه</strong><small>شامل شحن القاهرة والجيزة</small></div>
 <div class="chips"><span>✓ بطاريتين قابلتين للشحن</span><span>✓ دفع عند الاستلام</span><span>✓ معاينة قبل الدفع</span></div>
-<div class="actions"><a class="button" href="#order">اطلب الآن ←</a><a class="button btnalt" href="https://wa.me/201289437444?text=%D8%B9%D9%86%D8%AF%D9%8A%20%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D9%85%D8%B3%D8%AF%D8%B3%20%D8%A7%D9%84%D8%BA%D8%B3%D9%8A%D9%84" target="_blank" rel="noopener">استفسر على واتساب</a></div></div>
+<div class="actions"><button class="button ssf-add-car" type="button" data-add-car>أضف للسلة ←</button><a class="button btnalt" href="https://wa.me/201289437444?text=%D8%B9%D9%86%D8%AF%D9%8A%20%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D9%85%D8%B3%D8%AF%D8%B3%20%D8%A7%D9%84%D8%BA%D8%B3%D9%8A%D9%84" target="_blank" rel="noopener">استفسر على واتساب</a></div></div>
 <div class="art">
 <video id="carwashDemoVideo" controls muted playsinline preload="metadata" poster="/assets/carwash48-real-kit.webp" aria-label="فيديو تصوير حقيقي لعرض الجهاز واستخدامه">
 <source src="/assets/ads/carwash48-original-4.mp4" type="video/mp4">
@@ -61,33 +61,36 @@
 <details><summary>إيه محتويات الكرتونة؟</summary><p>الصور الطبيعية للطقم المعروض بتوضح المسدس وبطاريتين وخرطوم سحب وزجاجة فوم وشاحن ووصلات مختلفة وفلتر وكتيّب. تأكيد المحتويات الفعلية والتوافر بيكون قبل تسجيل الطلب.</p></details>
 <details><summary>الضمان والتوصيل؟</summary><p>التوصيل عادة 2–5 أيام بحسب منطقة الشحن. المعاينة قبل الدفع، والاستبدال والاسترجاع خلال 14 يومًا وفق سياسة صفقة وشروط حالة المنتج.</p></details>
 </div></section>
-<section class="wrap order" id="order">
-<div><span class="pill">اطلب مباشرة من SELECT SHOP</span><h2>اطلب المسدس وخلي الباقي علينا</h2><p>املأ البيانات وافتح واتساب برسالة طلب جاهزة. هنراجع التوافر ومحتويات الطقم مع المورد قبل تأكيد الأوردر.</p>
-<ul><li>مسدس غسيل لاسلكي مع بطاريتين</li><li>السعر 999 جنيه شامل القاهرة والجيزة</li><li>الدفع بعد المعاينة عند الاستلام</li><li>السعر للمحافظات الأخرى حسب تكلفة الشحن</li></ul><p>تسجيل الطلب واستلامه يتم من خلال تأكيدك على واتساب، مش بمجرد فتح الصفحة.</p></div>
-<form id="orderForm"><div class="fieldrow">
-<label>الاسم بالكامل<input type="text" name="name" autocomplete="name" required maxlength="70" placeholder="اسم المستلم"></label>
-<label>رقم الموبايل<input type="tel" name="phone" autocomplete="tel" inputmode="tel" required pattern="(?:01[0125][0-9]{8}|201[0125][0-9]{8})" placeholder="01xxxxxxxxx"></label></div>
-<label>المحافظة<select name="city" required><option value="">اختار المحافظة</option><option value="القاهرة">القاهرة</option><option value="الجيزة">الجيزة</option><option value="محافظة أخرى">محافظة أخرى (السعر يحدد قبل التأكيد)</option></select></label>
-<label>عنوان التوصيل<textarea name="address" required minlength="10" maxlength="350" rows="2" placeholder="المنطقة، الشارع، رقم العقار، علامة مميزة"></textarea></label>
-<label>ملاحظة إضافية (اختياري)<textarea name="notes" maxlength="220" rows="2" placeholder="اكتب ملاحظاتك"></textarea></label>
-<button class="button" type="submit">ابعت طلبك على واتساب ←</button><p>إرسال الطلب يفتح واتساب، ولا يعني إتمام عملية شراء أو حجز مؤكد.</p>
-</form></section></main>
+<section class="wrap order ssf-unified-checkout-invite" id="order" aria-labelledby="ssfCarOrderTitle">
+<div><span class="pill">نفس سلة SELECT SHOP</span><h2 id="ssfCarOrderTitle">أضف مسدس الغسيل لسلتك</h2>
+<p>هيتحط جنب الكوتشيات أو أي منتجات تانية في سلة واحدة، وتدخل بيانات التوصيل مرة واحدة في نفس خطوات الشراء.</p>
+<ul><li>الطقم الكامل ببطاريتين — 999 جنيه</li><li>القاهرة والجيزة: السعر يشمل الشحن</li><li>المحافظات الأخرى: نراجع فرق الشحن قبل تأكيد الطلب</li><li>خصم توفير الشحن ينطبق فقط على المنتجات المؤهلة من نفس المورد؛ صفقة وبروف بيتحسبوا بشكل منفصل</li></ul></div>
+<div class="ssf-car-cart-action"><p id="ssfCartError" class="ssf-cart-error" role="alert" hidden></p><strong>999 جنيه</strong><small>شامل القاهرة والجيزة</small>
+<button class="button ssf-add-car" type="button" data-add-car>أضف للسلة وافتح الطلب <span aria-hidden="true">←</span></button>
+<a href="/preview/select-unified-v1/?open_cart=1" class="ssf-view-cart">عرض السلة الحالية</a><p>هتكمّل نفس بيانات الكوتشيات: الاسم، الموبايل، المحافظة والعنوان.</p></div></section></main>
 <footer class="footer"><b>SELECT SHOP</b> • ONE SHOP FOR EVERYTHING YOU NEED<br><a href="/preview/select-unified-v1/#catalog">تصفح باقي المنتجات</a></footer>
-<div class="dock"><a href="#order">اطلب الآن — 999 ج</a><a id="inquiry" href="https://wa.me/201289437444?text=%D8%A7%D8%B3%D8%AA%D9%81%D8%B3%D8%A7%D8%B1%20%D8%B9%D9%86%20%D9%85%D8%B3%D8%AF%D8%B3%20%D8%A7%D9%84%D8%BA%D8%B3%D9%8A%D9%84" target="_blank" rel="noopener">واتساب</a></div>
-<script>(function(){
-var qa=window.SELECT_SHOP_TEST_MODE===true;if(qa)document.getElementById('qa').hidden=false;
-function send(name,params){if(qa)return;try{if(window.gtag)gtag('event',name,params)}catch(e){}}
-document.querySelectorAll('a[href="#order"]').forEach(function(a){a.addEventListener('click',function(){send('select_promotion',{promotion_id:'carwash48'})})});
-document.getElementById('inquiry').addEventListener('click',function(){send('whatsapp_inquiry',{item_id:'carwash48'})});
-document.getElementById('orderForm').addEventListener('submit',function(e){
-e.preventDefault();var f=e.currentTarget;if(!f.reportValidity())return;
-var d={name:f.elements.name.value.trim(),phone:f.elements.phone.value.trim(),city:f.elements.city.value,address:f.elements.address.value.trim(),notes:f.elements.notes.value.trim()};
-if(!/^(?:01[0125][0-9]{8}|201[0125][0-9]{8})$/.test(d.phone)){alert('راجع رقم الموبايل المصري');return;}
-var price=d.city==='محافظة أخرى'?'السعر يُحدد بعد تأكيد الشحن':'999 جنيه شامل الشحن';
-var msg=['[تجربة تصميم SELECT SHOP — ليس طلبًا حقيقيًا]','أهلاً SELECT SHOP، عايز أطلب مسدس غسيل السيارات اللاسلكي ببطاريتين','كود المنتج: CW48','السعر: '+price,'الاسم: '+d.name,'الموبايل: '+d.phone,'المحافظة: '+d.city,'العنوان: '+d.address,d.notes?'ملاحظات: '+d.notes:'','برجاء تأكيد التوافر ومحتويات الطقم قبل تسجيل الطلب'].filter(Boolean).join('\n');
-send('whatsapp_order_intent',{item_id:'carwash48',value:d.city==='محافظة أخرى'?0:999,currency:'EGP'});
-if(!qa&&window.fbq)fbq('track','Lead',{content_ids:['carwash48'],content_type:'product',value:d.city==='محافظة أخرى'?0:999,currency:'EGP'});
-window.location.assign('https://wa.me/201289437444?text='+encodeURIComponent(msg));
-});
-})();</script>
+<div class="dock"><button type="button" data-add-car>أضف للسلة — 999 ج</button><a href="/preview/select-unified-v1/?open_cart=1">عرض السلة</a></div>
+<script id="ssf-add-to-cart">
+(function(){
+const CART_KEY="selectShopUnifiedV1PreviewCart:v2", TTL=7*24*60*60*1000;
+function addCarToSharedCart(){
+ const now=Date.now();let items=[];
+ try{
+  const saved=JSON.parse(localStorage.getItem(CART_KEY)||"null");
+  if(saved&&saved.version===2&&Number.isFinite(saved.savedAt)&&saved.savedAt<=now&&(now-saved.savedAt)<=TTL&&Array.isArray(saved.items)) items=saved.items;
+ }catch(e){}
+ // This uses the same schema and key as the shoe cart. Separate supplier / no size selection.
+ const id="cw48-"+now.toString(36)+"-"+Math.random().toString(36).slice(2,8);
+ items.push({id,productId:"carwash48",variantId:"cw48",sizes:[0],tryTwo:false,role:"purchase",billableQty:1,addedAt:now});
+ try {
+  localStorage.setItem(CART_KEY,JSON.stringify({version:2,savedAt:now,items}));
+  location.assign("/preview/select-unified-v1/?open_cart=1");
+ }catch(err){
+  const note=document.getElementById("ssfCartError");
+  if(note){note.hidden=false;note.textContent="تعذر حفظ السلة في المتصفح. حاول مرة أخرى بعد السماح بتخزين بيانات الموقع.";}
+ }
+}
+document.querySelectorAll("[data-add-car]").forEach(btn=>btn.addEventListener("click",addCarToSharedCart));
+})();
+</script>
 </body></html>
