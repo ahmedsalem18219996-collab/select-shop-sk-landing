@@ -1797,3 +1797,10 @@ body.theme-night #checkoutSheet textarea{
 #checkoutForm .required-mark{font-size:15px;color:#c62f4b;margin-inline-start:4px}
 #checkoutForm .whatsapp-fallback{display:block;text-align:center;border-radius:13px;background:#e7f8ee;color:#17643d;padding:13px 10px;font-weight:900;font-size:13px;border:1px solid #aadac0;text-decoration:underline;text-underline-offset:3px}
 #checkoutForm .whatsapp-fallback[hidden]{display:none!important}
+
+/* Conversion recovery: always available WhatsApp link, even with JavaScript blocked. */
+.header-whatsapp-help{display:inline-flex;align-items:center;justify-content:center;padding:7px 11px;min-height:38px;border-radius:12px;border:1px solid #9dd4b6;background:#e7f8ee;color:#176a43;font-size:11px;font-weight:900;white-space:nowrap;text-decoration:none}
+.header-whatsapp-help:hover{background:#d6f4e3}
+.header-whatsapp-help:focus-visible{outline:3px solid #187246;outline-offset:3px}
+@media(max-width:440px){.header-whatsapp-help{font-size:10px;padding:6px 8px;min-height:34px}}
+#checkoutForm .whatsapp-fallback{display:block!important;white-space:normal;overflow-wrap:anywhere}
