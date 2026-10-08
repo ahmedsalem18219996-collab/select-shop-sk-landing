@@ -80,7 +80,7 @@ e.preventDefault();var f=e.currentTarget;if(!f.reportValidity())return;
 var d={name:f.elements.name.value.trim(),phone:f.elements.phone.value.trim(),city:f.elements.city.value,address:f.elements.address.value.trim(),notes:f.elements.notes.value.trim()};
 if(!/^(?:01[0125][0-9]{8}|201[0125][0-9]{8})$/.test(d.phone)){alert('راجع رقم الموبايل المصري');return;}
 var price=d.city==='محافظة أخرى'?'السعر يُحدد بعد تأكيد الشحن':'999 جنيه شامل الشحن';
-var msg=['أهلاً SELECT SHOP، عايز أطلب مسدس غسيل السيارات اللاسلكي ببطاريتين','كود المنتج: CW48','السعر: '+price,'الاسم: '+d.name,'الموبايل: '+d.phone,'المحافظة: '+d.city,'العنوان: '+d.address,d.notes?'ملاحظات: '+d.notes:'','برجاء تأكيد التوافر ومحتويات الطقم قبل تسجيل الطلب'].filter(Boolean).join('\n');
+var msg=['[تجربة تصميم SELECT SHOP — ليس طلبًا حقيقيًا]','أهلاً SELECT SHOP، عايز أطلب مسدس غسيل السيارات اللاسلكي ببطاريتين','كود المنتج: CW48','السعر: '+price,'الاسم: '+d.name,'الموبايل: '+d.phone,'المحافظة: '+d.city,'العنوان: '+d.address,d.notes?'ملاحظات: '+d.notes:'','برجاء تأكيد التوافر ومحتويات الطقم قبل تسجيل الطلب'].filter(Boolean).join('\n');
 send('whatsapp_order_intent',{item_id:'carwash48',value:d.city==='محافظة أخرى'?0:999,currency:'EGP'});
 if(!qa&&window.fbq)fbq('track','Lead',{content_ids:['carwash48'],content_type:'product',value:d.city==='محافظة أخرى'?0:999,currency:'EGP'});
 window.location.assign('https://wa.me/201289437444?text='+encodeURIComponent(msg));
