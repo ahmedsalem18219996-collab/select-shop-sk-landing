@@ -86,11 +86,19 @@ const PRODUCTS = Object.freeze({
       { id: "wk8", code: "WK-8", name: "نيو بالانس حرف N نبيتي", image: "assets/wk_8.jpg", sizes: [37, 38, 39, 40, 41] }
     ]
   }
+  ,
+  carwash48: {
+    id: "carwash48", name: "مسدس غسيل سيارات لاسلكي ببطاريتين", short: "CW48", price: 999,
+    supplierId: "safqa", category: "car-care", badge: "عناية السيارات",
+    description: "مسدس غسيل لاسلكي ببطاريتين، شامل توصيل القاهرة والجيزة.",
+    hero: "/assets/carwash48-real-kit.webp", sizeSummary: "لا يحتاج مقاس", features: [],
+    variants: [{ id: "cw48", code: "CW48", name: "الطقم الكامل ببطاريتين", image: "/assets/carwash48-real-kit.webp", sizes: [0] }]
+  }
 });
 
 window.SELECT_SHOP_PRODUCTS = PRODUCTS;
 
-const PRODUCT_IDS = Object.keys(PRODUCTS);
+const PRODUCT_IDS = Object.keys(PRODUCTS).filter(id => id !== "carwash48");
 const NEW_DESIGN_IDS = new Set(["eqwal", "wk"]);
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -100,7 +108,7 @@ const discountPercentText = price => `${discountPercentForPrice(price).toLocaleS
 const extraPairDiscountLabel = productId => `خصم ${discountPercentText(getProduct(productId).price)}`;
 const uid = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
 const validProductId = value => PRODUCT_IDS.includes(String(value || "").toLowerCase());
-const getProduct = id => PRODUCTS[validProductId(id) ? id.toLowerCase() : "sk"];
+const getProduct = id => PRODUCTS[String(id || "").toLowerCase()] || PRODUCTS.sk;
 const getVariant = (productId, variantId) => {
   const prod = getProduct(productId);
   return prod.variants.find(item => item.id === variantId) || prod.variants[0];
@@ -233,42 +241,49 @@ function productUrl(id, variantId = null) {
   return url;
 }
 
+const SUPPLIER_FREIGHT = Object.freeze({ prof: 80, safqa: 85 });
+const supplierFor = productId => getProduct(productId).supplierId || "prof";
+const isCarItem = item => item?.productId === "carwash48";
+const displayVariant = item => isCarItem(item) ? "الطقم الكامل ببطاريتين" : getVariant(item.productId, item.variantId).name;
+const sizeDescription = item => isCarItem(item) ? "المنتج لا يحتاج مقاس" :
+  (item.sizes.length === 2 ? "تجربة مقاسين (الاحتفاظ بمقاس واحد)" : "المقاس: " + item.sizes.join(" / "));
 function normalizeCart() {
   let primaryFound = false;
   cart = cart.map(item => {
+    if (isCarItem(item)) return { ...item, role: "purchase", billableQty: 1, sizes: [0], tryTwo: false };
     let role = ["primary", "trial", "purchase"].includes(item.role) ? item.role : "trial";
-    if (role === "primary") {
-      role = primaryFound ? "trial" : "primary";
-      primaryFound = true;
-    }
+    if (role === "primary") { role = primaryFound ? "trial" : "primary"; primaryFound = true; }
     return { ...item, role, billableQty: 1 };
   });
-  if (cart.length && !primaryFound) {
-    cart[0].role = "primary";
+  if (!primaryFound) {
+    const firstShoe = cart.find(item => !isCarItem(item));
+    if (firstShoe) firstShoe.role = "primary";
   }
 }
-
 function calcTotals(items) {
   const validItems = items.filter(item => PRODUCTS[item.productId]);
   const payable = validItems.filter(item => item.role !== "trial");
-  const pairCount = payable.length;
-  const subtotal = payable.reduce((sum, item) => sum + PRODUCTS[item.productId].price, 0);
-  const shippingSaving = Math.max(0, pairCount - 1) * CONFIG.SHIPPING_FEE;
+  const subtotal = payable.reduce((sum,item) => sum + PRODUCTS[item.productId].price, 0);
+  const bySupplier = {};
+  for (const item of payable) {
+    const supplier = supplierFor(item.productId);
+    bySupplier[supplier] = (bySupplier[supplier] || 0) + 1;
+  }
+  const shippingSaving = Object.entries(bySupplier).reduce((sum,[supplier,count]) =>
+    sum + Math.max(0,count - 1) * (SUPPLIER_FREIGHT[supplier] || 0), 0);
+  const shippingCharged = Object.keys(bySupplier).reduce((sum,supplier) =>
+    sum + (SUPPLIER_FREIGHT[supplier] || 0), 0);
   return {
-    subtotal,
-    discount: shippingSaving,
-    shippingSaving,
-    shippingCharged: pairCount ? CONFIG.SHIPPING_FEE : 0,
-    pairCount,
-    trialCount: validItems.length - pairCount,
-    total: Math.max(0, subtotal - shippingSaving)
+    subtotal, discount: shippingSaving, shippingSaving, shippingCharged,
+    supplierGroups: bySupplier, pairCount: payable.length,
+    trialCount: validItems.length - payable.length, total: Math.max(0, subtotal - shippingSaving)
   };
 }
 
-const roleLabel = item => item.role === "trial" ? "اختيار إضافي عند الاستلام" : item.role === "purchase" ? "زوج إضافي بعد الخصم" : "الطلب الأساسي";
+const roleLabel = item => isCarItem(item) ? "عناية السيارات" : item.role === "trial" ? "اختيار إضافي عند الاستلام" : item.role === "purchase" ? "زوج إضافي بعد الخصم" : "الطلب الأساسي";
 
 function additionalPairPrice(item) {
-  return Math.max(0, getProduct(item.productId).price - CONFIG.SHIPPING_FEE);
+  return Math.max(0, getProduct(item.productId).price - (SUPPLIER_FREIGHT[supplierFor(item.productId)] || 0));
 }
 
 function alternativeTotal(items, item) {
@@ -285,7 +300,7 @@ function payableSummary(items) {
   return `
     <div class="price-summary-grid">
       <div><span>الإجمالي قبل الخصم</span><b>${money(totals.subtotal)}</b></div>
-      <div class="discount-row"><span>الخصم</span><b>-${money(totals.discount)}</b></div>
+      <div class="discount-row"><span>خصم توفير الشحن عند تجميع منتجات نفس المورد</span><b>-${money(totals.discount)}</b></div>
       <div class="final-row"><span>الإجمالي بعد الخصم</span><b id="cartTotal">${money(totals.total)}</b></div>
     </div>
     ${optionalChoices.length ? `
@@ -295,8 +310,8 @@ function payableSummary(items) {
         <div><span>بعد الخصم</span><b>${money(allSelectedTotals.total)}</b></div>
         <small>وقت الاستلام اختاري اللي يعجبك. اللي مش مناسب سيبيه مع المندوب ومش هتدفعي ثمنه.</small>
       </div>
-    ` : `<p class="payable-note">السعر النهائي شامل الشحن والمعاينة قبل الدفع.</p>`}
-    <small class="delivery-detail">المبلغ النهائي بيتحدد حسب الأزواج اللي قررتي تستلميها فعلاً.</small>
+    ` : `<p class="payable-note">الأسعار تشمل الشحن وفق سياسة كل منتج؛ تختلف تكلفة شحن عناية السيارات خارج القاهرة والجيزة.</p>`}
+    <small class="delivery-detail">خصم التجميع يُحسب لكل مورد وحده؛ منتجات الموردين المختلفين لا تتشارك خصم الشحن. عناية السيارات 999 جنيه تشمل القاهرة والجيزة، وباقي المحافظات يُؤكد الشحن قبل اعتماد الطلب.</small>
   `;
 }
 
@@ -882,7 +897,7 @@ function openProductSheet(productId, { intent = "buy", editId = null, variantId 
     tryTwo: existing?.sizes?.length === 2,
     editId: editId || null,
     intent,
-    role: existing?.role || (!cart.length ? "primary" : intent === "purchase" ? "purchase" : "trial")
+    role: existing?.role || (!cart.some(item => !isCarItem(item)) ? "primary" : intent === "purchase" ? "purchase" : "trial")
   };
   renderProductSheet();
   openSheet($("#productSheet"));
@@ -1156,6 +1171,22 @@ function renderCart() {
 
   if (list) {
     list.innerHTML = cart.map(item => {
+      if (isCarItem(item)) return `
+      <article class="cart-item ssf-cart-car-item role-purchase" data-cart-id="${item.id}">
+        <div class="cart-line-top">
+          <img src="/assets/carwash48-real-kit.webp" width="180" height="180" alt="مسدس غسيل لاسلكي ببطاريتين">
+          <div class="cart-item-main">
+            <span class="role-tag purchase">منتج عناية السيارات · صفقة</span>
+            <b>مسدس غسيل لاسلكي ببطاريتين</b>
+            <small>الطقم الكامل · لا يحتاج مقاس</small>
+            <div class="cart-primary-price"><b>${money(999)}</b><small>شامل شحن القاهرة والجيزة</small></div>
+          </div>
+          <div class="cart-item-tools">
+            <button type="button" data-cart-view="${item.id}">عرض المنتج</button>
+            <button type="button" data-cart-remove="${item.id}" aria-label="حذف مسدس الغسيل">حذف</button>
+          </div>
+        </div>
+      </article>`;
       const product = getProduct(item.productId);
       const variant = getVariant(item.productId, item.variantId);
       const isTrial = item.role === "trial";
@@ -1226,14 +1257,14 @@ function renderCart() {
     $$('[data-cart-view]', list).forEach(button => {
       button.onclick = () => {
         const item = cart.find(entry => entry.id === button.dataset.cartView);
-        if (item) openProductSheet(item.productId, { editId: item.id, variantId: item.variantId });
+        if (item) { if (isCarItem(item)) location.assign("/preview/select-unified-v1/carwash/"); else openProductSheet(item.productId, { editId: item.id, variantId: item.variantId }); }
       };
     });
 
     $$('[data-cart-edit]', list).forEach(button => {
       button.onclick = () => {
         const item = cart.find(entry => entry.id === button.dataset.cartEdit);
-        if (item) openProductSheet(item.productId, { editId: item.id });
+        if (item) { if (isCarItem(item)) location.assign("/preview/select-unified-v1/carwash/"); else openProductSheet(item.productId, { editId: item.id }); }
       };
     });
 
@@ -1308,6 +1339,9 @@ function openCheckout(items) {
   const itemsContainer = $("#checkoutItems");
   if (itemsContainer) {
     itemsContainer.innerHTML = checkoutState.items.map(item => {
+      if (isCarItem(item)) return `<div class="checkout-line role-purchase"><div><span class="role-tag purchase">صفقة · عناية السيارات</span>
+        <b>مسدس غسيل لاسلكي ببطاريتين</b><small>الطقم الكامل، لا يحتاج مقاس · السعر يشمل القاهرة والجيزة</small>
+        </div><strong>${money(999)}</strong></div>`;
       const product = getProduct(item.productId);
       const variant = getVariant(item.productId, item.variantId);
       return `
@@ -1586,7 +1620,7 @@ function buildOrderPayload(data, items) {
   const totals = calcTotals(items);
   return { orderId: makeOrderReference(), createdAt: new Date().toISOString(), source: "select-shop-web",
     customer: { name:data.name.trim(), phone:normalizePhone(data.phone), governorate:data.governorate.trim(), area:data.area.trim(), address:data.address.trim(), inquiry:data.inquiry?.trim()||"", courierNotes:data.notes?.trim()||"" },
-    items: items.map(item => { const product=getProduct(item.productId), variant=getVariant(item.productId,item.variantId); return { role:item.role === "trial" ? "optional_choice" : item.role, productId:item.productId, productName:product.name, variantId:item.variantId, sku:variant.code, variantName:variant.name, sizes:[...item.sizes], chooseAtDelivery:item.role === "trial", tryTwoSizes:Boolean(item.tryTwo), listPrice:product.price, payablePrice:item.role==="trial"?0:item.role==="purchase"?additionalPairPrice(item):product.price };  }), totals };
+    items: items.map(item => { const product=getProduct(item.productId), variant=getVariant(item.productId,item.variantId); if (isCarItem(item)) return { role:"purchase", supplierId:"safqa", category:"car-care", productId:"carwash48", productName:product.name, variantId:"cw48", sku:"CW48", variantName:"الطقم الكامل ببطاريتين", sizes:[], chooseAtDelivery:false, tryTwoSizes:false, listPrice:999, payablePrice:999, shippingRegion:"القاهرة والجيزة مشمولتان؛ غيرهما يحتاج تأكيد" }; return { role:item.role === "trial" ? "optional_choice" : item.role, supplierId:supplierFor(item.productId), productId:item.productId, productName:product.name, variantId:item.variantId, sku:variant.code, variantName:variant.name, sizes:[...item.sizes], chooseAtDelivery:item.role === "trial", tryTwoSizes:Boolean(item.tryTwo), listPrice:product.price, payablePrice:item.role==="trial"?0:item.role==="purchase"?additionalPairPrice(item):product.price }; }), totals };
 }
 
 async function submitOrderToProf(payload) {
@@ -1605,14 +1639,15 @@ function checkoutMessage(data, items, orderId) {
   const sizes = x => x.sizes.length === 2 ? "تجربة " + x.sizes.join("/") + " (الاحتفاظ بمقاس واحد)" : "مقاس " + x.sizes.join("/");
   bought.forEach((x,i) => {
     const p=getProduct(x.productId), v=getVariant(x.productId,x.variantId);
-    rows.push((i+1) + "- " + p.name + " | " + v.code + " (" + v.name + ") | " + sizes(x) + " | " + money(x.role==="purchase" ? additionalPairPrice(x) : p.price));
+    rows.push(isCarItem(x) ? (i+1)+"- "+p.name+" | CW48 | الطقم الكامل ببطاريتين | "+money(p.price)+" (شحن القاهرة والجيزة)" : (i+1) + "- " + p.name + " | " + v.code + " (" + v.name + ") | " + sizes(x) + " | " + money(x.role==="purchase" ? additionalPairPrice(x) : p.price));
   });
   trials.forEach((x,i) => {
     const p=getProduct(x.productId),v=getVariant(x.productId,x.variantId);
     rows.push("اختيار إضافي للتجربة " + (i+1) + ": " + p.name + " | " + v.code + " (" + v.name + ") | " + sizes(x) + " | عند الاحتفاظ به: " + money(additionalPairPrice(x)));
   });
   rows.push("الإجمالي: " + money(total.total) + " شامل الشحن");
-  if(total.discount)rows.push("خصم الزوج الإضافي: " + money(total.discount));
+  if(total.discount)rows.push("خصم توفير الشحن للمنتجات من نفس المورد: " + money(total.discount));
+  if(bought.some(isCarItem)) { rows.push("منتجات صفقة وبروف لها شحن مستقل، ولا يوجد خصم بين الموردين."); if(!["القاهرة","الجيزة"].includes(data.governorate?.trim())) rows.push("تنبيه: إجمالي الطلب مبدئي؛ يُراجع فرق شحن مسدس الغسيل لهذه المحافظة قبل تأكيد الأوردر."); }
   if(trials.length)rows.push("التجربة دون التزام، والدفع للأزواج المستلمة فقط");
   rows.push("الاسم: " + data.name.trim(), "موبايل: " + normalizePhone(data.phone), "المحافظة: " + data.governorate.trim(), "المنطقة: " + data.area.trim(), "العنوان: " + data.address.trim());
   if(data.notes?.trim()) rows.push("ملاحظات: " + data.notes.trim().slice(0,250));
@@ -1622,7 +1657,7 @@ function checkoutMessage(data, items, orderId) {
 }
 function whatsappOrderUrl(message) { return "https://wa.me/" + SHOP_WHATSAPP_NUMBER + "?text=" + encodeURIComponent("[تجربة تصميم SELECT SHOP — ليس طلبًا حقيقيًا]\n" + message); }
 function whatsappCartFallback(items) {
-  return "مرحبًا SELECT SHOP، عايزة أساعدوني أكمّل الطلب:\n" + items.map(x=>getProduct(x.productId).name+" "+getVariant(x.productId,x.variantId).code+" مقاس "+x.sizes.join("/")).join("\n");
+  return "مرحبًا SELECT SHOP، محتاج مساعدة في إكمال الطلب:\n" + items.map(x=> isCarItem(x) ? "مسدس غسيل لاسلكي CW48، الطقم الكامل بدون مقاس" : getProduct(x.productId).name+" "+getVariant(x.productId,x.variantId).code+" مقاس "+x.sizes.join("/")).join("\n");
 }
 
 /* WhatsApp Checkout Submission */
@@ -1826,7 +1861,13 @@ setupDockVisibility();
 setupPremiumMotion();
 requestAnimationFrame(() => document.body.classList.add("loaded"));
 offerWhatsAppReturnConfirmation();
-
+if (new URLSearchParams(location.search).get("open_cart") === "1") {
+  requestAnimationFrame(() => {
+    openCart();
+    const url = new URL(location.href); url.searchParams.delete("open_cart");
+    history.replaceState(history.state, "", url.pathname + url.search + url.hash);
+  });
+}
 
 /* Campaign-specific product first view — shared canonical catalog and cart */
 function renderCampaignProductLanding(product, variant){
