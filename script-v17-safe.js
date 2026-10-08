@@ -6,7 +6,6 @@ const SHOP_WHATSAPP_NUMBER = "201289437444";
 const CONFIG = Object.freeze({
   WHATSAPP_NUMBER: SHOP_WHATSAPP_NUMBER,
   GA4_ID: "G-NB8PZCX35Z",
-  META_PIXEL_ID: "000000000000000",
   SHIPPING_FEE: 80,
   PROF_BRIDGE_URL: "" // يظل فارغاً حتى نحصل على API/Integration رسمي من Prof
 });
@@ -298,11 +297,6 @@ function bootAnalytics() {
     window.gtag("js", new Date());
     window.gtag("config", CONFIG.GA4_ID, { send_page_view: true });
   }
-  if (analyticsConfigured(CONFIG.META_PIXEL_ID, "000000000000000")) {
-    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
-    window.fbq("init", CONFIG.META_PIXEL_ID);
-    window.fbq("track", "PageView");
-  }
 }
 
 const PRODUCT_VIEW_SESSION_KEY = "selectShopViewedModels:v1";
@@ -334,16 +328,15 @@ function track(name, payload = {}) {
   window.dispatchEvent(new CustomEvent("selectshop:analytics", { detail: { name, payload } }));
   try {
     if (window.gtag) window.gtag("event", name, ga4Payload(name, payload));
-    if (window.fbq) {
-      const standard = { view_item: "ViewContent", add_to_cart: "AddToCart", begin_checkout: "InitiateCheckout", whatsapp_click: "Contact" }[name];
-      const metaPayload = { content_name: payload.item_name, content_ids: payload.item_id ? [payload.item_id] : undefined, value: payload.value, currency: "EGP" };
-      if (standard) window.fbq("track", standard, metaPayload);
-      else window.fbq("trackCustom", name, metaPayload);
-    }
+
   } catch {}
 }
 
 function trackProductView(product, viewContext) {
+  if (product && (viewContext !== "page_load" || /\/product\//.test(location.pathname))) {
+    const variantId = viewContext === "product_sheet" ? sheetState.variantId : currentVariantByProduct[product.id];
+    window.SELECT_SHOP_META?.view(product, getVariant(product.id, variantId));
+  }
   if (!product || viewedProductIds.has(product.id)) return;
   viewedProductIds.add(product.id);
   try { sessionStorage.setItem(PRODUCT_VIEW_SESSION_KEY, JSON.stringify([...viewedProductIds])); } catch {}
@@ -503,6 +496,7 @@ function setHeroVariant(variantId) {
     button.setAttribute("aria-pressed", String(active));
   });
   updateHeroImage(variant);
+  window.SELECT_SHOP_META?.view(product, variant);
   renderCampaignProductLanding(product, variant);
   $("#heroVariants .hero-variant.active")?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest", inline: "center" });
   track("select_color", { item_id: `${product.id}:${variant.id}`, item_name: `${product.name} ${variant.name}`, value: product.price, currency: "EGP" });
@@ -1146,9 +1140,20 @@ function openAddProductPicker(mode) {
   openSheet($("#addProductSheet"));
 }
 
+function metaCheckout(items) {
+  const lines = items.map(item => ({
+    ...item,
+    payablePrice: item.role === "trial" ? 0
+      : item.role === "purchase" ? additionalPairPrice(item)
+      : getProduct(item.productId).price
+  }));
+  window.SELECT_SHOP_META?.checkout(lines, calcTotals(items).total);
+}
+
 function openCart() {
   renderCart();
   openSheet($("#cartSheet"));
+  metaCheckout(cart);
 }
 
 function openCheckout(items) {
@@ -1179,6 +1184,7 @@ function openCheckout(items) {
   }
   const err = $("#formError"); if (err) err.textContent = "";
   openSheet($("#checkoutSheet"));
+  metaCheckout(checkoutState.items);
   track("begin_checkout", { value: totals.total, currency: "EGP", items: totals.pairCount, try_on_models: totals.trialCount });
 }
 
@@ -1293,6 +1299,9 @@ function commitSheetItem() {
       return true;
     }
     cart.push(item);
+    const metaPrice = item.role === "trial" ? 0
+      : item.role === "purchase" ? additionalPairPrice(item) : product.price;
+    window.SELECT_SHOP_META?.add(product, getVariant(item.productId, item.variantId), item, metaPrice);
     track("add_to_cart", {
       item_id: product.id,
       item_name: product.name,
@@ -1424,11 +1433,13 @@ const checkoutValidationLiveFix = event => {
     err.textContent = "راجعي البيانات المحددة بالأحمر، وبعدها اضغطي إتمام الطلب مرة تانية.";
   }
 };
+let checkoutSubmitting = false;
 if (checkoutForm) {
   checkoutForm.addEventListener("input", checkoutValidationLiveFix);
   checkoutForm.addEventListener("change", checkoutValidationLiveFix);
   checkoutForm.addEventListener("submit", async event => {
     event.preventDefault();
+    if (checkoutSubmitting) return;
     const form = event.currentTarget;
     const data = Object.fromEntries(new FormData(form).entries());
     const err = $("#formError");
@@ -1468,6 +1479,7 @@ if (checkoutForm) {
       return;
     }
 
+    checkoutSubmitting = true;
     const totals = calcTotals(checkoutState.items);
     const purchased = checkoutState.items.filter(i => i.role !== "trial");
     const trials = checkoutState.items.filter(i => i.role === "trial");
@@ -1544,13 +1556,15 @@ if (checkoutForm) {
 
     const profResult = await submitOrderToProf(orderPayload);
     try { localStorage.setItem("selectShopLastOrder", JSON.stringify({ ...orderPayload, prof:profResult })); } catch {}
+    const receipt = profResult.saved === true && profResult.orderId
+      ? { saved: true, orderId: profResult.orderId }
+      : {};
+    await window.SELECT_SHOP_META?.finish(orderPayload, receipt);
     track("whatsapp_click", { value: totals.total, currency: "EGP", items: totals.pairCount, order_id:orderPayload.orderId });
     toast(profResult.sent ? "تم إرسال الطلب وجاري فتح واتساب للتأكيد ✓" : "سيتم تحويلك لواتساب SELECT SHOP لتأكيد الطلب 💬");
 
     const targetUrl = `https://wa.me/${SHOP_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    setTimeout(() => {
-      window.location.href = targetUrl;
-    }, 400);
+    window.location.assign(targetUrl);
   });
 }
 

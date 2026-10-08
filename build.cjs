@@ -8,7 +8,7 @@ const PUBLIC_BASE = (process.env.PUBLIC_BASE || 'https://selectshopeg.com/').rep
 const script = fs.readFileSync(path.join(root, 'script-v17-safe.js'), 'utf8');
 let template = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 // Root and every product alias must load the same release of the active engine.
-for (const asset of ['script-v17-safe.js', 'styles-v17-safe.css']) {
+for (const asset of ['script-v17-safe.js', 'styles-v17-safe.css', 'meta-pixel.js']) {
   const version = crypto.createHash('sha256').update(fs.readFileSync(path.join(root, asset))).digest('hex').slice(0, 12);
   template = template.replace(new RegExp(asset.replace(/\./g, '\\.') + '(?:\\?v=[^"\\s]+)?', 'g'), `${asset}?v=${version}`);
 }
