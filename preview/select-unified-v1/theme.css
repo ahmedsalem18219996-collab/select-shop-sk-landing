@@ -155,3 +155,90 @@ body.ssf-product{--bg:#f7f8fa;--card:#fff;--line:#dfe6e9;--t:#1d2d38;--muted:#6a
 
 /* Keep design QA markers from distracting product visitors; preview events are already disabled. */
 .ssf-product .qa{display:none!important}
+
+
+/* V3 premium unisex identity: violet signature + graphite + warm amber details.
+   Mint remains reserved for buying actions. Shared between catalog, cart and car care. */
+:root{--bg:#f8f7fb;--surface:#fff;--surface-2:#f4f2f9;--ink:#262236;--muted:#706b80;--muted-2:#968fa2;--line:#e8e3ef;--brand:#7650dc;--brand-strong:#5534aa;--brand-soft:#f1edff;--accent:#f3ac62;--accent-soft:#fff4e9}
+body.ssf-home,body.ssf-product{background:#f8f7fb!important;color:#282437}
+body.ssf-home .announce,.ssf-product .trustline{background:#231d35!important;color:#f7ede7!important}
+.ssf-header-back,.ssf-categorybar{background:#fff!important;border-color:#ece6f2!important}
+.ssf-header .wordmark-type strong i{color:#211c30!important}
+.ssf-header .wordmark-type strong em{color:#7951dd!important}
+.ssf-header .wordmark-dot{background:#f2a960!important}
+.ssf-header .ssf-search{background:#faf9fc;border-color:#e8e2f0}
+.ssf-header .ssf-search:focus-within{border-color:#aa95e8;box-shadow:0 0 0 3px #8058e314}
+.ssf-header .cart-trigger{background:#282038!important;border-color:#282038!important;color:#fff!important}
+.ssf-header .cart-trigger b{background:#e5d6ff!important;color:#322346!important}
+.ssf-categorybar a{color:#615b71}
+.ssf-categorybar a:first-child{color:#633dc3;background:#f3efff}
+.ssf-categorybar a:hover,.ssf-categorybar a:focus-visible{background:#f2edff;color:#6343bd}
+.ssf-intro .ssf-eyebrow,.ssf-mini-title div small,#catalog .section-heading>span{color:#8c66df!important}
+.ssf-intro h1,.ssf-mini-title h2,#catalog .section-heading h2{color:#28213a!important}
+.ssf-intro-note{color:#675d7a;border-color:#eae5f1;background:#fff}
+.ssf-intro-note i{background:#e9a15e}
+.ssf-cat-card{background:#fff;border-color:#e8e1ef;box-shadow:0 8px 26px #291d3e0b}
+.ssf-cat-card:hover{border-color:#bda7ee}
+.ssf-cat-card-media{background:#f3f1f8}
+.ssf-cat-card-content small{color:#8767c3}
+.ssf-cat-card-content strong{color:#2a2437}
+.ssf-cat-card-content b{color:#7245d7}
+.ssf-upcoming span{background:#f4f2f8;border-color:#e7e1ed;color:#746a82}
+.ssf-home .model-card,.ssf-care-content{border-color:#e9e3ef!important;box-shadow:0 8px 23px #211a330a}
+.ssf-home .model-card.active{border-color:#a98fe7;box-shadow:0 0 0 2px #b8a2ed25}
+.ssf-home .model-card-media,.ssf-care-visual{background:#f3f1f8}
+.ssf-home .model-card h3,.ssf-home .ssf-care-description h3{color:#30273e}
+.ssf-home .model-price,.ssf-home .model-price b{color:#5a3ac1}
+.ssf-home .card-thumb.active{border-color:#7450d4!important}
+.ssf-home .model-meta span{background:#f3f1f7;color:#70677e}
+.ssf-home .model-meta .extra-pair-deal{background:#fff1dc;color:#935c20}
+.ssf-home .model-card-actions .btn.primary,.ssf-care .model-card-actions a{background:#178b67!important;border-color:#178b67!important;color:#fff!important}
+.ssf-home .model-card-actions .btn.primary:hover,.ssf-care .model-card-actions a:hover{background:#0c7656!important}
+.ssf-care-description>small{color:#8a63d0}
+.ssf-care-description a{background:#2b213c;color:white}
+.ssf-trust i{color:#7555c6;background:#f0ebfa}
+.ssf-footer{border-top-color:#e6dfed!important}
+.ssf-home #dockBuy{background:#178b67!important}
+.ssf-product .top{background:#fff!important;border-color:#e6e1ee!important}
+.ssf-product .logo{color:#252038!important}
+.ssf-product .logo i{color:#7a55d4!important}
+.ssf-product .navback{background:#f5f1fb;border-color:#e3d9f1;color:#6543be!important}
+.ssf-product .pill{background:#f1ebff!important;border-color:#e0d4fb!important;color:#6b46c5!important}
+.ssf-product .hero h1,.ssf-product .section h2,.ssf-product .order h2{color:#2b253b!important}
+.ssf-product .hero h1 span{color:#7751cd!important}
+.ssf-product .price strong{color:#46318d!important}
+.ssf-product .price small{color:#8264c2!important}
+.ssf-product .art,.ssf-product .real-gallery a{background:#f4f0f9!important;border-color:#e5dff1!important}
+.ssf-product .art video{background:#f0eaf8!important}
+.ssf-product .art span{color:#5b536d!important}
+.ssf-product .card,.ssf-product .faq details,.ssf-product .order{border-color:#e7e0ef!important;background:#fff!important}
+.ssf-product .offer{background:#f5efff!important;border-color:#e2d6fa!important}
+.ssf-product .offer h2{color:#483188!important}
+.ssf-product .offer p{color:#6f6681!important}
+.ssf-product .button{background:#178b67!important;color:#fff!important}
+.ssf-product .btnalt{background:#fff!important;color:#6242b0!important;border-color:#d8c8ec!important}
+.ssf-product .order input:focus,.ssf-product .order select:focus,.ssf-product .order textarea:focus{outline-color:#d4c5f6!important}
+.ssf-product .dock{background:#fff!important;border-color:#e2dbea!important}
+.ssf-product .dock a:last-child{background:#f2ebfd!important;color:#5940ad!important}
+.ssf-unified-checkout-invite{grid-template-columns:1.15fr .85fr!important;align-items:center}
+.ssf-car-cart-action{display:flex;flex-direction:column;align-items:stretch;gap:8px;background:#f7f4fc;border:1px solid #e6ddf3;border-radius:14px;padding:25px}
+.ssf-car-cart-action>strong{font:800 30px/1.4 "Manrope","Segoe UI",sans-serif;color:#48318c}
+.ssf-car-cart-action>small{color:#726781;font-size:11px}
+.ssf-car-cart-action>button{width:100%;margin-top:10px}
+.ssf-view-cart{display:block;text-align:center;color:#5c3ca7;font-weight:800;font-size:12px;border-bottom:1px solid #d7c5f5;padding:10px}
+.ssf-car-cart-action>p{font-size:11px;color:#766e84;line-height:1.75}
+.ssf-cart-error:not([hidden]){color:#a72d45;background:#fff0f4;padding:9px;border-radius:9px}
+.ssf-product .ssf-categorybar{border-bottom:1px solid #e6dfea!important}
+.ssf-product .ssf-categorybar .wrap{display:flex;align-items:center;min-height:43px;gap:6px;overflow-x:auto;white-space:nowrap}
+.ssf-product .ssf-categorybar .wrap a{font-size:12px;font-weight:700;color:#5e5471;padding:7px 12px}
+.ssf-product .ssf-categorybar .wrap a:first-child{background:#f4efff;color:#6243ba;border-radius:9px}
+.ssf-product .dock button{display:block;border:0;min-height:45px;border-radius:10px;background:#178b67;color:white;font-size:12px;font-weight:900;cursor:pointer}
+.ssf-product .dock a:last-child{display:grid;place-items:center;border-radius:10px;background:#f4efff}
+.ssf-cart-car-item .cart-primary-price b{color:#6845c6}
+.ssf-cart-car-item .role-tag{background:#f1ebff;color:#6a48c1}
+@media(max-width:720px){
+ .ssf-unified-checkout-invite{grid-template-columns:1fr!important}
+ .ssf-car-cart-action{padding:16px}
+ .ssf-product .dock{grid-template-columns:1.25fr .75fr}
+ .ssf-product .ssf-categorybar .wrap a{font-size:11px;padding:9px 10px}
+}
