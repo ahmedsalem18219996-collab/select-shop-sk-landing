@@ -1834,3 +1834,12 @@ body.theme-night .header-whatsapp-help{background:#163c2c;color:#c9f8da;border-c
 .topbar .cart-trigger b{min-width:18px;width:18px;height:18px;font-size:10px}
 }
 @media(max-width:345px){.topbar.shell{grid-template-columns:minmax(0,1fr) 30px max-content 46px;column-gap:2px}.topbar .home-nav-link{width:30px}.topbar .header-whatsapp-help{font-size:10px;padding-inline:6px}.topbar .cart-trigger{width:46px;min-width:46px}}
+
+/* Recovery for paid website traffic: immediate WhatsApp inquiry, without replacing order checkout. */
+.hero-wa-inquiry,.campaign-product-whatsapp{display:inline-flex;align-items:center;justify-content:center;text-align:center;min-height:45px;padding:11px 15px;border:1px solid #a5dfbf;border-radius:12px;background:#e7f8ee;color:#125f38;font-size:13px;font-weight:900;line-height:1.5;text-decoration:none;transition:background .18s,transform .18s}
+.hero-wa-inquiry{width:100%;margin-top:7px;grid-column:1/-1}
+.campaign-product-whatsapp{width:100%;margin-top:8px}
+.hero-wa-inquiry:hover,.campaign-product-whatsapp:hover{background:#d6f4e3;transform:translateY(-1px)}
+.hero-wa-inquiry:focus-visible,.campaign-product-whatsapp:focus-visible{outline:3px solid #137047;outline-offset:3px}
+body.theme-night .hero-wa-inquiry,body.theme-night .campaign-product-whatsapp{background:#143c2a;color:#d6ffe4;border-color:#39865c}
+@media(max-width:700px){.hero-wa-inquiry,.campaign-product-whatsapp{min-height:46px;font-size:12px;padding:10px 12px}}

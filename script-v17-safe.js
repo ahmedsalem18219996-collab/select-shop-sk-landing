@@ -508,14 +508,15 @@ if ("IntersectionObserver" in window && !reduceMotion) {
 }
 
 function syncHeaderWhatsAppLink(productId = currentProductId) {
-  const link = document.querySelector('.header-whatsapp-help');
-  if (!link) return;
   const product = getProduct(productId);
   const variant = getVariant(product.id, currentVariantByProduct[product.id]);
-  const message = 'مرحبًا SELECT SHOP، عايزة أطلب ' + variant.code + ' (' + product.name + ') وأحتاج مساعدة في التأكيد.';
-  link.href = 'https://wa.me/' + SHOP_WHATSAPP_NUMBER + '?text=' + encodeURIComponent(message);
-  link.setAttribute('aria-label', 'واتساب مباشر لطلب ' + variant.code);
-  link.title = 'واتساب مباشر - ' + variant.code;
+  const message = 'مرحبًا SELECT SHOP، عندي استفسار عن ' + variant.code + ' (' + product.name + ') قبل الطلب.';
+  const url = 'https://wa.me/' + SHOP_WHATSAPP_NUMBER + '?text=' + encodeURIComponent(message);
+  for (const link of document.querySelectorAll('.header-whatsapp-help, #heroWhatsappInquiry')) {
+    link.href = url;
+    link.setAttribute('aria-label', 'استفسار واتساب عن ' + variant.code);
+    link.title = 'استفسار على واتساب - ' + variant.code;
+  }
 }
 function renderHero({ announce = true } = {}) {
   const product = getProduct(currentProductId);
@@ -1732,6 +1733,24 @@ function setupPremiumMotion() {
   });
 }
 
+// Inquiry tracking is separate from orders: an opened chat is not an actual purchase.
+document.addEventListener("click", event => {
+  const link = event.target.closest?.(".header-whatsapp-help, #heroWhatsappInquiry, .campaign-product-whatsapp");
+  if (!link) return;
+  const product = getProduct(currentProductId);
+  const variant = getVariant(product.id, currentVariantByProduct[product.id]);
+  try {
+    track("whatsapp_inquiry_click", {
+      item_id: product.id + ":" + variant.id,
+      item_name: product.name + " " + variant.code,
+      item_variant: variant.id,
+      value: product.price,
+      currency: "EGP",
+      location: link.classList.contains("header-whatsapp-help") ? "header" : link.id === "heroWhatsappInquiry" ? "store_hero" : "product_hero"
+    });
+  } catch {}
+});
+
 window.addEventListener("popstate", () => {
   closeAllSheets();
   const route = readRoute();
@@ -1798,6 +1817,7 @@ function renderCampaignProductLanding(product, variant){
         </div>
       </div>
       <button class="btn primary campaign-product-buy" type="button">اختاري المقاس واطلبي الآن</button>
+      <a class="campaign-product-whatsapp" href="https://wa.me/${SHOP_WHATSAPP_NUMBER}?text=${encodeURIComponent('مرحبًا SELECT SHOP، عندي استفسار عن ' + variant.code + ' (' + product.name + ') قبل الطلب.')}" target="_blank" rel="noopener noreferrer">استفسري على واتساب قبل الطلب</a>
       <a href="${new URL("#catalog", APP_BASE).href}" class="campaign-product-browse"><span>شوفي باقي الموديلات <i aria-hidden="true">←</i></span><small>واستفيدي بخصم حتى ${maxExtraDiscount}٪ على الزوج الإضافي</small></a>
     </div>`;
   if (previous) previous.replaceWith(section);
