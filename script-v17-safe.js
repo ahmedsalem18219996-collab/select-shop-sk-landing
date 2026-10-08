@@ -498,7 +498,9 @@ function setHeroVariant(variantId) {
   updateHeroImage(variant);
   window.SELECT_SHOP_META?.view(product, variant);
   renderCampaignProductLanding(product, variant);
-  $("#heroVariants .hero-variant.active")?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest", inline: "center" });
+  if (document.body.dataset.page !== "product") {
+    $("#heroVariants .hero-variant.active")?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest", inline: "center" });
+  }
   track("select_color", { item_id: `${product.id}:${variant.id}`, item_name: `${product.name} ${variant.name}`, value: product.price, currency: "EGP" });
 }
 
@@ -1642,6 +1644,14 @@ function renderCampaignProductLanding(product, variant){
   const previous = document.querySelector(".campaign-product-first");
   if (!isProductPage) { previous?.remove(); return; }
   const maxExtraDiscount = Math.max(...Object.values(PRODUCTS).map(item => discountPercentForPrice(item.price))).toLocaleString("ar-EG");
+  const variantChoices = product.variants.map(option => `
+    <button class="campaign-variant-option ${option.id === variant.id ? "is-active" : ""}"
+      type="button" data-campaign-variant="${option.id}"
+      aria-pressed="${option.id === variant.id}"
+      aria-label="${option.code} — ${option.name}" title="${option.code} — ${option.name}">
+      <img src="${option.image}" alt="" width="90" height="66" loading="lazy" decoding="async">
+      <span>${option.code}</span>
+    </button>`).join("");
   const section=document.createElement("section");
   section.className="campaign-product-first shell";
   section.setAttribute("aria-label",product.name+" "+variant.code);
@@ -1654,12 +1664,24 @@ function renderCampaignProductLanding(product, variant){
       <h1>${product.name} — ${variant.name}</h1>
       <p>${product.description}</p>
       <div class="campaign-product-price">${money(product.price)} <small>شامل الشحن • معاينة قبل الدفع</small></div>
+      <div class="campaign-variant-picker" role="group" aria-label="ألوان وموديلات ${product.name}">
+        <div class="campaign-variant-heading">اختاري اللون أو الموديل <small>${product.variants.length.toLocaleString("ar-EG")} اختيارات متاحة</small></div>
+        <div class="campaign-variant-grid ${product.variants.length <= 4 ? "compact" : ""}" style="--variant-count:${product.variants.length}">
+          ${variantChoices}
+        </div>
+      </div>
       <button class="btn primary campaign-product-buy" type="button">اختاري المقاس واطلبي الآن</button>
       <a href="${new URL("#catalog", APP_BASE).href}" class="campaign-product-browse"><span>شوفي باقي الموديلات <i aria-hidden="true">←</i></span><small>واستفيدي بخصم حتى ${maxExtraDiscount}٪ على الزوج الإضافي</small></a>
     </div>`;
   if (previous) previous.replaceWith(section);
   else hero.before(section);
   section.querySelector(".campaign-product-buy").addEventListener("click",()=>openProductSheet(product.id,{intent:"buy",variantId:variant.id}));
+  section.querySelectorAll("[data-campaign-variant]").forEach(button => button.addEventListener("click", () => {
+    const selected = button.dataset.campaignVariant;
+    if (selected === variant.id) return;
+    setHeroVariant(selected);
+    document.querySelector(`.campaign-variant-option[data-campaign-variant="${selected}"]`)?.focus({ preventScroll: true });
+  }));
   const dock=document.querySelector("#mobileDock");
   if(dock){
     dock.classList.add("visible");
@@ -1681,6 +1703,17 @@ function renderCampaignProductLanding(product, variant){
    .campaign-product-kicker{font-size:12px;font-weight:900;color:#6657e8}
    .campaign-product-price{font-size:26px;font-weight:900;margin:18px 0;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
    .campaign-product-price small{font-size:12px;font-weight:500;color:#726c78}
+   .campaign-variant-picker{margin:12px 0 14px;min-width:0}
+   .campaign-variant-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:14px;font-weight:900;color:#281d3b}
+   .campaign-variant-heading small{font-size:11px;font-weight:700;color:#6f5a93;white-space:nowrap}
+   .campaign-variant-grid{display:grid;grid-template-columns:repeat(var(--variant-count),minmax(0,1fr));gap:6px}
+   .campaign-variant-grid.compact{grid-template-columns:repeat(var(--variant-count),minmax(0,94px))}
+   .campaign-variant-option{appearance:none;cursor:pointer;min-width:0;min-height:83px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 3px;background:#fff;border:1.5px solid #e4dced;border-radius:12px;color:#4c4456;transition:background .2s,border-color .2s,box-shadow .2s,transform .2s}
+   .campaign-variant-option img{display:block;width:100%;height:56px;object-fit:contain;border-radius:7px}
+   .campaign-variant-option span{font:800 10px/1.25 system-ui,sans-serif;direction:ltr;white-space:nowrap}
+   .campaign-variant-option:hover{background:#f8f5ff;border-color:#b29aea;transform:translateY(-2px)}
+   .campaign-variant-option.is-active{border-color:#7148ed;background:#f4efff;box-shadow:0 0 0 2px rgba(113,72,237,.17)}
+   .campaign-variant-option:focus-visible{outline:3px solid #7148ed;outline-offset:2px}
    .campaign-product-buy{min-height:54px;width:100%;font-weight:900}
    .campaign-product-browse{display:flex;flex-direction:column;align-items:center;gap:5px;margin-top:12px;padding:13px 16px;border:1px solid #c9bcf5;border-radius:16px;background:#f4efff;color:#5740c5;font-weight:800;font-size:14px;text-decoration:none;transition:background .18s,border-color .18s}
    .campaign-product-browse span{display:flex;align-items:center;gap:10px}
@@ -1688,7 +1721,12 @@ function renderCampaignProductLanding(product, variant){
    .campaign-product-browse small{font-size:12px;font-weight:600;line-height:1.6;text-align:center}
    .campaign-product-browse:hover{background:#ebe2ff;border-color:#8e76df}
    .campaign-product-browse:focus-visible{outline:3px solid #6657e8;outline-offset:3px}
+   @media(min-width:701px) and (max-width:1190px){.campaign-variant-grid:not(.compact){grid-template-columns:repeat(4,minmax(0,1fr))}}
    @media(max-width:700px){
+    .campaign-variant-grid:not(.compact){grid-template-columns:repeat(4,minmax(0,1fr))}
+    .campaign-variant-picker{margin:10px 0 12px}
+    .campaign-variant-option{min-height:77px;padding:3px 2px}
+    .campaign-variant-option img{height:52px}
     .campaign-product-first{grid-template-columns:1fr;gap:10px;padding-block:12px 22px}
     .campaign-product-media img{max-height:min(43vh,330px)}
     .campaign-product-info h1{font-size:22px;margin:8px 0}
