@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 510">
+<defs><radialGradient id="bg"><stop stop-color="#50347e"/><stop offset="1" stop-color="#16131f"/></radialGradient><linearGradient id="body" x2="1" y2="1"><stop stop-color="#394252"/><stop offset=".5" stop-color="#131922"/><stop offset="1" stop-color="#313747"/></linearGradient><linearGradient id="metal" x2="0" y2="1"><stop stop-color="#f0e9d5"/><stop offset=".5" stop-color="#738697"/><stop offset="1" stop-color="#d4d6df"/></linearGradient></defs>
+<rect width="820" height="510" rx="30" fill="url(#bg)"/>
+<circle cx="640" cy="115" r="150" fill="#a165d0" opacity=".13"/><circle cx="166" cy="394" r="160" fill="#ffc978" opacity=".06"/>
+<path d="M60 180L286 223M65 161L285 223M48 196L290 225" stroke="#bceeff" stroke-width="5" stroke-dasharray="8 17" opacity=".67"/>
+<ellipse cx="417" cy="458" rx="296" ry="22" fill="#0d0812" opacity=".65"/>
+<path d="M190 210L341 225" stroke="url(#metal)" stroke-width="27" stroke-linecap="round"/><path d="M171 205L202 211" stroke="#ec903d" stroke-width="47" stroke-linecap="round"/>
+<path d="M327 167Q346 142 395 137L574 145Q605 151 610 186L598 258L528 268L506 333L462 352L410 270L358 271Q327 257 324 225Z" fill="url(#body)" stroke="#8e8791" stroke-width="6"/>
+<path d="M419 188L586 191M416 218L582 215" stroke="#979da6" stroke-width="4" opacity=".45"/>
+<path d="M419 270L502 273L528 370L469 394L433 365Z" fill="#12151f" stroke="#585765" stroke-width="6"/>
+<rect x="444" y="273" width="41" height="26" rx="5" fill="#ec5835"/>
+<rect x="435" y="381" width="117" height="66" rx="12" fill="#262e38" stroke="#6d6470" stroke-width="6"/><rect x="444" y="376" width="99" height="15" rx="5" fill="#de6a42"/><text x="457" y="429" fill="#e0ebfa" font-size="27" font-family="Arial" font-weight="bold">48V</text>
+<path d="M354 269Q342 306 302 321L286 378" stroke="#e78540" stroke-width="22" fill="none"/><path d="M285 378Q217 416 244 443Q269 467 297 441Q318 411 364 422" stroke="#c3d6e2" stroke-width="10" fill="none"/>
+<rect x="109" y="377" width="132" height="70" rx="13" fill="#27303b" stroke="#756772" stroke-width="6"/><rect x="119" y="368" width="113" height="16" rx="4" fill="#de6b42"/><text x="143" y="425" font-size="27" font-family="Arial" font-weight="bold" fill="#e4eaf8">48V</text>
+<rect x="653" y="370" width="75" height="76" rx="13" fill="#ded9e8" opacity=".86"/><rect x="663" y="352" width="56" height="18" rx="7" fill="#ebdff0"/><path d="M696 372v71" stroke="#a6b7c3" stroke-width="7"/>
+</svg>
