@@ -3,6 +3,30 @@
 <head>
   <meta charset="utf-8">
   <base href="./">
+  <!-- Landing compatibility for legacy SK Meta ads with untagged homepage URLs.
+       The WK campaign already uses its own /product/wk1/ landing. -->
+  <script id="sk-legacy-ad-landing-route">
+(function () {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (window.location.pathname !== "/" && window.location.pathname !== "/index.html") return;
+    if (params.has("utm_campaign") || params.has("product") || params.has("skip_sk_redirect")) return;
+    let fromMeta = false;
+    try {
+      const refHost = new URL(document.referrer).hostname.toLowerCase();
+      fromMeta = /(^|\.)(facebook\.com|instagram\.com|fb\.com|fb\.me)$/.test(refHost);
+    } catch (_) {}
+    if (!params.has("fbclid") && !fromMeta) return;
+    const target = new URL("/product/sk1/", window.location.origin);
+    params.set("utm_source", params.get("utm_source") || "meta");
+    params.set("utm_medium", params.get("utm_medium") || "paid_social");
+    params.set("utm_campaign", "sk_home_ad_route_oct2026");
+    target.search = params.toString();
+    window.location.replace(target.href);
+  } catch (_) { /* Fail open: leave the storefront untouched on unsupported browsers. */ }
+})();
+
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f8f7f4">
   <meta name="description" content="SELECT SHOP — سنيكرز نسائية مختارة بأسعار شاملة التوصيل، معاينة واختيار المقاس الأنسب والدفع عند الاستلام.">
