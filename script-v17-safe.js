@@ -1673,7 +1673,7 @@ if (checkoutForm) {
     if (fallback) {
       fallback.href = targetUrl;
       fallback.hidden = false;
-      fallback.textContent = "واتساب ما فتحش؟ اضغطي هنا لإرسال طلبك";
+      fallback.textContent = "للاستفسار على واتساب";
     }
     try { toast("جاري فتح واتساب برسالة الطلب المجهزة…"); } catch {}
     try {
