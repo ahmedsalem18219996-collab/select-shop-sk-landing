@@ -1,0 +1,24 @@
+name: Commerce Policy Safety
+on:
+  pull_request:
+    paths:
+      - "commerce-policy.js"
+      - "tests/commerce-policy.test.cjs"
+      - ".github/workflows/commerce-policy.yml"
+  push:
+    branches:
+      - "feature/unified-commerce-checkout"
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate JavaScript syntax
+        run: |
+          node --check commerce-policy.js
+          node --check tests/commerce-policy.test.cjs
+      - name: Run pricing regression tests
+        run: node tests/commerce-policy.test.cjs
