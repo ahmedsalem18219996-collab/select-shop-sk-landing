@@ -490,7 +490,9 @@ function setHeroVariant(variantId) {
   const variant = getVariant(product.id, variantId);
   currentVariantByProduct[product.id] = variant.id;
   safeUpdateUrl(productUrl(product.id, variant.id), { productId: product.id, variantId: variant.id }, false);
-  $$('[data-hero-variant]', $("#heroVariants")).forEach(button => {
+  // Direct product landings have no #heroVariants: selecting a color must
+  // still update the canonical variant, main image, CTA, and Meta ViewContent.
+  document.querySelectorAll('[data-hero-variant]').forEach(button => {
     const active = button.dataset.heroVariant === variant.id;
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
