@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "select-shop-whatsapp-inbox",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-08",
+  "workers_dev": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "select-shop-whatsapp-inbox"
+    }
+  ]
+}

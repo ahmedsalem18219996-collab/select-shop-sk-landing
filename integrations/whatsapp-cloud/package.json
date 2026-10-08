@@ -1,0 +1,13 @@
+{
+  "name": "select-shop-whatsapp-inbox",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "migrate": "wrangler d1 execute select-shop-whatsapp-inbox --remote --file=schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
