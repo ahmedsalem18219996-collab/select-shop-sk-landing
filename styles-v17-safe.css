@@ -1817,3 +1817,20 @@ body.theme-night #checkoutSheet textarea{
 .whatsapp-return-actions button{cursor:pointer;border:1px solid #bdd8cb;border-radius:11px;background:#eff9f3;color:#135c38;font:800 12px/1.5 inherit;padding:10px 6px;min-height:45px}
 #whatsappReturnKeep{background:#fff;color:#473d4a;border-color:#dcd5df}
 @media(max-width:390px){.whatsapp-return-actions{grid-template-columns:1fr}.whatsapp-return-notice{padding:11px 12px}}
+
+/* Fix: visible direct WhatsApp button on every model, 320px+ phones. */
+.header-whatsapp-help{display:inline-flex!important;visibility:visible!important;opacity:1!important;white-space:nowrap;flex:0 0 auto;position:relative;z-index:1}
+body.theme-night .header-whatsapp-help{background:#163c2c;color:#c9f8da;border-color:#35875b}
+@media(max-width:700px){
+.topbar.shell{display:grid;grid-template-columns:minmax(0,1fr) 34px max-content 50px;column-gap:4px;align-items:center;padding-inline:3px}
+.topbar .wordmark{grid-column:1;min-width:0;max-width:100%;overflow:hidden;margin-inline-end:0;gap:2px}
+.topbar .wordmark-type strong{font-size:clamp(12px,3.8vw,16px);gap:2px;white-space:nowrap}
+.topbar .wordmark-dot{display:none}
+.topbar .home-nav-link{grid-column:2;min-width:0;width:34px;height:34px;padding:0;font-size:0!important;border-radius:10px}
+.topbar .home-nav-link::after{content:'⌂';font-size:21px;line-height:1}
+.topbar .header-whatsapp-help{grid-column:3;min-height:34px;padding:6px 8px;font-size:11px;border-radius:10px}
+.topbar .cart-trigger{grid-column:4;min-width:50px;width:50px;height:34px;padding:0 4px;gap:2px;justify-content:center}
+.topbar .cart-trigger svg{width:18px;height:18px;flex:0 0 18px}
+.topbar .cart-trigger b{min-width:18px;width:18px;height:18px;font-size:10px}
+}
+@media(max-width:345px){.topbar.shell{grid-template-columns:minmax(0,1fr) 30px max-content 46px;column-gap:2px}.topbar .home-nav-link{width:30px}.topbar .header-whatsapp-help{font-size:10px;padding-inline:6px}.topbar .cart-trigger{width:46px;min-width:46px}}

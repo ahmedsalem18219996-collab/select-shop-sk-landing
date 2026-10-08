@@ -507,11 +507,22 @@ if ("IntersectionObserver" in window && !reduceMotion) {
   $$(".reveal").forEach(element => element.classList.add("in"));
 }
 
+function syncHeaderWhatsAppLink(productId = currentProductId) {
+  const link = document.querySelector('.header-whatsapp-help');
+  if (!link) return;
+  const product = getProduct(productId);
+  const variant = getVariant(product.id, currentVariantByProduct[product.id]);
+  const message = 'مرحبًا SELECT SHOP، عايزة أطلب ' + variant.code + ' (' + product.name + ') وأحتاج مساعدة في التأكيد.';
+  link.href = 'https://wa.me/' + SHOP_WHATSAPP_NUMBER + '?text=' + encodeURIComponent(message);
+  link.setAttribute('aria-label', 'واتساب مباشر لطلب ' + variant.code);
+  link.title = 'واتساب مباشر - ' + variant.code;
+}
 function renderHero({ announce = true } = {}) {
   const product = getProduct(currentProductId);
   const variant = getVariant(product.id, currentVariantByProduct[product.id]);
   document.body.dataset.product = product.id;
   currentVariantByProduct[product.id] = variant.id;
+  syncHeaderWhatsAppLink(product.id);
 
   const badgeElem = $("#heroBadge"); if (badgeElem) badgeElem.textContent = product.badge;
   const codeElem = $("#heroCode"); if (codeElem) codeElem.textContent = product.name;
@@ -580,6 +591,7 @@ function setHeroVariant(variantId) {
   const product = getProduct(currentProductId);
   const variant = getVariant(product.id, variantId);
   currentVariantByProduct[product.id] = variant.id;
+  syncHeaderWhatsAppLink(product.id);
   safeUpdateUrl(productUrl(product.id, variant.id), { productId: product.id, variantId: variant.id }, false);
   // Direct product landings have no #heroVariants: selecting a color must
   // still update the canonical variant, main image, CTA, and Meta ViewContent.
