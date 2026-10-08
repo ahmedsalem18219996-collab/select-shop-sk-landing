@@ -2,10 +2,18 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const crypto = require('node:crypto');
 const root = __dirname;
-const PUBLIC_BASE = (process.env.PUBLIC_BASE || 'https://ahmedsalem18219996-collab.github.io/select-shop-sk-landing/').replace(/\/?$/, '/');
-const script = fs.readFileSync(path.join(root, 'script.js'), 'utf8');
-const template = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const PUBLIC_BASE = (process.env.PUBLIC_BASE || 'https://selectshopeg.com/').replace(/\/?$/, '/');
+const script = fs.readFileSync(path.join(root, 'script-v17-safe.js'), 'utf8');
+let template = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+// Root and every product alias must load the same release of the active engine.
+for (const asset of ['script-v17-safe.js', 'styles-v17-safe.css']) {
+  const version = crypto.createHash('sha256').update(fs.readFileSync(path.join(root, asset))).digest('hex').slice(0, 12);
+  template = template.replace(new RegExp(asset.replace(/\./g, '\\.') + '(?:\\?v=[^"\\s]+)?', 'g'), `${asset}?v=${version}`);
+}
+template = template.replace(/https:\/\/ahmedsalem18219996-collab\.github\.io\/select-shop-sk-landing\//g, PUBLIC_BASE);
+fs.writeFileSync(path.join(root, 'index.html'), template);
 const boundary = script.indexOf('window.SELECT_SHOP_PRODUCTS');
 if (boundary < 0) throw new Error('Canonical catalog boundary missing');
 const catalog = vm.runInNewContext(script.slice(0, boundary) + '\nPRODUCTS;', {});

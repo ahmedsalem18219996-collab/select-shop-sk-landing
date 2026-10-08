@@ -466,6 +466,7 @@ function renderHero({ announce = true } = {}) {
   }
 
   updateHeroImage(variant, false);
+  renderCampaignProductLanding(product, variant);
 
   document.title = `${product.name} | SELECT SHOP`;
   const meta = $('meta[name="description"]');
@@ -502,6 +503,7 @@ function setHeroVariant(variantId) {
     button.setAttribute("aria-pressed", String(active));
   });
   updateHeroImage(variant);
+  renderCampaignProductLanding(product, variant);
   $("#heroVariants .hero-variant.active")?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest", inline: "center" });
   track("select_color", { item_id: `${product.id}:${variant.id}`, item_name: `${product.name} ${variant.name}`, value: product.price, currency: "EGP" });
 }
@@ -984,16 +986,11 @@ function updateCartUI() {
   const dockLabel = $("#dockLabel");
   const dockPrice = $("#dockPrice");
   const dockBuy = $("#dockBuy");
-  if (count) {
-    if (dockLabel) dockLabel.textContent = totals.trialCount ? `أساسي + ${totals.trialCount} اختيار إضافي` : `${totals.pairCount} للشراء`;
-    if (dockPrice) dockPrice.textContent = money(totals.total);
-    if (dockBuy) dockBuy.textContent = "إتمام الطلب";
-  } else {
-    const product = getProduct(currentProductId);
-    if (dockLabel) dockLabel.textContent = product.name;
-    if (dockPrice) dockPrice.textContent = money(product.price);
-    if (dockBuy) dockBuy.textContent = "اطلبي الآن";
-  }
+  const product = getProduct(currentProductId);
+  const variant = getVariant(product.id, currentVariantByProduct[product.id]);
+  if (dockLabel) dockLabel.textContent = `${variant.code} • ${product.name}`;
+  if (dockPrice) dockPrice.textContent = money(product.price);
+  if (dockBuy) dockBuy.textContent = "اطلبي الآن";
   updateCatalogSelection();
 }
 
@@ -1370,7 +1367,7 @@ const backdrop = $("#sheetBackdrop");
 if (backdrop) backdrop.addEventListener("click", () => closeAllSheets());
 
 const dockBuy = $("#dockBuy");
-if (dockBuy) dockBuy.addEventListener("click", () => cart.length ? openCart() : openProductSheet(currentProductId, { intent: "buy", variantId: currentVariantByProduct[currentProductId] }));
+if (dockBuy) dockBuy.addEventListener("click", () => openProductSheet(currentProductId, { intent: "buy", variantId: currentVariantByProduct[currentProductId] }));
 
 $$('[data-add-product-mode]').forEach(button => button.addEventListener("click", () => openAddProductPicker(button.dataset.addProductMode)));
 $$('[data-back-to-cart]').forEach(button => button.addEventListener("click", () => { closeAllSheets(false, false); openCart(); }));
@@ -1622,22 +1619,14 @@ requestAnimationFrame(() => document.body.classList.add("loaded"));
 
 
 /* Campaign-specific product first view — shared canonical catalog and cart */
-(function initCampaignProductLanding(){
-  const match=location.pathname.match(/\/product\/([a-z0-9-]+)\/?$/i);
-  if(!match)return;
-  const slug=match[1].toLowerCase();
-  let product=null,variant=null;
-  for(const candidate of Object.values(PRODUCTS)){
-    const chosen=candidate.variants.find(v=>v.id===slug);
-    if(chosen){product=candidate;variant=chosen;break;}
-    if(candidate.id===slug){product=candidate;variant=candidate.variants[0];break;}
-  }
-  if(!product||!variant)return;
-  currentProductId=product.id;
-  currentVariantByProduct[product.id]=variant.id;
-  renderHero({announce:false});
-  const hero=document.querySelector(".storefront-hero");
-  if(!hero)return;
+function renderCampaignProductLanding(product, variant){
+  const isProductPage = /\/product\/[a-z0-9-]+(?:\/index\.html|\/)?$/i.test(location.pathname);
+  document.body.dataset.page = isProductPage ? "product" : "store";
+  const hero = document.querySelector(".storefront-hero");
+  if (!hero) return;
+  hero.hidden = isProductPage;
+  const previous = document.querySelector(".campaign-product-first");
+  if (!isProductPage) { previous?.remove(); return; }
   const section=document.createElement("section");
   section.className="campaign-product-first shell";
   section.setAttribute("aria-label",product.name+" "+variant.code);
@@ -1651,9 +1640,10 @@ requestAnimationFrame(() => document.body.classList.add("loaded"));
       <p>${product.description}</p>
       <div class="campaign-product-price">${money(product.price)} <small>شامل الشحن • معاينة قبل الدفع</small></div>
       <button class="btn primary campaign-product-buy" type="button">اختاري المقاس واطلبي الآن</button>
-      <a href="https://selectshopeg.com/#catalog" class="campaign-product-browse">شاهدي باقي الموديلات ←</a>
+      <a href="${new URL("#catalog", APP_BASE).href}" class="campaign-product-browse">شاهدي باقي الموديلات ←</a>
     </div>`;
-  hero.replaceWith(section);
+  if (previous) previous.replaceWith(section);
+  else hero.before(section);
   section.querySelector(".campaign-product-buy").addEventListener("click",()=>openProductSheet(product.id,{intent:"buy",variantId:variant.id}));
   const dock=document.querySelector("#mobileDock");
   if(dock){
@@ -1663,8 +1653,11 @@ requestAnimationFrame(() => document.body.classList.add("loaded"));
     const price=dock.querySelector("#dockPrice");
     if(price)price.textContent=money(product.price);
   }
+  if (document.getElementById("campaignProductStyle")) return;
   const style=document.createElement("style");
+  style.id = "campaignProductStyle";
   style.textContent=`
+   .storefront-hero[hidden]{display:none!important}
    .campaign-product-first{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(16px,4vw,52px);align-items:center;padding-block:clamp(16px,3vw,42px);direction:rtl}
    .campaign-product-media{background:#f3eff9;border:1px solid #e9e2f1;border-radius:24px;overflow:hidden;display:grid;place-items:center}
    .campaign-product-media img{width:100%;max-height:470px;object-fit:contain}
@@ -1682,7 +1675,7 @@ requestAnimationFrame(() => document.body.classList.add("loaded"));
     .campaign-product-info p{font-size:12px;margin:6px 0}
     .campaign-product-price{font-size:23px;margin:8px 0}
     .campaign-product-buy{min-height:48px}
-    .mobile-dock{display:grid!important;transform:none!important;opacity:1!important;bottom:calc(12px + var(--vv-bottom) + env(safe-area-inset-bottom,0px))!important}
+    body[data-page="product"]:not(.sheet-open) .mobile-dock{display:grid!important;transform:none!important;opacity:1!important;bottom:calc(12px + var(--vv-bottom) + env(safe-area-inset-bottom,0px))!important}
    }`;
   document.head.appendChild(style);
-})();
+}
