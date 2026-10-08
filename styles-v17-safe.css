@@ -1789,3 +1789,11 @@ body.theme-night #checkoutSheet textarea{
   text-align:center;
   line-height:1.5;
 }
+
+/* Checkout completion clarity and WhatsApp recovery link. */
+.checkout-required-guide{display:flex;flex-direction:column;gap:6px;padding:13px 14px;border:1px solid rgba(102,87,232,.20);border-radius:14px;background:#f3efff;color:#352451;line-height:1.6}
+.checkout-required-guide strong{font-size:13px;font-weight:900}
+.checkout-required-guide span{font-size:12px;font-weight:650}
+#checkoutForm .required-mark{font-size:15px;color:#c62f4b;margin-inline-start:4px}
+#checkoutForm .whatsapp-fallback{display:block;text-align:center;border-radius:13px;background:#e7f8ee;color:#17643d;padding:13px 10px;font-weight:900;font-size:13px;border:1px solid #aadac0;text-decoration:underline;text-underline-offset:3px}
+#checkoutForm .whatsapp-fallback[hidden]{display:none!important}

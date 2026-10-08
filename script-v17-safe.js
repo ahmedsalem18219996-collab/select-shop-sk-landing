@@ -1211,7 +1211,19 @@ function openCheckout(items) {
     savings.innerHTML = payableSummary(checkoutState.items).replace('id="cartTotal"', 'id="checkoutTotal"');
   }
   const err = $("#formError"); if (err) err.textContent = "";
+  const whatsappFallback = $("#whatsappFallback");
+  if (whatsappFallback) { whatsappFallback.hidden = true; whatsappFallback.removeAttribute("href"); }
   openSheet($("#checkoutSheet"));
+  // Jump to required fields, which otherwise sit below the order summary on mobile.
+  requestAnimationFrame(() => {
+    const sheet = $("#checkoutSheet");
+    const scroller = $(".sheet-scroll", sheet);
+    const form = $("#checkoutForm");
+    if (scroller && form) {
+      const offset = form.getBoundingClientRect().top - scroller.getBoundingClientRect().top;
+      scroller.scrollTop += Math.max(0, offset - 12);
+    }
+  });
   metaCheckout(checkoutState.items);
   track("begin_checkout", { value: totals.total, currency: "EGP", items: totals.pairCount, try_on_models: totals.trialCount });
 }
@@ -1472,7 +1484,7 @@ if (checkoutForm) {
     const data = Object.fromEntries(new FormData(form).entries());
     const err = $("#formError");
 
-    $("input, select, textarea", form).forEach(field => {
+    $$("input, select, textarea", form).forEach(field => {
       field.classList.remove("field-invalid");
       field.removeAttribute("aria-invalid");
     });
@@ -1582,17 +1594,38 @@ if (checkoutForm) {
     if (data.notes?.trim()) { message += `• ملاحظات للمندوب: ${data.notes.trim()}\n`; }
     message += `\n✨ تم إنشاء الطلب عبر موقع SELECT SHOP`;
 
-    const profResult = await submitOrderToProf(orderPayload);
-    try { localStorage.setItem("selectShopLastOrder", JSON.stringify({ ...orderPayload, prof:profResult })); } catch {}
-    const receipt = profResult.saved === true && profResult.orderId
-      ? { saved: true, orderId: profResult.orderId }
-      : {};
-    await window.SELECT_SHOP_META?.finish(orderPayload, receipt);
-    track("whatsapp_click", { value: totals.total, currency: "EGP", items: totals.pairCount, order_id:orderPayload.orderId });
-    toast(profResult.sent ? "تم إرسال الطلب وجاري فتح واتساب للتأكيد ✓" : "سيتم تحويلك لواتساب SELECT SHOP لتأكيد الطلب 💬");
+    // Do not block WhatsApp navigation on analytics or optional integrations.
+    try { localStorage.setItem("selectShopLastOrder", JSON.stringify({ ...orderPayload, status: "whatsapp-prepared" })); } catch {}
+    if (CONFIG.PROF_BRIDGE_URL) {
+      void submitOrderToProf(orderPayload).catch(error => console.warn("Prof bridge error:", error));
+    }
+    try {
+      Promise.resolve(window.SELECT_SHOP_META?.finish(orderPayload, {}))
+        .catch(error => console.warn("Meta lead tracking error:", error));
+    } catch (error) { console.warn("Meta lead tracking error:", error); }
+    track("whatsapp_click", { value: totals.total, currency: "EGP", items: totals.pairCount, order_id: orderPayload.orderId });
 
     const targetUrl = `https://wa.me/${SHOP_WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
-    window.location.assign(targetUrl);
+    const fallback = $("#whatsappFallback");
+    if (fallback) fallback.href = targetUrl;
+    toast("جاري فتح واتساب برسالة الطلب المجهزة…");
+    try {
+      window.location.assign(targetUrl);
+    } catch (error) {
+      console.error("WhatsApp navigation failed:", error);
+      checkoutSubmitting = false;
+      if (fallback) fallback.hidden = false;
+      if (err) {
+        err.textContent = "تعذر فتح واتساب تلقائيًا. اضغطي رابط واتساب الموجود تحت البيانات.";
+        err.hidden = false;
+      }
+      return;
+    }
+    // Allow the customer to open the same message manually if the in-app browser blocks navigation.
+    setTimeout(() => {
+      checkoutSubmitting = false;
+      if (fallback) fallback.hidden = false;
+    }, 1400);
   });
 }
 

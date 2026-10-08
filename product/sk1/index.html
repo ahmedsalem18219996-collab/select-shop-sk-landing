@@ -17,7 +17,7 @@
   <link rel="canonical" href="https://selectshopeg.com/product/sk1/">
   <title>SK-1 — SK Sneakers | SELECT SHOP</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23684fd3'/%3E%3Cpath d='M15 41h34v7H15zm3-25h29v7H18zm-3 12h26v7H15z' fill='%23ffffff'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles-v17-safe.css?v=22e59e7bcaba">
+  <link rel="stylesheet" href="styles-v17-safe.css?v=checkout-20261008c">
   <script src="meta-pixel.js?v=bf26a35ecb24"></script>
 </head>
 <body>
@@ -325,18 +325,22 @@
       <div class="checkout-items" id="checkoutItems"></div>
       <div class="checkout-savings" id="checkoutSavings"></div>
       <form id="checkoutForm" novalidate>
+        <div class="checkout-required-guide" role="note" aria-label="إرشادات تأكيد الطلب">
+          <strong>كمّلي بيانات التوصيل علشان نفتح واتساب</strong>
+          <span>الحقول اللي عليها * مطلوبة: الاسم، الموبايل، المحافظة، المنطقة، والعنوان. بعد كده اضغطي «إتمام الطلب».</span>
+        </div>
         <p class="form-error" id="formError" role="alert" aria-live="assertive" hidden></p>
         <label>
-          <span>الاسم بالكامل</span>
+          <span>الاسم بالكامل <b class="required-mark" aria-label="مطلوب">*</b></span>
           <input name="name" autocomplete="name" required placeholder="مثال: سارة محمد">
         </label>
         <label>
-          <span>رقم الموبايل (واتساب)</span>
+          <span>رقم الموبايل (واتساب) <b class="required-mark" aria-label="مطلوب">*</b></span>
           <input name="phone" inputmode="tel" autocomplete="tel" required placeholder="01xxxxxxxxx">
         </label>
         <div class="form-row">
           <label>
-            <span>المحافظة</span>
+            <span>المحافظة <b class="required-mark" aria-label="مطلوب">*</b></span>
             <select name="governorate" required aria-label="اختاري المحافظة">
               <option value="" selected disabled>اختاري المحافظة</option>
               <option value="القاهرة">القاهرة</option>
@@ -369,18 +373,19 @@
             </select>
           </label>
           <label>
-            <span>المنطقة / الحي</span>
+            <span>المنطقة / الحي <b class="required-mark" aria-label="مطلوب">*</b></span>
             <input name="area" required placeholder="مثال: مدينة نصر">
           </label>
         </div>
         <label>
-          <span>العنوان بالتفصيل</span>
+          <span>العنوان بالتفصيل <b class="required-mark" aria-label="مطلوب">*</b></span>
           <textarea name="address" required rows="2" placeholder="الشارع، رقم العمارة، رقم الشقة، علامة مميزة..."></textarea>
         </label>
         <label>
           <span>ملاحظات للمندوب (اختياري)</span>
           <textarea name="notes" rows="2" placeholder="أي تفاصيل خاصة بوقت الاستلام..."></textarea>
         </label>
+        <a class="whatsapp-fallback" id="whatsappFallback" target="_blank" rel="noopener noreferrer" hidden>واتساب ما فتحش؟ اضغطي هنا لإرسال الطلب</a>
       </form>
       <div class="checkout-trust-notice">
         <p>🔒 سيتم تحويلك لواتساب SELECT SHOP لتأكيد الطلب • الدفع عند الاستلام بعد المعاينة واختيار اللي يناسبك مع المندوب.</p>
@@ -404,6 +409,6 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="script-v17-safe.js?v=3e8a0ec60fb"></script>
+  <script src="script-v17-safe.js?v=checkout-20261008c"></script>
 </body>
 </html>
