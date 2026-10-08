@@ -1164,6 +1164,12 @@ function renderCart() {
   if (trialLimit) trialLimit.hidden = !hasTrial;
   const trialAddButton = addMore?.querySelector('[data-add-product-mode="trial"]');
   if (trialAddButton) { trialAddButton.disabled = hasTrial; trialAddButton.setAttribute("aria-disabled", String(hasTrial)); }
+  const discountedMore = $("#cartAddDiscounted");
+  if (discountedMore) {
+    const hasShoe = cart.some(item => !isCarItem(item) && item.role !== "trial");
+    const label = discountedMore.querySelector("b");
+    if (label) label.textContent = hasShoe ? "＋ كوتشي إضافي بخصم شحن" : "＋ أضف كوتشي من المتجر";
+  }
   if (checkoutBtn) {
     checkoutBtn.disabled = !cart.length;
     checkoutBtn.textContent = cart.length ? `إتمام الطلب — ${money(calcTotals(cart).total)}` : "إتمام الطلب";
@@ -1290,17 +1296,18 @@ function renderCart() {
 function renderAddProductPicker(mode = "purchase") {
   addProductMode = mode === "trial" ? "trial" : "purchase";
   const hasTrial = cart.some(item => item.role === "trial");
+  const hasDiscountEligibleShoe = cart.some(item => !isCarItem(item) && item.role !== "trial");
   if (addProductMode === "trial" && hasTrial) { toast("عندك اختيار إضافي بالفعل — عدليه من السلة أو أضيفي زوج شراء"); return false; }
   const note = $("#addProductNote"), grid = $("#addProductGrid"), title = $("#addProductTitle"), kicker = $("#addProductKicker");
-  if (title) title.textContent = addProductMode === "trial" ? "اختاري موديل إضافي" : "اختاري الزوج الإضافي";
-  if (kicker) kicker.textContent = addProductMode === "trial" ? "اختاري براحتك عند الاستلام" : "خصم واضح على الزوج الإضافي";
+  if (title) title.textContent = addProductMode === "trial" ? "اختاري موديل إضافي" : hasDiscountEligibleShoe ? "اختاري الزوج الإضافي" : "اختاري كوتشي للطلب";
+  if (kicker) kicker.textContent = addProductMode === "trial" ? "اختاري براحتك عند الاستلام" : hasDiscountEligibleShoe ? "خصم توفير الشحن من نفس المورد" : "بدون خصم بين الموردين المختلفين";
   if (note) note.innerHTML = addProductMode === "trial"
     ? `<b>◇ اختيار إضافي عند الاستلام</b><span>المندوب يجيبلك الاختيارين. اللي يعجبك استلميه، ولو أخدتي الاتنين يظهر الخصم تلقائيًا.</span>`
-    : `<b>＋ زوج شراء إضافي</b><span>اختاري الموديل وبعدها اللون والمقاس. الخصم بيتحسب تلقائي ويظهر قبل التأكيد.</span>`;
+    : hasDiscountEligibleShoe ? `<b>＋ زوج شراء إضافي</b><span>اختاري الموديل وبعدها اللون والمقاس. خصم شحن بروف بيتحسب تلقائي عند شراء زوج إضافي.</span>` : `<b>＋ كوتشي للطلب</b><span>المنتج من مورد مختلف عن عناية السيارات؛ مفيش خصم شحن بين صفقة وبروف. السعر شامل شحنه حسب السياسة.</span>`;
   if (grid) {
     grid.innerHTML = PRODUCT_IDS.map(id => {
       const product = PRODUCTS[id], discounted = Math.max(0, product.price - CONFIG.SHIPPING_FEE);
-      return `<button class="add-product-card" type="button" data-picker-product="${id}"><img class="zoomable-product-image" data-product-zoom-image src="${product.hero}" alt="${product.name}" data-zoom-caption="${product.name}" width="240" height="200" loading="lazy" role="button" tabindex="0" aria-label="تكبير صورة ${product.name}"><span><b>${product.name}</b><small>${product.variants.length} ألوان • ${product.sizeSummary}</small></span><em>${addProductMode === "trial" ? "اختيار عند الاستلام" : `<del>${money(product.price)}</del><strong>${money(discounted)}</strong><small>${extraPairDiscountLabel(id)}</small>`}</em></button>`;
+      return `<button class="add-product-card" type="button" data-picker-product="${id}"><img class="zoomable-product-image" data-product-zoom-image src="${product.hero}" alt="${product.name}" data-zoom-caption="${product.name}" width="240" height="200" loading="lazy" role="button" tabindex="0" aria-label="تكبير صورة ${product.name}"><span><b>${product.name}</b><small>${product.variants.length} ألوان • ${product.sizeSummary}</small></span><em>${addProductMode === "trial" ? "اختيار عند الاستلام" : hasDiscountEligibleShoe ? `<del>${money(product.price)}</del><strong>${money(discounted)}</strong><small>توفير الشحن لنفس المورد</small>` : `<strong>${money(product.price)}</strong><small>بدون خصم تجميع بين الموردين</small>`}</em></button>`;
     }).join("");
     $$('[data-picker-product]', grid).forEach(button => button.addEventListener("click", () => {
       const id = button.dataset.pickerProduct;
