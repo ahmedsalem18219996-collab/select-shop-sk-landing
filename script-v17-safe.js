@@ -1270,6 +1270,7 @@ function openCart() {
 }
 
 function openCheckout(items) {
+  resetCheckoutSubmission();
   checkoutState = { items: items.map(item => ({ ...item, sizes: [...item.sizes] })) };
   const itemsContainer = $("#checkoutItems");
   if (itemsContainer) {
@@ -1604,6 +1605,14 @@ const checkoutValidationLiveFix = event => {
   }
 };
 let checkoutSubmitting = false;
+// Timers may pause while WhatsApp is foregrounded; reset explicitly on return.
+function resetCheckoutSubmission() { checkoutSubmitting = false; }
+window.addEventListener("pageshow", resetCheckoutSubmission);
+window.addEventListener("pagehide", resetCheckoutSubmission);
+window.addEventListener("focus", resetCheckoutSubmission);
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) resetCheckoutSubmission();
+});
 if (checkoutForm) {
   checkoutForm.addEventListener("input", checkoutValidationLiveFix);
   checkoutForm.addEventListener("change", checkoutValidationLiveFix);
@@ -1650,6 +1659,7 @@ if (checkoutForm) {
     }
 
     checkoutSubmitting = true;
+    try {
     const totals = calcTotals(checkoutState.items);
     const purchased = checkoutState.items.filter(i => i.role !== "trial");
     const trials = checkoutState.items.filter(i => i.role === "trial");
@@ -1689,11 +1699,16 @@ if (checkoutForm) {
       }
       return;
     }
-    // Allow the customer to open the same message manually if the in-app browser blocks navigation.
-    setTimeout(() => {
+    // The fallback remains accessible if the in-app browser declines navigation.
+    } catch (error) {
+      console.error("Checkout preparation failed:", error);
+      if (err) {
+        err.textContent = "تعذر تجهيز رابط الطلب مؤقتًا. حاولي تاني أو استخدمي رابط واتساب للاستفسار.";
+        err.hidden = false;
+      }
+    } finally {
       checkoutSubmitting = false;
-      if (fallback) fallback.hidden = false;
-    }, 1400);
+    }
   });
 }
 
