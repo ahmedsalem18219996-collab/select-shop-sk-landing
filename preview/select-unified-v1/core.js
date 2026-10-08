@@ -1652,7 +1652,8 @@ function checkoutMessage(data, items, orderId) {
     const p=getProduct(x.productId),v=getVariant(x.productId,x.variantId);
     rows.push("اختيار إضافي للتجربة " + (i+1) + ": " + p.name + " | " + v.code + " (" + v.name + ") | " + sizes(x) + " | عند الاحتفاظ به: " + money(additionalPairPrice(x)));
   });
-  rows.push("الإجمالي: " + money(total.total) + " شامل الشحن");
+  const carShippingPending = bought.some(isCarItem) && !["القاهرة","الجيزة"].includes(data.governorate?.trim());
+  rows.push((carShippingPending ? "إجمالي مبدئي قبل تأكيد شحن عناية السيارات: " : "الإجمالي شامل الشحن: ") + money(total.total));
   if(total.discount)rows.push("خصم توفير الشحن للمنتجات من نفس المورد: " + money(total.discount));
   if(bought.some(isCarItem)) { rows.push("منتجات صفقة وبروف لها شحن مستقل، ولا يوجد خصم بين الموردين."); if(!["القاهرة","الجيزة"].includes(data.governorate?.trim())) rows.push("تنبيه: إجمالي الطلب مبدئي؛ يُراجع فرق شحن مسدس الغسيل لهذه المحافظة قبل تأكيد الأوردر."); }
   if(trials.length)rows.push("التجربة دون التزام، والدفع للأزواج المستلمة فقط");
