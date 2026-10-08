@@ -1619,3 +1619,70 @@ syncProgress();
 setupDockVisibility();
 setupPremiumMotion();
 requestAnimationFrame(() => document.body.classList.add("loaded"));
+
+
+/* Campaign-specific product first view — shared canonical catalog and cart */
+(function initCampaignProductLanding(){
+  const match=location.pathname.match(/\/product\/([a-z0-9-]+)\/?$/i);
+  if(!match)return;
+  const slug=match[1].toLowerCase();
+  let product=null,variant=null;
+  for(const candidate of Object.values(PRODUCTS)){
+    const chosen=candidate.variants.find(v=>v.id===slug);
+    if(chosen){product=candidate;variant=chosen;break;}
+    if(candidate.id===slug){product=candidate;variant=candidate.variants[0];break;}
+  }
+  if(!product||!variant)return;
+  currentProductId=product.id;
+  currentVariantByProduct[product.id]=variant.id;
+  renderHero({announce:false});
+  const hero=document.querySelector(".storefront-hero");
+  if(!hero)return;
+  const section=document.createElement("section");
+  section.className="campaign-product-first shell";
+  section.setAttribute("aria-label",product.name+" "+variant.code);
+  section.innerHTML=`
+    <div class="campaign-product-media">
+      <img src="${variant.image}" alt="${variant.code} ${variant.name}" width="800" height="800" fetchpriority="high">
+    </div>
+    <div class="campaign-product-info">
+      <span class="campaign-product-kicker">SELECT SHOP • ${variant.code}</span>
+      <h1>${product.name} — ${variant.name}</h1>
+      <p>${product.description}</p>
+      <div class="campaign-product-price">${money(product.price)} <small>شامل الشحن • معاينة قبل الدفع</small></div>
+      <button class="btn primary campaign-product-buy" type="button">اختاري المقاس واطلبي الآن</button>
+      <a href="https://selectshopeg.com/#catalog" class="campaign-product-browse">شاهدي باقي الموديلات ←</a>
+    </div>`;
+  hero.replaceWith(section);
+  section.querySelector(".campaign-product-buy").addEventListener("click",()=>openProductSheet(product.id,{intent:"buy",variantId:variant.id}));
+  const dock=document.querySelector("#mobileDock");
+  if(dock){
+    dock.classList.add("visible");
+    const caption=dock.querySelector("#dockLabel");
+    if(caption)caption.textContent=variant.code+" • "+product.name;
+    const price=dock.querySelector("#dockPrice");
+    if(price)price.textContent=money(product.price);
+  }
+  const style=document.createElement("style");
+  style.textContent=`
+   .campaign-product-first{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(16px,4vw,52px);align-items:center;padding-block:clamp(16px,3vw,42px);direction:rtl}
+   .campaign-product-media{background:#f3eff9;border:1px solid #e9e2f1;border-radius:24px;overflow:hidden;display:grid;place-items:center}
+   .campaign-product-media img{width:100%;max-height:470px;object-fit:contain}
+   .campaign-product-info h1{font-size:clamp(24px,3vw,42px);line-height:1.3;margin:12px 0}
+   .campaign-product-info p{line-height:1.85;color:#726c78}
+   .campaign-product-kicker{font-size:12px;font-weight:900;color:#6657e8}
+   .campaign-product-price{font-size:26px;font-weight:900;margin:18px 0;display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+   .campaign-product-price small{font-size:12px;font-weight:500;color:#726c78}
+   .campaign-product-buy{min-height:54px;width:100%;font-weight:900}
+   .campaign-product-browse{display:inline-block;margin-top:16px;color:#6657e8;font-weight:800;font-size:13px}
+   @media(max-width:700px){
+    .campaign-product-first{grid-template-columns:1fr;gap:10px;padding-block:12px 22px}
+    .campaign-product-media img{max-height:min(43vh,330px)}
+    .campaign-product-info h1{font-size:22px;margin:8px 0}
+    .campaign-product-info p{font-size:12px;margin:6px 0}
+    .campaign-product-price{font-size:23px;margin:8px 0}
+    .campaign-product-buy{min-height:48px}
+    .mobile-dock{display:grid!important;transform:none!important;opacity:1!important;bottom:calc(12px + var(--vv-bottom) + env(safe-area-inset-bottom,0px))!important}
+   }`;
+  document.head.appendChild(style);
+})();
