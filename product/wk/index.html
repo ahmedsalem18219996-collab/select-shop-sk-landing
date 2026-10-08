@@ -41,10 +41,38 @@
   <link rel="canonical" href="https://selectshopeg.com/product/wk/">
   <title>WK-1 — WK Retro | SELECT SHOP</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23684fd3'/%3E%3Cpath d='M15 41h34v7H15zm3-25h29v7H18zm-3 12h26v7H15z' fill='%23ffffff'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles-v17-safe.css?v=two-size-helper-20261008-b">
-  <script src="meta-pixel.js?v=bf26a35ecb24"></script>
+  <link rel="stylesheet" href="styles-v17-safe.css?v=owner-qa-filter-20261008a">
+    <!-- Explicit internal QA mode: only the user's own device/browser is excluded.
+       Future events are suppressed BEFORE either GA4 or Meta Pixel initializes. -->
+  <script id="select-shop-owner-test-mode">
+  (function () {
+    var storageKey = "selectShopOwnerTestModeV1";
+    var query = new URLSearchParams(window.location.search);
+    var option = query.get("shop_test");
+    var value = false;
+    try {
+      if (option === "1") localStorage.setItem(storageKey, "1");
+      else if (option === "0") localStorage.removeItem(storageKey);
+      value = option === "1" || (option !== "0" && localStorage.getItem(storageKey) === "1");
+    } catch (_) { value = option === "1"; }
+    window.SELECT_SHOP_TEST_MODE = value;
+    if (value) document.documentElement.classList.add("shop-test-mode");
+    document.addEventListener("DOMContentLoaded", function () {
+      var note = document.getElementById("shopOwnerTestNotice");
+      if (note) note.hidden = !value;
+      var quit = document.getElementById("shopOwnerTestExit");
+      if (quit) quit.href = window.location.pathname + "?shop_test=0";
+    });
+  })();
+  </script>
+  <script src="meta-pixel.js?v=owner-qa-filter-20261008a"></script>
 </head>
 <body>
+  <div class="shop-owner-test-notice" id="shopOwnerTestNotice" hidden>
+    <strong>وضع التجربة مفعّل</strong>
+    <span>اختباراتك على الجهاز ده مش هتتحسب ضمن زيارات وإجراءات العملاء الجاية.</span>
+    <a id="shopOwnerTestExit" href="/?shop_test=0">إيقاف وضع التجربة</a>
+  </div>
   <a class="skip-link" href="#main">تخطي إلى المحتوى</a>
   <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
@@ -449,6 +477,6 @@
     </div>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="script-v17-safe.js?v=two-size-helper-20261008-b"></script>
+  <script src="script-v17-safe.js?v=owner-qa-filter-20261008a"></script>
 </body>
 </html>

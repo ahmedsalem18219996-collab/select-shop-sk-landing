@@ -357,6 +357,7 @@ function completeWhatsAppHandoff() {
 /* Analytics */
 function analyticsConfigured(value, placeholder) { return Boolean(value && value !== placeholder); }
 function bootAnalytics() {
+  if (window.SELECT_SHOP_TEST_MODE === true) return;
   if (analyticsConfigured(CONFIG.GA4_ID, "G-XXXXXXXXXX")) {
     const script = document.createElement("script");
     script.async = true;
@@ -403,6 +404,7 @@ function ga4Payload(name, payload) {
 }
 
 function track(name, payload = {}) {
+  if (window.SELECT_SHOP_TEST_MODE === true) return;
   window.dispatchEvent(new CustomEvent("selectshop:analytics", { detail: { name, payload } }));
   try {
     if (window.gtag) window.gtag("event", name, ga4Payload(name, payload));

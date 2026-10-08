@@ -1859,3 +1859,10 @@ body.theme-night .two-size-progress strong{background:#4c326b;color:#faf1ff}
 body.theme-night .two-size-progress.complete,body.theme-night .two-size-reminder.complete{background:#123a2a;color:#ceffe3;border-color:#377d55}
 body.theme-night .size-rail.needs-second-size .size-btn:not(.active){background:#282036;border-color:#936bdc}
 @media(max-width:440px){.two-size-progress{grid-template-columns:1fr;padding:9px 10px;gap:4px}.two-size-progress strong{width:max-content;font-size:11px}.two-size-progress span,.two-size-reminder{font-size:11px}.two-size-reminder{padding:8px 10px}}
+
+/* Test mode is visible only on the owner's opted-in browser. */
+.shop-owner-test-notice[hidden]{display:none!important}
+.shop-owner-test-notice{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 14px;padding:9px 12px;background:#1d2738;color:#fff;font-size:12px;line-height:1.65;text-align:center;direction:rtl;border-bottom:2px solid #debd6d}
+.shop-owner-test-notice strong{color:#ffe1a3;font-weight:900}
+.shop-owner-test-notice a{color:#c4ffdb;font-weight:900;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:440px){.shop-owner-test-notice{font-size:11px;gap:2px 8px}}

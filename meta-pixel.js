@@ -5,7 +5,7 @@
 (() => {
   'use strict';
   const PIXEL_ID = '992616030526349';
-  const enabled = /^\d{5,20}$/.test(PIXEL_ID) && !/^0+$/.test(PIXEL_ID);
+  const enabled = /^\d{5,20}$/.test(PIXEL_ID) && !/^0+$/.test(PIXEL_ID) && window.SELECT_SHOP_TEST_MODE !== true;
   const seenViews = new Set();
   const sentOrderEvents = new Set();
   let lastCheckoutKey = '';
