@@ -3,6 +3,30 @@
 <head>
   <meta charset="utf-8">
   <base href="../../">
+  <!-- Landing compatibility for legacy SK Meta ads with untagged homepage URLs.
+       The WK campaign already uses its own /product/wk1/ landing. -->
+  <script id="sk-legacy-ad-landing-route">
+(function () {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (window.location.pathname !== "/" && window.location.pathname !== "/index.html") return;
+    if (params.has("utm_campaign") || params.has("product") || params.has("skip_sk_redirect")) return;
+    let fromMeta = false;
+    try {
+      const refHost = new URL(document.referrer).hostname.toLowerCase();
+      fromMeta = /(^|\.)(facebook\.com|instagram\.com|fb\.com|fb\.me)$/.test(refHost);
+    } catch (_) {}
+    if (!params.has("fbclid") && !fromMeta) return;
+    const target = new URL("/product/sk1/", window.location.origin);
+    params.set("utm_source", params.get("utm_source") || "meta");
+    params.set("utm_medium", params.get("utm_medium") || "paid_social");
+    params.set("utm_campaign", "sk_home_ad_route_oct2026");
+    target.search = params.toString();
+    window.location.replace(target.href);
+  } catch (_) { /* Fail open: leave the storefront untouched on unsupported browsers. */ }
+})();
+
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f8f7f4">
   <meta name="description" content="ALEX Premium — أسود بنعل أبيض. 540 جنيه شامل الشحن، مع المعاينة عند الاستلام وإمكانية تجربة موديل إضافي بدون شحن إضافي.">
@@ -17,7 +41,7 @@
   <link rel="canonical" href="https://selectshopeg.com/product/alex03/">
   <title>ALEX03 — ALEX Premium | SELECT SHOP</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23684fd3'/%3E%3Cpath d='M15 41h34v7H15zm3-25h29v7H18zm-3 12h26v7H15z' fill='%23ffffff'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="styles-v17-safe.css?v=inquiry-cta-20261008f">
+  <link rel="stylesheet" href="styles-v17-safe.css?v=two-size-helper-20261008-b">
   <script src="meta-pixel.js?v=bf26a35ecb24"></script>
 </head>
 <body>
@@ -239,16 +263,21 @@
             <small id="sizeHint">اختاري مقاسك المعتاد</small>
           </div>
         </div>
+        <div id="twoSizeProgress" class="two-size-progress" role="status" aria-live="polite" aria-atomic="true" hidden>
+          <strong id="twoSizeProgressCount">0 من 2</strong>
+          <span id="twoSizeProgressMessage">اضغطي على أول مقاس من الأرقام اللي تحت</span>
+        </div>
         <div class="size-rail" id="sizeRail"></div>
       </div>
       <button class="try-size-toggle" id="trySizeToggle" type="button" aria-pressed="false">
         <span class="toggle-badge">2</span>
         <span>
           <b>محتارة بين مقاسين؟</b>
-          <small>اختاري مقاسين لنفس الزوج، قيسيهم مع المندوب واستلمي المقاس الأنسب بسعر زوج واحد فقط.</small>
+          <small>فعّلي التجربة واضغطي على رقمين مختلفين من المقاسات اللي فوق — بسعر زوج واحد.</small>
         </span>
         <i><u></u></i>
       </button>
+      <p id="twoSizeReminder" class="two-size-reminder" aria-live="polite" hidden>↑ اختاري رقم المقاس الأول من الأرقام اللي فوق، وبعده اضغطي على رقم تاني.</p>
       <p class="availability-note">اختيار المقاسين حسب التوافر عند التأكيد • يُحسب كزوج واحد وشحنة واحدة فقط.</p>
       <div class="selection-summary" id="selectionSummary" aria-live="polite">
         <span>اختيارك الحالي</span>
@@ -420,6 +449,6 @@
     </div>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="script-v17-safe.js?v=checkout-return-20261008-g"></script>
+  <script src="script-v17-safe.js?v=two-size-helper-20261008-b"></script>
 </body>
 </html>

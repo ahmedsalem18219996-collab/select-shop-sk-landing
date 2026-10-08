@@ -1843,3 +1843,19 @@ body.theme-night .header-whatsapp-help{background:#163c2c;color:#c9f8da;border-c
 .hero-wa-inquiry:focus-visible,.campaign-product-whatsapp:focus-visible{outline:3px solid #137047;outline-offset:3px}
 body.theme-night .hero-wa-inquiry,body.theme-night .campaign-product-whatsapp{background:#143c2a;color:#d6ffe4;border-color:#39865c}
 @media(max-width:700px){.hero-wa-inquiry,.campaign-product-whatsapp{min-height:46px;font-size:12px;padding:10px 12px}}
+
+/* Visible second-size instruction in product sheets. */
+.two-size-progress{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 10px;align-items:center;margin:0 0 10px;padding:12px;border-radius:13px;border:1px solid #c9b9f4;background:#f4efff;color:#423175;text-align:right;line-height:1.7}
+.two-size-progress[hidden],.two-size-reminder[hidden]{display:none!important}
+.two-size-progress strong{display:inline-flex;border-radius:9px;padding:5px 9px;background:#ede4ff;color:#5732b0;font-weight:900;font-size:12px;white-space:nowrap}
+.two-size-progress span{font-weight:800;font-size:12px}
+.two-size-progress.complete{border-color:#91d4af;background:#eaf8f0;color:#125c3d}
+.two-size-progress.complete strong{background:#d5f0e1;color:#12643c}
+.two-size-reminder{border:1px dashed #b29aed;border-radius:10px;padding:10px 12px;margin:9px 0 0;background:#f8f5ff;color:#51338c;font-weight:850;font-size:12px;line-height:1.7;text-align:right}
+.two-size-reminder.complete{background:#eaf8f0;border-color:#91d4af;color:#145b39}
+.size-rail.needs-second-size .size-btn:not(.active){border-color:#a78af0;box-shadow:0 0 0 2px rgba(126,78,215,.14);background:#faf7ff}
+body.theme-night .two-size-progress,body.theme-night .two-size-reminder{background:#2b2039;color:#f1ddff;border-color:#7b5ea4}
+body.theme-night .two-size-progress strong{background:#4c326b;color:#faf1ff}
+body.theme-night .two-size-progress.complete,body.theme-night .two-size-reminder.complete{background:#123a2a;color:#ceffe3;border-color:#377d55}
+body.theme-night .size-rail.needs-second-size .size-btn:not(.active){background:#282036;border-color:#936bdc}
+@media(max-width:440px){.two-size-progress{grid-template-columns:1fr;padding:9px 10px;gap:4px}.two-size-progress strong{width:max-content;font-size:11px}.two-size-progress span,.two-size-reminder{font-size:11px}.two-size-reminder{padding:8px 10px}}

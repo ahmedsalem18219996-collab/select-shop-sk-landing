@@ -882,16 +882,42 @@ function openProductSheet(productId, { intent = "buy", editId = null, variantId 
 }
 
 function updatePurchaseJourney() {
-  const hasSize = Boolean(sheetState?.sizes?.length);
+  const selectedCount = sheetState?.sizes?.length || 0;
+  const hasSize = selectedCount > 0;
+  const ready = Boolean(sheetState?.tryTwo ? selectedCount === 2 : selectedCount === 1);
   const steps = {
     model: document.querySelector('[data-journey-step="model"]'),
     size: document.querySelector('[data-journey-step="size"]'),
     confirm: document.querySelector('[data-journey-step="confirm"]')
   };
   steps.model?.classList.add("done");
-  steps.size?.classList.toggle("active", !hasSize);
-  steps.size?.classList.toggle("done", hasSize);
-  steps.confirm?.classList.toggle("active", hasSize);
+  steps.size?.classList.toggle("active", !ready);
+  steps.size?.classList.toggle("done", ready);
+  steps.confirm?.classList.toggle("active", ready);
+  const progress = $("#twoSizeProgress");
+  const counter = $("#twoSizeProgressCount");
+  const guide = $("#twoSizeProgressMessage");
+  const reminder = $("#twoSizeReminder");
+  const rail = $("#sizeRail");
+  if (progress) progress.hidden = !sheetState?.tryTwo;
+  if (reminder) reminder.hidden = !sheetState?.tryTwo;
+  rail?.classList.toggle("needs-second-size", Boolean(sheetState?.tryTwo && selectedCount === 1));
+  if (sheetState?.tryTwo) {
+    if (counter) counter.textContent = selectedCount + " من 2 مقاسات";
+    const text = selectedCount === 0
+      ? "① اضغطي على أول مقاس من الأرقام اللي تحت."
+      : selectedCount === 1
+        ? "② مقاس " + sheetState.sizes[0] + " اتحدد ✓ دلوقتي اضغطي على رقم مقاس تاني من الأزرار اللي تحت."
+        : "✓ اختارتي المقاسين " + sheetState.sizes.join(" و ") + ". تقدري تكمّلي الطلب.";
+    if (guide) guide.textContent = text;
+    if (reminder) reminder.textContent = selectedCount === 0
+      ? "↑ اضغطي على أول مقاس من الأرقام اللي فوق، وبعدها على مقاس تاني."
+      : selectedCount === 1
+        ? "↑ مقاس " + sheetState.sizes[0] + " اتحدد. اضغطي على رقم مقاس مختلف من اللي فوق عشان نكمّل."
+        : "✓ المقاسين اتحددوا، وجاهزين للتجربة عند الاستلام بسعر زوج واحد.";
+    progress?.classList.toggle("complete", ready);
+    reminder?.classList.toggle("complete", ready);
+  }
   const product = sheetState ? getProduct(sheetState.productId) : null;
   const variant = sheetState && product ? getVariant(product.id, sheetState.variantId) : null;
   const summary = $("#selectionSummaryText");
@@ -901,7 +927,6 @@ function updatePurchaseJourney() {
       : `${variant.code} • اختاري المقاس للمتابعة`;
   }
 
-  const ready = sheetState?.tryTwo ? sheetState.sizes.length === 2 : sheetState?.sizes?.length === 1;
   const primaryCta = $("#sheetBuyNow");
   if (primaryCta && product) {
     primaryCta.disabled = !ready;
@@ -958,7 +983,7 @@ function renderProductSheet() {
   }
   const sHint = $("#sizeHint");
   if (sHint) {
-    sHint.textContent = sheetState.tryTwo ? "اختاري مقاسين — زوج واحد وسعر واحد" : "اختاري مقاسك المعتاد";
+    sHint.textContent = sheetState.tryTwo ? "لازم تضغطي على مقاسين مختلفين من الأرقام اللي تحت — زوج واحد وسعر واحد" : "اختاري مقاسك المعتاد";
   }
 
   const pCopy = $("#productDetailCopy");
@@ -1018,7 +1043,7 @@ function renderSizes() {
   const rail = $("#sizeRail");
   if (!rail) return;
   rail.innerHTML = variant.sizes.map(size => `
-    <button class="size-btn ${sheetState.sizes.includes(size) ? "active" : ""}" type="button" data-sheet-size="${size}" aria-pressed="${sheetState.sizes.includes(size)}">
+    <button class="size-btn ${sheetState.sizes.includes(size) ? "active" : ""}" type="button" data-sheet-size="${size}" aria-pressed="${sheetState.sizes.includes(size)}" aria-label="مقاس ${size}${sheetState.sizes.includes(size) ? ' - تم اختياره' : ''}">
       ${size}
     </button>
   `).join("");
