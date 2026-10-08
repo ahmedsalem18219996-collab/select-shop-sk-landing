@@ -183,10 +183,10 @@ let lastFocus = null;
 
 // v2 intentionally does not import the old cart key: it contained stale testing selections.
 // A customer's NEW cart persists for seven days, across the product landing pages and home.
-const LEGACY_CART_STORAGE_KEY = location.pathname.includes("/preview-v17/") ? "selectShopCartV17Preview" : "selectShopCart";
+const LEGACY_CART_STORAGE_KEY = "selectShopUnifiedV1PreviewCart";
 const CART_STORAGE_KEY = LEGACY_CART_STORAGE_KEY + ":v2";
 const CART_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-const WHATSAPP_HANDOFF_KEY = "selectShopWhatsAppHandoff:v1";
+const WHATSAPP_HANDOFF_KEY = "selectShopUnifiedV1PreviewWhatsAppHandoff";
 
 function validSavedCartItem(item) {
   const product = PRODUCTS[item?.productId];
@@ -376,7 +376,7 @@ function bootAnalytics() {
   }
 }
 
-const PRODUCT_VIEW_SESSION_KEY = "selectShopViewedModels:v1";
+const PRODUCT_VIEW_SESSION_KEY = "selectShopUnifiedV1PreviewViewedModels";
 const viewedProductIds = new Set((() => {
   try {
     const saved = JSON.parse(sessionStorage.getItem(PRODUCT_VIEW_SESSION_KEY) || "[]");
@@ -386,7 +386,7 @@ const viewedProductIds = new Set((() => {
   }
 })());
 
-const PRODUCT_VARIANT_VIEW_SESSION_KEY = "selectShopViewedVariants:v1";
+const PRODUCT_VARIANT_VIEW_SESSION_KEY = "selectShopUnifiedV1PreviewViewedVariants";
 const viewedVariantIds = new Set((() => {
   try {
     const saved = JSON.parse(sessionStorage.getItem(PRODUCT_VARIANT_VIEW_SESSION_KEY) || "[]");
@@ -478,7 +478,7 @@ function setupDockVisibility() {
   dockObserver.observe(heroActions);
 }
 
-const SELECT_SHOP_THEME_KEY = "selectShopTheme";
+const SELECT_SHOP_THEME_KEY = "selectShopUnifiedV1PreviewTheme";
 function applyTheme() {
   document.body.classList.remove("theme-night");
   document.documentElement.style.colorScheme = "light";
@@ -1701,7 +1701,7 @@ if (checkoutForm) {
     const message = checkoutMessage(data, checkoutState.items, orderPayload.orderId);
 
     // Do not block WhatsApp navigation on analytics or optional integrations.
-    try { localStorage.setItem("selectShopLastOrder", JSON.stringify({ ...orderPayload, status: "whatsapp-prepared" })); } catch {}
+    try { localStorage.setItem("selectShopUnifiedV1PreviewLastOrder", JSON.stringify({ ...orderPayload, status: "whatsapp-prepared" })); } catch {}
     if (CONFIG.PROF_BRIDGE_URL) {
       void submitOrderToProf(orderPayload).catch(error => console.warn("Prof bridge error:", error));
     }
