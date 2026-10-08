@@ -1,0 +1,125 @@
+/* SELECT SHOP / Typography refinement v2 — preview-only.
+   Editorial heading + highly legible Arabic UI + precise Latin/number details.
+   No product, card, cart or checkout behavior modified. */
+:root{
+  --ssf-font-display:"Alexandria","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --ssf-font-body:"IBM Plex Sans Arabic",Tahoma,Arial,sans-serif;
+  --ssf-font-latin:"Manrope","Segoe UI",Arial,sans-serif;
+}
+html:lang(ar){text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+body.ssf-home,body.ssf-product{
+  font-family:var(--ssf-font-body)!important;
+  font-size:14px;
+  font-weight:400;
+  line-height:1.8;
+  -webkit-font-smoothing:antialiased;
+  font-synthesis:none;
+}
+body.ssf-home :is(button,input,select,textarea),
+body.ssf-product :is(button,input,select,textarea){font-family:var(--ssf-font-body)!important}
+body.ssf-home :is(h1,h2,h3,.ssf-cat-card-content strong,.ssf-mini-title h2,.ssf-trust strong,.model-card h3,.sheet-head h2),
+body.ssf-product :is(h1,h2,h3,.card b,.order h2,.faq summary){
+  font-family:var(--ssf-font-display)!important;
+  font-optical-sizing:auto;
+  letter-spacing:0!important;
+  font-weight:700;
+}
+.ssf-home .ssf-intro h1{
+  font-size:clamp(26px,2.9vw,39px);
+  line-height:1.55;
+  font-weight:800!important;
+  letter-spacing:-.15px!important;
+  max-width:19em;
+  text-wrap:balance;
+}
+.ssf-home .ssf-mini-title h2,
+.ssf-home #catalog .section-heading h2,
+.ssf-home .ssf-care-description h3{
+  font-size:clamp(22px,2.35vw,29px);
+  font-weight:700!important;
+  line-height:1.48;
+  text-wrap:balance;
+}
+.ssf-home .ssf-cat-card-content strong{font-size:18px;line-height:1.55;font-weight:700!important}
+.ssf-home .ssf-cat-card-content > span{font-size:11.5px;line-height:1.85;letter-spacing:0}
+.ssf-home .ssf-intro p,
+.ssf-home .ssf-mini-title p,
+.ssf-home .ssf-cat-card-content span,
+.ssf-home #catalog .section-heading p,
+.ssf-home .model-card p,
+.ssf-home .ssf-care-description p,
+.ssf-home .ssf-trust small{font-family:var(--ssf-font-body)!important;letter-spacing:0;line-height:1.85}
+.ssf-home .ssf-intro p{font-size:13px;max-width:49em}
+.ssf-home .ssf-categorybar a{font-family:var(--ssf-font-body);font-size:12px;font-weight:600}
+.ssf-home .ssf-categorybar span{font-family:var(--ssf-font-body);font-size:11px}
+.ssf-home .ssf-header .wordmark-type strong,
+.ssf-product .logo{font-family:var(--ssf-font-latin)!important;letter-spacing:-1.2px!important;font-weight:800!important}
+.ssf-home .ssf-header .wordmark-type small,
+.ssf-home .ssf-eyebrow,
+.ssf-home .ssf-mini-title div small,
+.ssf-home .ssf-cat-card-content small,
+.ssf-home .ssf-care-description > small{
+  font-family:var(--ssf-font-latin)!important;
+  font-weight:800!important;
+  letter-spacing:1.25px!important;
+  line-height:1.55;
+}
+.ssf-home .ssf-search input{font-family:var(--ssf-font-body)!important;font-size:13px;line-height:1.55}
+.ssf-home .ssf-search-results button,
+.ssf-home .ssf-search-results a,
+.ssf-home .ssf-contact{font-family:var(--ssf-font-body);font-weight:600!important}
+.ssf-home .model-card h3{font-size:16px;line-height:1.65;font-weight:700!important}
+.ssf-home .model-card .model-price b,
+.ssf-home .ssf-care .model-price b,
+.ssf-product .price strong{font-family:var(--ssf-font-latin)!important;font-weight:800!important;letter-spacing:-.8px!important}
+.ssf-home .model-card .model-price span,
+.ssf-home .model-card .model-meta span{font-family:var(--ssf-font-body)!important;font-weight:500}
+.ssf-home .ssf-cat-card-content b,
+.ssf-home .ssf-care-description a,
+.ssf-home .ssf-care .model-card-actions a,
+.ssf-home .model-card-actions .btn,
+.ssf-home .ssf-header .cart-trigger,
+.ssf-home .ssf-trust strong,
+.ssf-home .ssf-upcoming span{
+  font-family:var(--ssf-font-body)!important;
+  letter-spacing:0!important;
+  font-weight:700;
+}
+.ssf-home .section-heading h2,
+.ssf-home .sheet h2{letter-spacing:0!important;line-height:1.5!important}
+.ssf-product .hero h1{font-size:clamp(27px,3.8vw,40px);line-height:1.55!important;font-weight:800!important}
+.ssf-product :is(.intro,.sub,.order p,.order li,.card p,.faq p,.chips span,.navback,.trustline){
+  font-family:var(--ssf-font-body)!important;
+  letter-spacing:0!important;
+  line-height:1.85
+}
+.ssf-product :is(.pill,.price small,.button,.order label,.faq summary){
+  font-family:var(--ssf-font-body)!important;
+  font-weight:700!important;
+  letter-spacing:0!important;
+}
+.ssf-product .section h2,.ssf-product .order h2{font-size:clamp(22px,2.6vw,30px);line-height:1.55!important}
+.ssf-product .logo{font-size:23px}
+.ssf-product .price strong{font-size:38px;line-height:1.35}
+.ssf-product .card b{line-height:1.5}
+@media(max-width:710px){
+  .ssf-home .ssf-intro h1{font-size:26px;line-height:1.58!important;letter-spacing:0!important}
+  .ssf-home .ssf-intro p{font-size:12.5px;line-height:1.95}
+  .ssf-home .ssf-mini-title h2,.ssf-home #catalog .section-heading h2{font-size:22px;line-height:1.57}
+  .ssf-home .ssf-mini-title p{font-size:11px;line-height:1.7}
+  .ssf-home .ssf-cat-card-content strong{font-size:14px;line-height:1.65}
+  .ssf-home .ssf-cat-card-content > span{font-size:10.5px}
+  .ssf-home .ssf-cat-card-content b{font-size:10.5px}
+  .ssf-home .ssf-cat-card-content small{font-size:9px;letter-spacing:.8px!important}
+  .ssf-home .ssf-categorybar a{font-size:11px}
+  .ssf-home .ssf-header .wordmark-type strong{font-size:22px!important}
+  .ssf-home .ssf-header .wordmark-type small{font-size:8px}
+  .ssf-product .hero h1{font-size:28px;line-height:1.6!important}
+  .ssf-product .price strong{font-size:33px}
+}
+@media(max-width:420px){
+  .ssf-home .ssf-intro h1{font-size:24px;line-height:1.63!important}
+  .ssf-home .ssf-cat-card-content strong{font-size:13.5px}
+  .ssf-home .ssf-mini-title h2{font-size:21px}
+  .ssf-home .ssf-intro p{font-size:12px}
+}
