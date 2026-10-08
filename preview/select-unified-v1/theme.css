@@ -152,3 +152,6 @@ body.ssf-product{--bg:#f7f8fa;--card:#fff;--line:#dfe6e9;--t:#1d2d38;--muted:#6a
 .ssf-product .dock a{background:#167a5b!important;color:#fff!important;border-radius:9px!important}
 .ssf-product .dock a:last-child{background:#edf4ef!important;color:#14573c!important}
 @media(max-width:720px){.ssf-product .hero{gap:14px;padding-top:16px}.ssf-product .art video{height:270px;max-height:270px}.ssf-product .hero h1{font-size:29px}.ssf-product .top>div{min-height:59px}.ssf-product .real-gallery img{object-fit:contain;background:#f5f7f8}}
+
+/* Keep design QA markers from distracting product visitors; preview events are already disabled. */
+.ssf-product .qa{display:none!important}
