@@ -1006,7 +1006,7 @@ function renderProductSheet() {
   }
   const sHint = $("#sizeHint");
   if (sHint) {
-    sHint.textContent = sheetState.tryTwo ? "لازم تضغطي على مقاسين مختلفين من الأرقام اللي تحت — زوج واحد وسعر واحد" : "تحديد المقاس المعتاد";
+    sHint.textContent = sheetState.tryTwo ? "التجربة بتحتاج تحديد مقاسين مختلفين من الأرقام — زوج واحد وسعر واحد" : "تحديد المقاس المعتاد";
   }
 
   const pCopy = $("#productDetailCopy");
@@ -1597,7 +1597,7 @@ if (cartCheckout) cartCheckout.addEventListener("click", () => { if (cart.length
 const cartClearButton = $("#cartClear");
 if (cartClearButton) cartClearButton.addEventListener("click", () => {
   if (!cart.length) return;
-  if (!window.confirm("تمسحي كل المنتجات من السلة؟")) return;
+  if (!window.confirm("تأكيد حذف كل المنتجات من السلة؟")) return;
   clearCart();
   dismissWhatsAppHandoff();
   toast("السلة بقت فاضية ✓");
@@ -1786,7 +1786,7 @@ if (checkoutForm) {
     } catch (error) {
       console.error("Checkout preparation failed:", error);
       if (err) {
-        err.textContent = "تعذر تجهيز رابط الطلب مؤقتًا. حاولي تاني أو استخدمي رابط واتساب للاستفسار.";
+        err.textContent = "تعذر تجهيز رابط الطلب مؤقتًا. ممكن إعادة المحاولة أو استخدام رابط واتساب للاستفسار.";
         err.hidden = false;
       }
     } finally {
@@ -1921,8 +1921,8 @@ function renderCampaignProductLanding(product, variant){
         </div>
       </div>
       <button class="btn primary campaign-product-buy" type="button">تحديد المقاس وطلب المنتج</button>
-      <a class="campaign-product-whatsapp" href="https://wa.me/${SHOP_WHATSAPP_NUMBER}?text=${encodeURIComponent('مرحبًا SELECT SHOP، عندي استفسار عن ' + variant.code + ' (' + product.name + ') قبل الطلب.')}" target="_blank" rel="noopener noreferrer">استفسري على واتساب قبل الطلب</a>
-      <a href="${new URL("#catalog", APP_BASE).href}" class="campaign-product-browse"><span>شوفي باقي الموديلات <i aria-hidden="true">←</i></span><small>واستفيدي بخصم حتى ${maxExtraDiscount}٪ على الزوج الإضافي</small></a>
+      <a class="campaign-product-whatsapp" href="https://wa.me/${SHOP_WHATSAPP_NUMBER}?text=${encodeURIComponent('مرحبًا SELECT SHOP، عندي استفسار عن ' + variant.code + ' (' + product.name + ') قبل الطلب.')}" target="_blank" rel="noopener noreferrer">استفسار على واتساب قبل الطلب</a>
+      <a href="${new URL("#catalog", APP_BASE).href}" class="campaign-product-browse"><span>تصفح باقي الموديلات <i aria-hidden="true">←</i></span><small>مع فرصة خصم تصل إلى ${maxExtraDiscount}٪ على الزوج الإضافي</small></a>
     </div>`;
   if (previous) previous.replaceWith(section);
   else hero.before(section);
