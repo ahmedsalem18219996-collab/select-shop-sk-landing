@@ -1,9 +1,9 @@
-// Customer checkout configuration for the TEMPORARY SELECT SHOP storefront only.
-// Keeping disabled until the new independent Supabase project is verified.
-window.SELECT_SHOP_GUEST_ORDERS = Object.freeze({
-  enabled: false,
-  supabaseUrl: "",
-  publishableKey: "",
-  turnstileSiteKey: "",
+// SELECT SHOP direct checkout, independent orders database.
+// Feature intentionally OFF until CAPTCHA configured and real end-to-end checks pass.
+// This file contains PUBLIC client configuration only, never secrets.
+window.SELECT_SHOP_GUEST_ORDERS=Object.freeze({
+ enabled:false,
+ supabaseUrl:"https://zznqdwrohrycsjfpvkhc.supabase.co",
+ publishableKey:"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa",
+ turnstileSiteKey:""
 });
-// All exposed values must be PUBLIC. NEVER put service_role or Turnstile secret here.
