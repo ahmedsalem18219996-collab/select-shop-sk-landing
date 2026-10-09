@@ -30,7 +30,23 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="/preview/select-unified-v1/typography-v2.css?v=2">
-<link rel="stylesheet" href="/preview/select-unified-v1/palette-neutral-v1.css?v=2"></head>
+<link rel="stylesheet" href="/preview/select-unified-v1/palette-neutral-v1.css?v=2"><script id="ssf-embedded-cart-mode">
+if (new URLSearchParams(location.search).get("cart_embed") === "1") {
+  document.documentElement.classList.add("ssf-cart-embed");
+}
+</script>
+<style id="ssf-cart-embed-styles">
+html.ssf-cart-embed,html.ssf-cart-embed body{margin:0!important;padding:0!important;overflow:hidden!important;background:#fff!important;width:100%;height:100%}
+html.ssf-cart-embed .announce,html.ssf-cart-embed .ssf-header-back,
+html.ssf-cart-embed .ssf-categorybar,html.ssf-cart-embed main,
+html.ssf-cart-embed .ssf-footer,html.ssf-cart-embed .mobile-dock,
+html.ssf-cart-embed .toast,html.ssf-cart-embed .whatsapp-return-notice{display:none!important}
+html.ssf-cart-embed .sheet{width:100%!important;max-width:none!important;inset:0!important;box-shadow:none!important;border:0!important;height:100dvh!important;z-index:4000!important}
+html.ssf-cart-embed .sheet-backdrop{display:none!important}
+html.ssf-cart-embed .sheet:not(.show){pointer-events:none!important}
+html.ssf-cart-embed .sheet.show{transform:none!important;opacity:1!important;pointer-events:auto!important}
+</style>
+</head>
 <body class="ssf-home">
   <div class="shop-owner-test-notice" id="shopOwnerTestNotice" hidden>
     <strong>وضع التجربة مفعّل</strong>
@@ -386,6 +402,17 @@
   input.addEventListener("input",draw);input.addEventListener("focus",draw);input.addEventListener("keydown",e=>{if(e.key==="Escape"){results.hidden=true;input.setAttribute("aria-expanded","false");}if(e.key==="Enter"&&!results.hidden){e.preventDefault();results.querySelector("button,a")?.click();}});
   results.addEventListener("click",e=>{const el=e.target.closest("button[data-search-id]");if(!el)return;const product=document.querySelector('[data-select-product="'+el.dataset.searchId+'"]');if(product){product.click();input.value="";results.hidden=true;input.setAttribute("aria-expanded","false");}});
   document.addEventListener("click",e=>{if(!e.target.closest(".ssf-search")){results.hidden=true;input.setAttribute("aria-expanded","false");}});
+})();
+</script><script id="ssf-embedded-cart-events">
+(function(){
+ if(new URLSearchParams(location.search).get("cart_embed")!=="1" || window.parent===window)return;
+ function send(type){try{window.parent.postMessage({type},"https://selectshopeg.com");}catch(e){}}
+ document.addEventListener("click",function(event){
+   if(event.target.closest("[data-close-sheet]"))send("SSF_EMBED_CART_CLOSE");
+ },true);
+ document.addEventListener("keydown",function(event){
+   if(event.key==="Escape")send("SSF_EMBED_CART_CLOSE");
+ },true);
 })();
 </script></body>
 </html>
