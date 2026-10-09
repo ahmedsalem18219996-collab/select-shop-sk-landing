@@ -1208,7 +1208,7 @@ function renderSmartCartRecommendations() {
      </div>`;
     return;
   }
-  const heading=isShoe?"كمّل اللوك بكوتشي تاني":"منتجات تانية تناسب طلبك";
+  const heading=isShoe?"كوتشي تاني يكمل اختيارك":"منتجات تانية تناسب طلبك";
   const subheading=saved>0?
     `اقتراحات من ${plan.supplierName} · توفير الشحن عند إضافة منتج تاني من نفس المورد`:
     `اقتراحات من ${plan.supplierName} · الخصم حسب سياسة الشحن`;
@@ -1314,6 +1314,7 @@ function renderCart() {
             <div class="cart-item-tools">
               <button type="button" data-cart-view="${item.id}">عرض المنتج</button>
               <button type="button" data-cart-edit="${item.id}">تعديل</button>
+              <button type="button" data-cart-add-pair="${item.id}">＋ زوج تاني من نفس الموديل</button>
               <button type="button" data-cart-remove="${item.id}" aria-label="حذف ${product.name}">حذف</button>
             </div>
           </div>
@@ -1373,6 +1374,12 @@ function renderCart() {
         if (item) { if (isCarItem(item)) location.assign("/preview/select-unified-v1/carwash/"); else openProductSheet(item.productId, { editId: item.id }); }
       };
     });
+
+    $("[data-cart-add-pair]",list).forEach(button=>button.addEventListener("click",()=>{
+      const item=cart.find(entry=>entry.id===button.dataset.cartAddPair);
+      if(item && isShoeProduct(getProduct(item.productId)))
+        openProductSheet(item.productId,{intent:"purchase",variantId:item.variantId});
+    }));
 
     const changeRole = (id, role) => {
       if (role === "primary") {
