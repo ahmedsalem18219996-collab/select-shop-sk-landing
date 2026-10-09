@@ -1375,7 +1375,7 @@ function renderCart() {
       };
     });
 
-    $("[data-cart-add-pair]",list).forEach(button=>button.addEventListener("click",()=>{
+    $$("[data-cart-add-pair]",list).forEach(button=>button.addEventListener("click",()=>{
       const item=cart.find(entry=>entry.id===button.dataset.cartAddPair);
       if(item && isShoeProduct(getProduct(item.productId)))
         openProductSheet(item.productId,{intent:"purchase",variantId:item.variantId});
