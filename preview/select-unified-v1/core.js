@@ -242,7 +242,7 @@ function productUrl(id, variantId = null) {
 }
 
 const SUPPLIER_FREIGHT = Object.freeze({ prof: 80, safqa: 85 });
-const supplierFor = productId => getProduct(productId).supplierId || "prof";
+const supplierFor = productId => PRODUCTS[productId]?.supplierId || "unassigned";
 function isCarItem(item) { return item?.productId === "carwash48"; }
 const displayVariant = item => isCarItem(item) ? "الطقم الكامل ببطاريتين" : getVariant(item.productId, item.variantId).name;
 const sizeDescription = item => isCarItem(item) ? "المنتج لا يحتاج مقاس" :
@@ -286,6 +286,15 @@ function additionalPairPrice(item) {
   return Math.max(0, getProduct(item.productId).price - (SUPPLIER_FREIGHT[supplierFor(item.productId)] || 0));
 }
 
+// Line totals allocate the per-supplier shipping saving only to additional purchased units.
+function linePayablePrice(item, items) {
+  if(item.role==="trial")return 0;
+  const supplier=supplierFor(item.productId);
+  const previousSameSupplier=items.filter(entry=>entry.role!=="trial" && supplierFor(entry.productId)===supplier);
+  const index=previousSameSupplier.findIndex(entry=>entry.id===item.id);
+  const saving=index>0?(SUPPLIER_FREIGHT[supplier]||0):0;
+  return Math.max(0,getProduct(item.productId).price-saving);
+}
 function alternativeTotal(items, item) {
   const promoted = items.map(entry => entry.id === item.id ? { ...entry, role: "purchase" } : entry);
   return calcTotals(promoted).total;
@@ -1289,7 +1298,7 @@ function renderCart() {
       const isTrial = item.role === "trial";
       const isPurchase = item.role === "purchase";
       const discountText = discountPercentText(product.price);
-      const discountedPrice = additionalPairPrice(item);
+      const discountedPrice = isTrial ? additionalPairPrice(item) : linePayablePrice(item,cart);
       return `
         <article class="cart-item role-${item.role}" data-cart-id="${item.id}">
           <div class="cart-line-top">
@@ -1328,10 +1337,10 @@ function renderCart() {
           ` : isPurchase ? `
             <div class="purchase-offer">
               <div class="keep-offer-head">
-                <strong>زوج إضافي بخصم ${discountText}</strong>
-                <span class="discount-badge">تم الخصم</span>
+                <strong>${discountedPrice < product.price ? `زوج إضافي بتوفير شحن` : `منتج للشراء`}</strong>
+                ${discountedPrice < product.price ? `<span class="discount-badge">خصم ${discountText}</span>` : ""}
               </div>
-              <div class="keep-price"><del>${money(product.price)}</del><b>${money(discountedPrice)}</b></div>
+              <div class="keep-price">${discountedPrice < product.price ? `<del>${money(product.price)}</del>` : ""}<b>${money(discountedPrice)}</b></div>
             </div>
             <div class="cart-role-actions">
               <button type="button" data-trial-only="${item.id}">خليه اختيار عند الاستلام</button>
@@ -1446,9 +1455,7 @@ function openAddProductPicker(mode) {
 function metaCheckout(items) {
   const lines = items.map(item => ({
     ...item,
-    payablePrice: item.role === "trial" ? 0
-      : item.role === "purchase" ? additionalPairPrice(item)
-      : getProduct(item.productId).price
+    payablePrice: linePayablePrice(item,items)
   }));
   window.SELECT_SHOP_META?.checkout(lines, calcTotals(items).total);
 }
@@ -1479,7 +1486,7 @@ function openCheckout(items) {
             <b>${product.name} — ${variant.name}</b>
             <small>${item.sizes.length === 2 ? "تجربة مقاسين (للاحتفاظ بواحد)" : "المقاس"}: ${item.sizes.join(" / ")}</small>
           </div>
-          <strong>${item.role === "trial" ? "اختيار عند الاستلام — بيتحسب فقط عند استلامه" : item.role === "purchase" ? `${money(additionalPairPrice(item))} بعد الخصم` : money(product.price)}</strong>
+          <strong>${item.role === "trial" ? "اختيار عند الاستلام — بيتحسب فقط عند استلامه" : item.role === "purchase" ? `${money(linePayablePrice(item,checkoutState.items))}${linePayablePrice(item,checkoutState.items)<product.price?" بعد خصم الشحن":""}` : money(linePayablePrice(item,checkoutState.items))}</strong>
         </div>
       `;
     }).join("");
@@ -1759,7 +1766,7 @@ function buildOrderPayload(data, items) {
   const totals = calcTotals(items);
   return { orderId: makeOrderReference(), createdAt: new Date().toISOString(), source: "select-shop-web",
     customer: { name:data.name.trim(), phone:normalizePhone(data.phone), governorate:data.governorate.trim(), area:data.area.trim(), address:data.address.trim(), inquiry:data.inquiry?.trim()||"", courierNotes:data.notes?.trim()||"" },
-    items: items.map(item => { const product=getProduct(item.productId), variant=getVariant(item.productId,item.variantId); if (isCarItem(item)) return { role:"purchase", supplierId:"safqa", category:"car-care", productId:"carwash48", productName:product.name, variantId:"cw48", sku:"CW48", variantName:"الطقم الكامل ببطاريتين", sizes:[], chooseAtDelivery:false, tryTwoSizes:false, listPrice:999, payablePrice:999, shippingRegion:"القاهرة والجيزة مشمولتان؛ غيرهما يحتاج تأكيد" }; return { role:item.role === "trial" ? "optional_choice" : item.role, supplierId:supplierFor(item.productId), productId:item.productId, productName:product.name, variantId:item.variantId, sku:variant.code, variantName:variant.name, sizes:[...item.sizes], chooseAtDelivery:item.role === "trial", tryTwoSizes:Boolean(item.tryTwo), listPrice:product.price, payablePrice:item.role==="trial"?0:item.role==="purchase"?additionalPairPrice(item):product.price }; }), totals };
+    items: items.map(item => { const product=getProduct(item.productId), variant=getVariant(item.productId,item.variantId); if (isCarItem(item)) return { role:"purchase", supplierId:"safqa", category:"car-care", productId:"carwash48", productName:product.name, variantId:"cw48", sku:"CW48", variantName:"الطقم الكامل ببطاريتين", sizes:[], chooseAtDelivery:false, tryTwoSizes:false, listPrice:999, payablePrice:999, shippingRegion:"القاهرة والجيزة مشمولتان؛ غيرهما يحتاج تأكيد" }; return { role:item.role === "trial" ? "optional_choice" : item.role, supplierId:supplierFor(item.productId), productId:item.productId, productName:product.name, variantId:item.variantId, sku:variant.code, variantName:variant.name, sizes:[...item.sizes], chooseAtDelivery:item.role === "trial", tryTwoSizes:Boolean(item.tryTwo), listPrice:product.price, payablePrice:linePayablePrice(item,items) }; }), totals };
 }
 
 async function submitOrderToProf(payload) {
@@ -1778,7 +1785,7 @@ function checkoutMessage(data, items, orderId) {
   const sizes = x => x.sizes.length === 2 ? "تجربة " + x.sizes.join("/") + " (الاحتفاظ بمقاس واحد)" : "مقاس " + x.sizes.join("/");
   bought.forEach((x,i) => {
     const p=getProduct(x.productId), v=getVariant(x.productId,x.variantId);
-    rows.push(isCarItem(x) ? (i+1)+"- "+p.name+" | CW48 | الطقم الكامل ببطاريتين | "+money(p.price)+" (شحن القاهرة والجيزة)" : (i+1) + "- " + p.name + " | " + v.code + " (" + v.name + ") | " + sizes(x) + " | " + money(x.role==="purchase" ? additionalPairPrice(x) : p.price));
+    rows.push(isCarItem(x) ? (i+1)+"- "+p.name+" | CW48 | الطقم الكامل ببطاريتين | "+money(p.price)+" (شحن القاهرة والجيزة)" : (i+1) + "- " + p.name + " | " + v.code + " (" + v.name + ") | " + sizes(x) + " | " + money(linePayablePrice(x,items)));
   });
   trials.forEach((x,i) => {
     const p=getProduct(x.productId),v=getVariant(x.productId,x.variantId);
