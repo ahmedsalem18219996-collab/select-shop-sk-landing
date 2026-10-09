@@ -1888,8 +1888,9 @@ if (checkoutForm) {
       try{
         const result=await window.SELECT_SHOP_GUEST_CHECKOUT.submit(data,checkoutState.items);
         // An order is complete only AFTER the server persisted and acknowledged it.
-        const alreadyCompleted=Boolean(sessionStorage.getItem("ssfLastConfirmedOrder")===result.orderCode);
-        try{sessionStorage.setItem("ssfLastConfirmedOrder",result.orderCode)}catch{}
+        let alreadyCompleted=false;
+        try{alreadyCompleted=sessionStorage.getItem("ssfLastConfirmedOrder")===result.orderCode;
+          sessionStorage.setItem("ssfLastConfirmedOrder",result.orderCode)}catch{}
         if(!alreadyCompleted){
           try{track("purchase",{value:result.total,currency:"EGP",order_id:result.orderCode,items:checkoutState.items.length})}catch{}
         }
