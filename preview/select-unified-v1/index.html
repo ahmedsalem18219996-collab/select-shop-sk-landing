@@ -406,7 +406,7 @@ html.ssf-cart-embed .sheet.show{transform:none!important;opacity:1!important;poi
 </script><script id="ssf-embedded-cart-events">
 (function(){
  if(new URLSearchParams(location.search).get("cart_embed")!=="1" || window.parent===window)return;
- function send(type){try{window.parent.postMessage({type},"https://selectshopeg.com");}catch(e){}}
+ function send(type){try{window.parent.postMessage({type},location.origin);}catch(e){}}
  document.addEventListener("click",function(event){
    if(event.target.closest("[data-close-sheet]"))send("SSF_EMBED_CART_CLOSE");
  },true);
