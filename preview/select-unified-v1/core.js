@@ -12,7 +12,7 @@ const CONFIG = Object.freeze({
 
 const PRODUCTS = Object.freeze({
   sk: {
-    id: "sk", name: "SK Sneakers", short: "SK", price: 680, badge: "الأكثر طلبًا",
+    id: "sk", supplierId: "prof", category: "shoes", name: "SK Sneakers", short: "SK", price: 680, badge: "الأكثر طلبًا",
     headline: "راحة في كل خطوة.<br><em>ستايل يبان.</em>",
     description: "سنيكر خفيف بخامة Mesh مهوّاة ونعل EVA مرن للمشي، الشغل، الخروج والجيم.",
     hero: "assets/sk-1.jpg", sizeSummary: "37–41",
@@ -28,7 +28,7 @@ const PRODUCTS = Object.freeze({
     ]
   },
   alex: {
-    id: "alex", name: "ALEX Premium", short: "ALEX", price: 540, badge: "ستايل فاخر",
+    id: "alex", supplierId: "prof", category: "shoes", name: "ALEX Premium", short: "ALEX", price: 540, badge: "ستايل فاخر",
     headline: "تفاصيل فخمة.<br><em>خطوة واثقة.</em>",
     description: "تصميم جلدي بلمسة عصرية، تبطين داخلي ونعل خفيف ومتين للاستخدام اليومي الراقي.",
     hero: "assets/alex01.jpg", sizeSummary: "37–46*",
@@ -47,7 +47,7 @@ const PRODUCTS = Object.freeze({
     ]
   },
   eqwal: {
-    id: "eqwal", name: "EQWAL Street", short: "EQWAL", price: 580, badge: "كاجوال يومي",
+    id: "eqwal", supplierId: "prof", category: "shoes", name: "EQWAL Street", short: "EQWAL", price: 580, badge: "كاجوال يومي",
     headline: "كاجوال نظيف.<br><em>سهل يتلبس.</em>",
     description: "تصميم كاجوال Street بألوان هادئة وسهلة التنسيق، مناسب للخروج والاستخدام اليومي.",
     hero: "assets/eqwal03.jpg", sizeSummary: "37–45*",
@@ -65,7 +65,7 @@ const PRODUCTS = Object.freeze({
     ]
   },
   wk: {
-    id: "wk", name: "WK Retro", short: "WK", price: 630, badge: "8 اختيارات",
+    id: "wk", supplierId: "prof", category: "shoes", name: "WK Retro", short: "WK", price: 630, badge: "8 اختيارات",
     headline: "ثمانية اختيارات.<br><em>ستايل يناسبك.</em>",
     description: "مجموعة سنيكرز يومية بطابع Retro ورياضي جذاب، بتفاصيل لونية ونعل Gum كلاسيكي، مقاسات 37–41.",
     hero: "assets/wk_1.jpg", sizeSummary: "37–41",
@@ -1147,6 +1147,88 @@ function updateCartUI() {
   updateCatalogSelection();
 }
 
+
+/* Context-aware cart merchandising. The current catalog is the only source of truth:
+   suggestions are never fabricated and saving is the incremental per-supplier freight relief. */
+const SUPPLIER_LABELS = Object.freeze({prof:"بروف",safqa:"صفقة"});
+const productCategory = product => product.category || "general";
+const isShoeProduct = product => productCategory(product) === "shoes";
+function getSmartCartSuggestions(items) {
+  const payable = items.filter(item => item.role !== "trial" && PRODUCTS[item.productId]);
+  if (!payable.length) return {supplierId:null,supplierName:"",suggestions:[],shoeContext:false,hasMatchingSupplier:false};
+  const inCart = new Set(items.map(item => item.productId));
+  const supplierGroups = [...new Set(payable.map(item => supplierFor(item.productId)))].map(id => {
+    const existing = payable.filter(item => supplierFor(item.productId) === id);
+    const candidates = Object.values(PRODUCTS).filter(product =>
+      supplierFor(product.id) === id && !inCart.has(product.id) &&
+      Array.isArray(product.variants) && product.variants.some(variant => variant.sizes?.length)
+    );
+    return {id,existing,candidates};
+  }).sort((a,b) => Number(b.candidates.length>0) - Number(a.candidates.length>0) ||
+    b.existing.length - a.existing.length);
+  const chosen = supplierGroups[0];
+  const baseline = calcTotals(items);
+  const suggestions = chosen.candidates.map(product => {
+    const trialLine = {id:"smart-preview",productId:product.id,role:"purchase",variantId:product.variants[0].id,sizes:[product.variants[0].sizes[0]]};
+    const next = calcTotals([...items,trialLine]);
+    const saving = Math.max(0,next.discount - baseline.discount);
+    return {productId:product.id,name:product.name,image:product.hero,price:product.price,
+      saving,percent:Math.round(saving / product.price * 100),
+      priceAfterSaving:Math.max(0,product.price - saving),category:productCategory(product)};
+  });
+  const shoeContext = chosen.existing.some(item => isShoeProduct(getProduct(item.productId)));
+  suggestions.sort((a,b)=> Number(b.category === (shoeContext?"shoes":productCategory(getProduct(chosen.existing[0].productId)))) -
+    Number(a.category === (shoeContext?"shoes":productCategory(getProduct(chosen.existing[0].productId)))));
+  return {supplierId:chosen.id,supplierName:SUPPLIER_LABELS[chosen.id]||chosen.id,
+    suggestions:suggestions.slice(0,3),shoeContext,hasMatchingSupplier:!!suggestions.length};
+}
+function renderSmartCartRecommendations() {
+  const root=$("#ssfSmartCart");
+  if(!root)return;
+  if(!cart.length){root.hidden=true;root.replaceChildren();return;}
+  const plan=getSmartCartSuggestions(cart);
+  root.hidden=false;
+  const isShoe=plan.shoeContext && plan.suggestions.some(item=>item.category==="shoes");
+  const saved=plan.suggestions[0]?.saving||0;
+  if(!plan.suggestions.length){
+    root.innerHTML=`<div class="ssf-smart-empty">
+       <strong>منتجات تانية من نفس المورد</strong>
+       <p>حاليًا مفيش منتجات إضافية متاحة من ${plan.supplierName} في المتجر. خصم الشحن بيتحسب على المنتجات المؤهلة من نفس المورد فقط، ومش بينطبق بين بروف وصفقة.</p>
+     </div>`;
+    return;
+  }
+  const heading=isShoe?"كمّل اللوك بكوتشي تاني":"منتجات تانية تناسب طلبك";
+  const subheading=saved>0?
+    `اقتراحات من ${plan.supplierName} · توفير الشحن عند إضافة منتج تاني من نفس المورد`:
+    `اقتراحات من ${plan.supplierName} · الخصم حسب سياسة الشحن`;
+  root.innerHTML=`<div class="ssf-smart-head">
+     <div><span class="ssf-smart-kicker">اقتراحات مخصوصة لسلتك · ${plan.supplierName}</span><h3 id="ssfSmartTitle">${heading}</h3><p>${subheading}</p></div>
+     <span class="ssf-smart-saving">${saved>0?`توفير حتى ${money(saved)}`:"منتجات مقترحة"}</span>
+   </div><div class="ssf-smart-rail">${plan.suggestions.map(product=>`
+     <article class="ssf-smart-card">
+       <img src="${product.image}" alt="${product.name}" loading="lazy" width="80" height="80">
+       <div class="ssf-smart-card-main">
+         <strong>${product.name}</strong>
+         <small>${plan.supplierName} · ${product.category==="shoes"?"ألوان ومقاسات مختلفة":"منتج إضافي"}</small>
+         <div class="ssf-smart-prices">${product.saving>0?
+           `<del>${money(product.price)}</del><b>${money(product.priceAfterSaving)}</b><em>خصم ${product.percent}٪ (توفير ${money(product.saving)} شحن)</em>`:
+           `<b>${money(product.price)}</b>`}</div>
+         <button type="button" data-ssf-smart-product="${product.productId}">${product.category==="shoes"?"اختيار اللون والمقاس":"عرض المنتج وإضافته"}</button>
+       </div>
+     </article>`).join("")}</div>
+   <small class="ssf-smart-disclaimer">النسبة تقريبية من سعر المنتج؛ الخصم الفعلي توفير في شحن منتجات نفس المورد. الاختيار للتجربة عند الاستلام لا يُحتسب كمنتج شراء إضافي.</small>`;
+  $("[data-ssf-smart-product]",root).forEach(button=>button.addEventListener("click",()=>{
+    const id=button.dataset.ssfSmartProduct;
+    const product=PRODUCTS[id];
+    if(!product)return;
+    if(isShoeProduct(product)){
+      openProductSheet(id,{intent:"purchase",variantId:currentVariantByProduct[id]||product.variants[0].id});
+    }else if(id==="carwash48"){
+      location.assign("/preview/select-unified-v1/carwash/");
+    }
+  }));
+}
+
 function renderCart() {
   const list = $("#cartList");
   const summary = $("#cartSummary");
@@ -1291,6 +1373,7 @@ function renderCart() {
   }
 
   if (summary) summary.innerHTML = cart.length ? payableSummary(cart) : "";
+  renderSmartCartRecommendations();
 }
 
 function renderAddProductPicker(mode = "purchase") {
