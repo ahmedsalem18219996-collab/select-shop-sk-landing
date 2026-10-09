@@ -1,0 +1,21 @@
+{
+  "id": "/preview/select-unified-v1/orders-admin/",
+  "name": "SELECT SHOP Orders",
+  "short_name": "SELECT Orders",
+  "description": "Private order dashboard for SELECT SHOP",
+  "start_url": "/preview/select-unified-v1/orders-admin/",
+  "scope": "/preview/select-unified-v1/orders-admin/",
+  "display": "standalone",
+  "background_color": "#091b24",
+  "theme_color": "#091b24",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
