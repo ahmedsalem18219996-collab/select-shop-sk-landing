@@ -98,3 +98,24 @@ body.ssf-home .announce,body.ssf-product .trustline{background:#1B2C34!important
 .ssf-product .dock a:last-child{background:#EAF3F2!important;color:#235D66!important}
 .ssf-product .ssf-categorybar .wrap a{color:#556B71!important}
 .ssf-product .ssf-categorybar .wrap a:first-child{background:#EAF3EF!important;color:#245E54!important}
+
+/* Remove inherited plum-toned ornamentation from legacy components without altering structure. */
+.ssf-home .card-variant-label{background:#fffefaed!important;border-color:#dfe8e5!important;color:#32515a!important}
+.ssf-home .card-zoom{border-color:#dce6e3!important;background:#fffffff0!important;color:#345b64!important}
+.ssf-home .card-variant-nav{background:#fffefaf0!important;color:#244751!important;border-color:#dbe6e2!important}
+.ssf-home .card-thumbs .card-thumb{background:#f7f8f6!important;border-color:#dce6e3!important}
+.ssf-home .card-thumbs .card-thumb.active{border-color:#23846d!important;box-shadow:0 0 0 2px #1b846319!important}
+.ssf-home .purchase-journey{background:#f4f7f5!important;border-color:#dce6e2!important}
+.ssf-home .purchase-journey>span b{background:#e7eeea!important;color:#4d6870!important}
+.ssf-home .purchase-journey>span.done b,.ssf-home .purchase-journey>span.active b{background:#1d7b5f!important;color:#fff!important}
+.ssf-home .size-btn.active{background:#1b8064!important;color:#fff!important;border-color:#1b8064!important;box-shadow:0 6px 18px #1b806420!important}
+.ssf-home .variant-btn.active{border-color:#288674!important;box-shadow:0 0 0 3px #1c806016!important}
+.ssf-home .cart-summary,.ssf-home .checkout-savings,.ssf-home .price-summary-grid{background:#fff!important;border-color:#dfe9e5!important}
+.ssf-home .optional-choice-total{background:#f0f5f2!important;color:#33504e!important}
+.ssf-home .payable-note{color:#718188!important}
+.ssf-home .cart-list .cart-item{background:#fff!important;border-color:#e0e8e4!important}
+.ssf-home .keep-price b,.ssf-home .purchase-offer .keep-price b{color:#206a58!important}
+.ssf-home #cartAddDiscounted{background:#eff5f3!important;border-color:#dbe8e2!important;color:#1e5c54!important}
+.ssf-home .faq details{background:#fff!important;border-color:#dfe8e4!important}
+.ssf-home .faq summary::after{background:#eaf3ef!important;color:#236455!important}
+.ssf-home .toast{background:#1c3037!important;color:#fff!important}
