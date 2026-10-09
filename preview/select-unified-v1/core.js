@@ -1228,7 +1228,7 @@ function renderSmartCartRecommendations() {
        </div>
      </article>`).join("")}</div>
    <small class="ssf-smart-disclaimer">النسبة تقريبية من سعر المنتج؛ الخصم الفعلي توفير في شحن منتجات نفس المورد. الاختيار للتجربة عند الاستلام لا يُحتسب كمنتج شراء إضافي.</small>`;
-  $("[data-ssf-smart-product]",root).forEach(button=>button.addEventListener("click",()=>{
+  $$("[data-ssf-smart-product]",root).forEach(button=>button.addEventListener("click",()=>{
     const id=button.dataset.ssfSmartProduct;
     const product=PRODUCTS[id];
     if(!product)return;
