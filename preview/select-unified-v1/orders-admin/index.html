@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>إدارة الطلبات | SELECT SHOP</title>
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="theme-color" content="#091b24">
+<link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./styles.css?v=1"></head>
+<body>
+<header class="topbar"><a class="brand" href="../"><strong>SELECT <span>SHOP</span></strong><small>ORDERS / PRIVATE</small></a>
+<div class="header-actions"><span class="connection" id="connectionState">غير متصل</span>
+<button id="refreshBtn" class="ghost" type="button" hidden>تحديث</button>
+<button id="notifyBtn" class="ghost" type="button" hidden>تفعيل التنبيهات</button>
+<button id="signOutBtn" class="ghost" type="button" hidden>خروج</button></div></header>
+<main class="main">
+<section id="unconfigured" class="panel intro" hidden><span class="eyebrow">التجهيزات لم تكتمل</span>
+<h1>تطبيق الطلبات جاهز للربط</h1>
+<p>لوحة الإدارة دي خاصة بموقع SELECT SHOP الحالي فقط. لازم ربط قاعدة بيانات الطلبات المستقلة وإنشاء حساب مسؤول أولًا.</p>
+<p class="muted">لا توجد طلبات تجريبية معروضة كأنها حقيقية. مشروع الماستر منفصل بالكامل.</p></section>
+<section class="panel login" id="loginPanel" hidden>
+<div class="loginmark">SS</div><span class="eyebrow">إدارة خاصة وآمنة</span>
+<h1>مرحبًا في إدارة الطلبات</h1><p>الدخول للحسابات المصرّح لها فقط.</p>
+<form id="loginForm"><label>البريد الإلكتروني<input type="email" name="email" required autocomplete="username"></label>
+<label>كلمة المرور<input type="password" name="password" required autocomplete="current-password" minlength="6"></label>
+<button id="loginSubmit" class="primary" type="submit">تسجيل الدخول</button></form>
+<p id="loginMessage" class="message" role="alert"></p></section>
+<section class="dashboard" id="dashboard" hidden>
+<div class="dash-head"><div><span class="eyebrow">متابعة المبيعات</span>
+<h1>طلبات SELECT SHOP</h1><p>إدارة الأوردرات من الموبايل والكمبيوتر.</p></div>
+<div class="live"><i></i><span id="liveState">جاري الاتصال</span></div></div>
+<section class="stats"><article><span>إجمالي الطلبات المعروضة</span><b id="totalCount">0</b></article>
+<article><span>طلبات جديدة</span><b id="newCount">0</b></article>
+<article><span>قيد التنفيذ</span><b id="activeCount">0</b></article>
+<article><span>تم التسليم</span><b id="doneCount">0</b></article></section>
+<section class="panel orders-panel">
+<div class="toolbar"><div><h2>الطلبات</h2><p id="lastSync">جارٍ تحميل البيانات</p></div>
+<div class="filters"><label class="sr-only" for="statusFilter">تصفية بالحالة</label>
+<select id="statusFilter"><option value="all">كل الحالات</option>
+<option value="new">جديد</option><option value="shipping_quote">تأكيد الشحن</option>
+<option value="review">مراجعة</option><option value="confirmed">مؤكد</option>
+<option value="packing">تجهيز</option><option value="shipped">تم الشحن</option>
+<option value="delivered">تم التسليم</option><option value="cancelled">ملغي</option></select>
+<input type="search" id="searchInput" placeholder="بحث بالعميل أو رقم الطلب" aria-label="بحث في الطلبات"></div></div>
+<div class="order-list" id="orderList" aria-live="polite"></div>
+<div class="pager"><span id="pageInfo"></span>
+<button class="ghost" type="button" id="moreBtn" hidden>عرض طلبات أقدم</button></div></section></section></main>
+<dialog id="detailDialog" class="detail-dialog"><header class="modal-head">
+<div><span class="eyebrow">تفاصيل الطلب</span><h2 id="detailTitle"></h2></div>
+<button class="ghost" id="closeDetail" type="button">إغلاق</button></header>
+<div id="detailContent" class="modal-content"></div>
+<footer class="modal-actions"><label>حالة الطلب <select id="detailStatus"></select></label>
+<button class="primary" id="saveStatus" type="button">حفظ الحالة</button></footer>
+<p class="message" id="detailMessage" role="alert"></p></dialog>
+<div id="toast" role="status" aria-live="polite" class="toast"></div>
+<script src="./config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script defer src="./app.js?v=1"></script>
+</body></html>
