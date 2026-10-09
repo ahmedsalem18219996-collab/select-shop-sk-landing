@@ -1,0 +1,5 @@
+# Apply this ONLY to the independent select-shop-orders Supabase project.
+# This endpoint is public to customers, so server-side CAPTCHA, origin checks
+# and rate limiting are mandatory before accepting new orders.
+[functions.submit-order]
+verify_jwt = false
