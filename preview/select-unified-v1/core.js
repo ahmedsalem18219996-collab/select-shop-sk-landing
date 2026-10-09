@@ -1386,30 +1386,57 @@ function renderCart() {
 }
 
 function renderAddProductPicker(mode = "purchase") {
-  addProductMode = mode === "trial" ? "trial" : "purchase";
-  const hasTrial = cart.some(item => item.role === "trial");
-  const hasDiscountEligibleShoe = cart.some(item => !isCarItem(item) && item.role !== "trial");
-  if (addProductMode === "trial" && hasTrial) { toast("يوجد اختيار إضافي بالفعل — يمكن تعديله من السلة أو إضافة زوج للشراء"); return false; }
-  const note = $("#addProductNote"), grid = $("#addProductGrid"), title = $("#addProductTitle"), kicker = $("#addProductKicker");
-  if (title) title.textContent = addProductMode === "trial" ? "تحديد موديل إضافي" : hasDiscountEligibleShoe ? "تحديد الزوج الإضافي" : "تحديد كوتشي للطلب";
-  if (kicker) kicker.textContent = addProductMode === "trial" ? "تحديد الاختيار الأنسب عند الاستلام" : hasDiscountEligibleShoe ? "خصم توفير الشحن من نفس المورد" : "بدون خصم بين الموردين المختلفين";
-  if (note) note.innerHTML = addProductMode === "trial"
-    ? `<b>◇ اختيار إضافي عند الاستلام</b><span>المندوب بيجيب الاختيارين. يمكن الاحتفاظ بالأنسب فقط، ولو تم استلام الاتنين بيظهر الخصم تلقائيًا.</span>`
-    : hasDiscountEligibleShoe ? `<b>＋ زوج شراء إضافي</b><span>تحديد الموديل ثم اللون والمقاس. خصم شحن بروف بيتحسب تلقائي عند شراء زوج إضافي.</span>` : `<b>＋ كوتشي للطلب</b><span>المنتج من مورد مختلف عن عناية السيارات؛ مفيش خصم شحن بين صفقة وبروف. السعر شامل شحنه حسب السياسة.</span>`;
-  if (grid) {
-    grid.innerHTML = PRODUCT_IDS.map(id => {
-      const product = PRODUCTS[id], discounted = Math.max(0, product.price - CONFIG.SHIPPING_FEE);
-      return `<button class="add-product-card" type="button" data-picker-product="${id}"><img class="zoomable-product-image" data-product-zoom-image src="${product.hero}" alt="${product.name}" data-zoom-caption="${product.name}" width="240" height="200" loading="lazy" role="button" tabindex="0" aria-label="تكبير صورة ${product.name}"><span><b>${product.name}</b><small>${product.variants.length} ألوان • ${product.sizeSummary}</small></span><em>${addProductMode === "trial" ? "اختيار عند الاستلام" : hasDiscountEligibleShoe ? `<del>${money(product.price)}</del><strong>${money(discounted)}</strong><small>توفير الشحن لنفس المورد</small>` : `<strong>${money(product.price)}</strong><small>بدون خصم تجميع بين الموردين</small>`}</em></button>`;
-    }).join("");
-    $$('[data-picker-product]', grid).forEach(button => button.addEventListener("click", () => {
-      const id = button.dataset.pickerProduct;
-      closeAllSheets(false, false);
-      openProductSheet(id, { intent: addProductMode, variantId: currentVariantByProduct[id] });
+  addProductMode=mode==="trial"?"trial":"purchase";
+  const paidShoes=cart.filter(item=>item.role!=="trial" && isShoeProduct(getProduct(item.productId)));
+  const hasTrial=cart.some(item=>item.role==="trial");
+  if(addProductMode==="trial" && !paidShoes.length){
+    toast("التجربة عند الاستلام متاحة للأحذية فقط");return false;
+  }
+  if(addProductMode==="trial" && hasTrial){
+    toast("يوجد بالفعل اختيار إضافي للتجربة، ويمكن تعديله من السلة");return false;
+  }
+  const plan=getSmartCartSuggestions(cart);
+  const inCart=new Set(cart.map(item=>item.productId));
+  const available=Object.values(PRODUCTS).filter(product=>
+    !inCart.has(product.id) && product.variants?.some(variant=>variant.sizes?.length) &&
+    (addProductMode!=="trial" || isShoeProduct(product))
+  ).sort((a,b)=> Number(supplierFor(b.id)===plan.supplierId) -
+                 Number(supplierFor(a.id)===plan.supplierId));
+  const note=$("#addProductNote"),grid=$("#addProductGrid"),title=$("#addProductTitle"),kicker=$("#addProductKicker");
+  if(title)title.textContent=addProductMode==="trial"?"اختيار كوتشي للتجربة":"اختيار منتج إضافي";
+  if(kicker)kicker.textContent=addProductMode==="trial"?"تجربة عند الاستلام":"اقتراحات حسب السلة والمورد";
+  if(note)note.innerHTML=addProductMode==="trial"
+    ? `<b>◇ اختيار إضافي للتجربة</b><span>يمكن تجربة كوتشي إضافي عند الاستلام بدون التزام بشرائه. الخصم لا يدخل الحساب إلا عند الاحتفاظ بالمنتج.</span>`
+    : `<b>＋ منتجات إضافية</b><span>منتجات نفس المورد ممكن توفّر في الشحن. المنتجات من مورد مختلف تظهر بسعرها الكامل من غير خصم تجميع.</span>`;
+  if(grid){
+    const original=calcTotals(cart);
+    grid.innerHTML=available.map(product=>{
+      const supplier=supplierFor(product.id);
+      const saving=addProductMode==="trial"?0:Math.max(0,
+        calcTotals([...cart,{productId:product.id,role:"purchase"}]).discount-original.discount);
+      const percent=Math.round(saving/product.price*100);
+      return `<button class="add-product-card" type="button" data-picker-product="${product.id}">
+        <img src="${product.hero}" alt="${product.name}" width="240" height="200" loading="lazy">
+        <span><b>${product.name}</b><small>${SUPPLIER_LABELS[supplier]||supplier} • ${isShoeProduct(product)?product.sizeSummary:"منتج متاح"}</small></span>
+        <em>${addProductMode==="trial"?
+           "اختيار للتجربة عند الاستلام" : saving>0?
+           `<del>${money(product.price)}</del><strong>${money(product.price-saving)}</strong><small>خصم ${percent}٪ (توفير شحن ${money(saving)})</small>`:
+           `<strong>${money(product.price)}</strong><small>بدون خصم تجميع بين الموردين</small>`}</em>
+      </button>`;
+    }).join("") || '<p class="ssf-smart-empty-list">مفيش منتجات تانية متاحة للاختيار حاليًا.</p>';
+    $$("[data-picker-product]",grid).forEach(button=>button.addEventListener("click",()=>{
+      const id=button.dataset.pickerProduct,product=PRODUCTS[id];
+      if(!product)return;
+      if(isShoeProduct(product)){
+        closeAllSheets(false,false);
+        openProductSheet(id,{intent:addProductMode,variantId:currentVariantByProduct[id]||product.variants[0].id});
+      }else if(id==="carwash48"){
+        location.assign("/preview/select-unified-v1/carwash/");
+      }
     }));
   }
   return true;
 }
-
 function openAddProductPicker(mode) {
   if (!cart.length) { openProductSheet(currentProductId, { intent: "buy", variantId: currentVariantByProduct[currentProductId] }); return; }
   if (!renderAddProductPicker(mode)) return;
