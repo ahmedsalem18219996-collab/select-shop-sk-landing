@@ -1314,7 +1314,6 @@ function renderCart() {
             <div class="cart-item-tools">
               <button type="button" data-cart-view="${item.id}">عرض المنتج</button>
               <button type="button" data-cart-edit="${item.id}">تعديل</button>
-              <button type="button" data-cart-add-pair="${item.id}">＋ زوج تاني من نفس الموديل</button>
               <button type="button" data-cart-remove="${item.id}" aria-label="حذف ${product.name}">حذف</button>
             </div>
           </div>
@@ -1347,6 +1346,7 @@ function renderCart() {
               <button type="button" data-trial-only="${item.id}">خليه اختيار عند الاستلام</button>
             </div>
           ` : ""}
+          ${!isTrial ? `<div class="ssf-second-pair"><button type="button" data-cart-add-pair="${item.id}">＋ إضافة زوج تاني من نفس الموديل <small>خصم توفير الشحن على الزوج الإضافي عند الاستحقاق</small></button></div>` : ""}
           ${item.sizes.length === 2 ? '<span class="trial-badge">تجربة المقاسين عند الاستلام والاحتفاظ بالمقاس الأنسب فقط</span>' : ""}
         </article>
       `;
