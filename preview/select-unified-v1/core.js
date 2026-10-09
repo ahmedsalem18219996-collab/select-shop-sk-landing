@@ -1766,7 +1766,12 @@ if (checkoutForm) {
     }
     try { toast("جاري فتح واتساب برسالة الطلب المجهزة…"); } catch {}
     try {
-      window.location.assign(targetUrl);
+      // For the embedded car-care checkout, navigate WhatsApp at the top level.
+      if (new URLSearchParams(location.search).get("cart_embed") === "1" && window.parent !== window) {
+        window.parent.postMessage({type:"SSF_EMBED_CART_CHECKOUT",url:targetUrl}, location.origin);
+      } else {
+        window.location.assign(targetUrl);
+      }
     } catch (error) {
       console.error("WhatsApp navigation failed:", error);
       checkoutSubmitting = false;
