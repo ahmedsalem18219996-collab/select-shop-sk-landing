@@ -34,7 +34,15 @@ Deno.serve(async request => {
   const origin = request.headers.get("origin") || "";
   // Reject both cross-origin browsers and non-browser invocations by default.
   if (!allowedOrigins.has(origin)) return new Response("Forbidden origin",{status:403});
-  if (request.method === "OPTIONS") return reply({},204,origin);
+  if (request.method === "OPTIONS") return new Response(null,{
+    status:204,
+    headers:{
+      "access-control-allow-origin":origin,
+      "access-control-allow-headers":"content-type, apikey, authorization, x-client-info",
+      "access-control-allow-methods":"POST,OPTIONS",
+      "vary":"Origin",
+    },
+  });
   if (request.method !== "POST") return reply({error:"method_not_allowed"},405,origin);
   if (Number(request.headers.get("content-length") || 0) > 30000)
     return reply({error:"payload_too_large"},413,origin);
