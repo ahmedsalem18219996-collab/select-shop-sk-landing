@@ -2,7 +2,7 @@
 // Deployment requires a DIFFERENT Supabase project from SELECT-SHOP-CLEAN.
 // Mandatory secrets: TURNSTILE_SECRET_KEY, ORDER_HASH_SECRET.
 // Built-in SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must remain server-side.
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.79.0";
 
 const allowedOrigins = new Set(["https://selectshopeg.com","https://www.selectshopeg.com"]);
 const encoder = new TextEncoder();
@@ -69,15 +69,6 @@ Deno.serve(async request => {
     auth:{autoRefreshToken:false,persistSession:false},
   });
 
-  // Retry-safe submission: no duplicate order if response is lost over mobile networks.
-  const prior=await db.from("ss_orders").select("order_code,total_egp,shipping_review_required")
-    .eq("idempotency_key",idempotencyKey).maybeSingle();
-  if(prior.error)return reply({error:"storage_unavailable"},503,origin);
-  if(prior.data)return reply({
-    ok:true,orderCode:prior.data.order_code,total:prior.data.total_egp,
-    shippingReviewRequired:prior.data.shipping_review_required,
-  },200,origin);
-
   const customer = incoming.customer as Record<string,unknown>|null;
   const items = incoming.items;
   const fullName = text(customer?.name,120);
@@ -93,8 +84,29 @@ Deno.serve(async request => {
     !Array.isArray(items) || items.length<1 || items.length>12)
     return reply({error:"invalid_customer_or_items"},422,origin);
 
+  // Stable request digest prevents using a repeated idempotency key for a DIFFERENT order.
+  // A retry for the same payload may return the original receipt without consuming
+  // a second, single-use Turnstile token.
+  const requestBody=JSON.stringify({
+    customer:{name:fullName,phone,governorate,area,address,notes,inquiry},
+    items:items.map(i=>({
+      productId:i?.productId,variantId:i?.variantId,sizes:i?.sizes,role:i?.role
+    }))
+  });
+  const requestHash=Array.from(new Uint8Array(await crypto.subtle.digest(
+    "SHA-256",encoder.encode(requestBody))),n=>n.toString(16).padStart(2,"0")).join("");
+  const prior=await db.from("ss_orders")
+    .select("request_hash,order_code,total_egp,shipping_review_required")
+    .eq("idempotency_key",idempotencyKey).maybeSingle();
+  if(prior.error)return reply({error:"storage_unavailable"},503,origin);
+  if(prior.data){
+    if(prior.data.request_hash!==requestHash)return reply({error:"request_id_conflict"},409,origin);
+    return reply({ok:true,orderCode:prior.data.order_code,total:prior.data.total_egp,
+      shippingReviewRequired:prior.data.shipping_review_required},200,origin);
+  }
+
   // Turnstile CAPTCHA must be configured and passed before any new order is accepted.
-  const token = text(incoming.turnstileToken,3000);
+  const token = text(incoming.turnstileToken,2048);
   if(token.length<5)return reply({error:"captcha_required"},422,origin);
   const ip=request.headers.get("cf-connecting-ip") ||
     (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() ||
@@ -115,7 +127,7 @@ Deno.serve(async request => {
   // HMAC fingerprints avoid storing customer IPs. Limit to five attempts/hour.
   const fingerprint=await hmac(ip,hashSecret);
   const limit=await db.rpc("ss_order_rate_allowed",{
-    p_fingerprint:fingerprint,p_hour:new Date().toISOString(),
+    p_fingerprint:fingerprint,p_limit:5,
   });
   if(limit.error)return reply({error:"rate_limit_unavailable"},503,origin);
   if(limit.data!==true)return reply({error:"too_many_orders"},429,origin);
@@ -179,7 +191,7 @@ Deno.serve(async request => {
   const day=new Date().toISOString().slice(0,10).replaceAll("-","");
   const orderCode="SS-"+day+"-"+crypto.randomUUID().slice(0,8).toUpperCase();
   const insert=await db.from("ss_orders").insert({
-    order_code:orderCode,idempotency_key:idempotencyKey,
+    order_code:orderCode,idempotency_key:idempotencyKey,request_hash:requestHash,
     customer_name:fullName,phone,governorate,area,address,notes,inquiry,
     items:validated,subtotal_egp:subtotal,discount_egp:discount,
     total_egp:total,shipping_review_required:shippingReviewRequired,status,
@@ -188,12 +200,15 @@ Deno.serve(async request => {
     // Lost-response retry or concurrent duplicate: return same persisted result.
     if(insert.error.code==="23505"){
       const existing=await db.from("ss_orders")
-        .select("order_code,total_egp,shipping_review_required")
+        .select("request_hash,order_code,total_egp,shipping_review_required")
         .eq("idempotency_key",idempotencyKey).maybeSingle();
-      if(existing.data)return reply({
+      if(existing.data){
+        if(existing.data.request_hash!==requestHash)return reply({error:"request_id_conflict"},409,origin);
+        return reply({
         ok:true,orderCode:existing.data.order_code,total:existing.data.total_egp,
         shippingReviewRequired:existing.data.shipping_review_required,
       },200,origin);
+      }
     }
     console.error("Order insert failure",insert.error.code);
     return reply({error:"order_save_failed"},503,origin);
