@@ -1511,6 +1511,8 @@ function openCheckout(items) {
     whatsappFallback.hidden = false;
   }
   openSheet($("#checkoutSheet"));
+  if(window.SELECT_SHOP_GUEST_CHECKOUT?.isEnabled?.())
+    void window.SELECT_SHOP_GUEST_CHECKOUT.prepare().catch(error=>console.warn("Order captcha setup pending:",error));
   // Jump to required fields, which otherwise sit below the order summary on mobile.
   requestAnimationFrame(() => {
     const sheet = $("#checkoutSheet");
@@ -1876,6 +1878,28 @@ if (checkoutForm) {
         firstInvalid.focus({ preventScroll: true });
         firstInvalid.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
       }
+      return;
+    }
+
+    // Direct orders are enabled only after the separate backend, catalog and CAPTCHA
+    // have been deployed and independently verified. The old checkout remains unchanged otherwise.
+    if(window.SELECT_SHOP_GUEST_CHECKOUT?.isEnabled?.()){
+      checkoutSubmitting=true;
+      try{
+        const result=await window.SELECT_SHOP_GUEST_CHECKOUT.submit(data,checkoutState.items);
+        // An order is complete only AFTER the server persisted and acknowledged it.
+        const alreadyCompleted=Boolean(sessionStorage.getItem("ssfLastConfirmedOrder")===result.orderCode);
+        try{sessionStorage.setItem("ssfLastConfirmedOrder",result.orderCode)}catch{}
+        if(!alreadyCompleted){
+          try{track("purchase",{value:result.total,currency:"EGP",order_id:result.orderCode,items:checkoutState.items.length})}catch{}
+        }
+        clearCart();
+        closeAllSheets();
+        window.SELECT_SHOP_GUEST_CHECKOUT.receipt(result);
+      }catch(error){
+        console.error("Guest order save failed:",error);
+        if(err){err.textContent=error?.message||"تعذر تسجيل الطلب. لم يتم تأكيد الأوردر، حاول مرة تانية.";err.hidden=false}
+      }finally{checkoutSubmitting=false}
       return;
     }
 
