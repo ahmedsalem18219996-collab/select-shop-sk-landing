@@ -1,0 +1,100 @@
+/* SELECT SHOP — Neutral edition / preview only.
+   One color system across categories, product cards, checkout drawers, and car-care page.
+   Graphite / warm-white / steel / jade / honey. No purple. */
+:root{
+ --bg:#F8F9F7;--surface:#fff;--surface-2:#F0F4F3;--ink:#1D2B34;
+ --muted:#697982;--muted-2:#8B999E;--line:#DEE7E5;
+ --brand:#315D70;--brand-strong:#244B58;--brand-soft:#EAF2F4;
+ --accent:#C99559;--accent-soft:#FFF3E5;--shadow-sm:0 8px 24px #14262b0b;
+}
+body.ssf-home,body.ssf-product{background:#F8F9F7!important;color:#1D2B34!important}
+body.ssf-home .announce,body.ssf-product .trustline{background:#1B2C34!important;color:#F5F4EE!important}
+.ssf-home .ssf-header-back,.ssf-home .ssf-categorybar,.ssf-product .ssf-categorybar{background:#fff!important;border-color:#E2E8E8!important}
+.ssf-home .ssf-header .wordmark-type strong i,.ssf-product .logo{color:#1E2E37!important}
+.ssf-home .ssf-header .wordmark-type strong em,.ssf-product .logo i{color:#C08A4E!important}
+.ssf-home .ssf-header .wordmark-dot{background:#C08A4E!important}
+.ssf-home .ssf-header .wordmark-type small{color:#79878C!important}
+.ssf-home .ssf-search{background:#F6F8F7!important;border-color:#DFE7E5!important}
+.ssf-home .ssf-search:focus-within{border-color:#6D9C9E!important;box-shadow:0 0 0 3px #4D919118!important}
+.ssf-home .ssf-contact{color:#315D6D!important}
+.ssf-home .ssf-header .cart-trigger{background:#1C3640!important;border-color:#1C3640!important;color:#fff!important}
+.ssf-home .ssf-header .cart-trigger b{background:#CFEFE3!important;color:#154B3C!important}
+.ssf-home .ssf-categorybar a{color:#50636B!important}
+.ssf-home .ssf-categorybar a:first-child,.ssf-product .ssf-categorybar a:first-child{color:#255E60!important;background:#EAF4F0!important}
+.ssf-home .ssf-categorybar a:hover,.ssf-home .ssf-categorybar a:focus-visible{background:#EAF3F4!important;color:#204D60!important}
+.ssf-home .ssf-eyebrow,.ssf-home .ssf-mini-title div small,.ssf-home #catalog .section-heading>span,.ssf-home .ssf-care-description>small{color:#3B7080!important}
+.ssf-home .ssf-intro h1,.ssf-home .ssf-mini-title h2,.ssf-home #catalog .section-heading h2,.ssf-home .ssf-cat-card-content strong,.ssf-home .ssf-care-description h3,.ssf-home .ssf-trust strong{color:#1D333B!important}
+.ssf-home .ssf-intro-note{color:#63777D;background:#fff!important;border-color:#DEE7E5!important}
+.ssf-home .ssf-intro-note i{background:#C99559!important}
+.ssf-home .ssf-cat-card{background:#fff!important;border-color:#E1E8E6!important;box-shadow:0 7px 25px #182E360B!important}
+.ssf-home .ssf-cat-card:hover,.ssf-home .ssf-cat-card:focus-visible{border-color:#95B7B4!important}
+.ssf-home .ssf-cat-card-media,.ssf-home .model-card-media,.ssf-home .ssf-care-visual{background:#F0F3F2!important}
+.ssf-home .ssf-cat-card-content small{color:#66808D!important}
+.ssf-home .ssf-cat-card-content b,.ssf-home .ssf-mini-title>a,.ssf-home .preview-category-head a{color:#256D64!important}
+.ssf-home .ssf-upcoming span{background:#F2F5F3!important;border-color:#E2E9E7!important;color:#73838A!important}
+.ssf-home .model-card,.ssf-home .ssf-care-content{background:#fff!important;border-color:#E0E7E6!important;box-shadow:0 8px 25px #24323A0C!important}
+.ssf-home .model-card.active{border-color:#83ADA6!important;box-shadow:0 0 0 2px #A5CDB52E!important}
+.ssf-home .model-card::before{display:none!important}
+.ssf-home .model-card h3{color:#1C343B!important}
+.ssf-home .model-card .model-price,.ssf-home .model-card .model-price b,.ssf-home .ssf-care .model-price b{color:#234D58!important}
+.ssf-home .model-card-badge{background:#fff!important;border-color:#E2E7E5!important;color:#385B61!important}
+.ssf-home .card-thumb.active,.ssf-home .card-variant-nav:focus-visible{border-color:#247A68!important}
+.ssf-home .model-meta span{background:#EDF2F0!important;color:#627680!important}
+.ssf-home .model-meta .extra-pair-deal{background:#FFF1DC!important;color:#97652B!important}
+.ssf-home .model-card-actions .btn.primary,.ssf-home .ssf-care .model-card-actions a,
+.ssf-home #dockBuy,.ssf-home .btn.primary{background:#177B5C!important;border-color:#177B5C!important;color:#fff!important}
+.ssf-home .model-card-actions .btn.primary:hover,.ssf-home .ssf-care .model-card-actions a:hover,
+.ssf-home .btn.primary:hover{background:#0D6047!important;border-color:#0D6047!important}
+.ssf-home .ssf-care-description a{background:#1D3540!important;color:#fff!important}
+.ssf-home .ssf-trust i{background:#E8F2ED!important;color:#237C64!important}
+.ssf-home .ssf-footer{background:#fff!important;border-color:#DEE7E5!important}
+.ssf-home .model-rail .new-design-mini{background:#C89055!important;color:#fff!important}
+.ssf-home .sheet,.ssf-home .sheet-head,.ssf-home .sheet-actions{background:#fff!important}
+.ssf-home .sheet{z-index:2010!important;visibility:visible!important}
+.ssf-home .sheet:not(.show){pointer-events:none!important}
+.ssf-home .sheet.show{transform:translate3d(0,0,0)!important;opacity:1!important;pointer-events:auto!important}
+.ssf-home .sheet-backdrop{z-index:2000!important;background:#17252C88!important}
+.ssf-home .sheet-backdrop[hidden]{display:none!important}
+.ssf-home .sheet-head{border-color:#E0E7E5!important}
+.ssf-home .sheet-head small,.ssf-home .product-sheet .variant-title,.ssf-home .checkout-savings .discount-row{color:#376476!important}
+.ssf-home .sheet-close,.ssf-home .sheet-home-link{background:#F6F8F7!important;border-color:#DDE6E3!important;color:#294751!important}
+.ssf-home .sheet :is(.role-tag.primary,.role-tag.purchase){background:#E9F4EE!important;color:#156B53!important}
+.ssf-home .sheet .role-tag.trial{background:#FFF1DC!important;color:#8A5B26!important}
+.ssf-home .sheet :is(.model-intent,.optional-choice-total,.keep-offer,.purchase-offer){background:#F0F5F3!important;border-color:#DCE9E2!important}
+.ssf-home .sheet .discount-badge{background:#FFF0DB!important;color:#925D24!important}
+.ssf-home .sheet :is(.variant-btn.active,.size-btn.active,.size-pill.active,.size-button.active){background:#E6F1ED!important;color:#155B49!important;border-color:#319078!important}
+.ssf-home .sheet input:focus,.ssf-home .sheet select:focus,.ssf-home .sheet textarea:focus{outline-color:#77B8A7!important;border-color:#529C88!important}
+.ssf-home .cart-item,.ssf-home .checkout-line{border-color:#E0E7E5!important}
+.ssf-home .cart-primary-price b,.ssf-home .checkout-line strong{color:#205568!important}
+.ssf-home .price-summary-grid .discount-row b{color:#177B5C!important}
+.ssf-home .whatsapp{background:#177B5C!important;color:#fff!important}
+.ssf-home .mobile-dock{background:#fff!important;border-color:#DFE7E5!important}
+.ssf-cart-recovery-note{display:flex;flex-direction:column;gap:9px;margin:10px 0;background:#FFF8EC;border:1px solid #F0D8B1;border-radius:13px;padding:14px;color:#5E4428}
+.ssf-cart-recovery-note strong{font-size:14px;color:#674626}
+.ssf-cart-recovery-note span{font-size:12px;line-height:1.8}
+.ssf-cart-recovery-note button{background:#1B4C54;color:#fff;border:0;border-radius:9px;padding:10px 12px;cursor:pointer;font:700 12px inherit}
+.ssf-product .top{background:#fff!important;border-color:#E0E7E5!important}
+.ssf-product .top .navback{color:#315A66!important;background:#F3F7F6!important;border-color:#E0E8E5!important}
+.ssf-product .pill{background:#E9F3F0!important;border-color:#D0E5DE!important;color:#266C5A!important}
+.ssf-product .hero h1,.ssf-product .section h2,.ssf-product .order h2,.ssf-product .card b{color:#233640!important}
+.ssf-product .hero h1 span{color:#2E6874!important}
+.ssf-product .price strong{color:#1D4753!important}
+.ssf-product .price small{color:#1C795B!important}
+.ssf-product .chips span{background:#fff!important;border-color:#E1E7E5!important;color:#667984!important}
+.ssf-product .art,.ssf-product .real-gallery a{background:#F0F4F2!important;border-color:#DAE4E1!important}
+.ssf-product .art video{background:#EDF3F1!important}
+.ssf-product .art span{background:#fffefdec!important;color:#485E65!important}
+.ssf-product .card,.ssf-product .faq details,.ssf-product .order{background:#fff!important;border-color:#DEE7E4!important}
+.ssf-product .offer{background:#EEF5F1!important;border-color:#D8E9E0!important}
+.ssf-product .offer h2{color:#225142!important}
+.ssf-product .offer p{color:#637A6F!important}
+.ssf-product .button,.ssf-product .dock button{background:#177B5C!important;color:#fff!important;border-color:#177B5C!important}
+.ssf-product .btnalt{background:#fff!important;color:#2D5C67!important;border-color:#CBD9D8!important}
+.ssf-product .order input:focus,.ssf-product .order select:focus,.ssf-product .order textarea:focus{outline-color:#A7D0C0!important}
+.ssf-product .ssf-car-cart-action{background:#F3F7F5!important;border-color:#DCE7E2!important}
+.ssf-product .ssf-car-cart-action>strong{color:#234F58!important}
+.ssf-product .ssf-view-cart{color:#235D69!important;border-color:#CCDCD9!important}
+.ssf-product .dock{background:#fff!important;border-color:#DEE7E3!important}
+.ssf-product .dock a:last-child{background:#EAF3F2!important;color:#235D66!important}
+.ssf-product .ssf-categorybar .wrap a{color:#556B71!important}
+.ssf-product .ssf-categorybar .wrap a:first-child{background:#EAF3EF!important;color:#245E54!important}
