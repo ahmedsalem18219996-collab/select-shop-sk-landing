@@ -309,7 +309,7 @@ function payableSummary(items) {
   return `
     <div class="price-summary-grid">
       <div><span>الإجمالي قبل الخصم</span><b>${money(totals.subtotal)}</b></div>
-      <div class="discount-row"><span>خصم توفير الشحن عند تجميع منتجات نفس المورد</span><b>-${money(totals.discount)}</b></div>
+      <div class="discount-row"><span>خصم شحن المنتجات المؤهلة</span><b>-${money(totals.discount)}</b></div>
       <div class="final-row"><span>الإجمالي بعد الخصم</span><b id="cartTotal">${money(totals.total)}</b></div>
     </div>
     ${optionalChoices.length ? `
@@ -320,7 +320,7 @@ function payableSummary(items) {
         <small>وقت الاستلام، الاحتفاظ بالاختيار المناسب فقط، والباقي يرجع مع المندوب من غير دفع ثمنه.</small>
       </div>
     ` : `<p class="payable-note">الأسعار تشمل الشحن وفق سياسة كل منتج؛ تختلف تكلفة شحن عناية السيارات خارج القاهرة والجيزة.</p>`}
-    <small class="delivery-detail">خصم التجميع يُحسب لكل مورد وحده؛ منتجات الموردين المختلفين لا تتشارك خصم الشحن. عناية السيارات 999 جنيه تشمل القاهرة والجيزة، وباقي المحافظات يُؤكد الشحن قبل اعتماد الطلب.</small>
+    <small class="delivery-detail">الخصم بيظهر تلقائيًا للمنتجات المؤهلة فقط. سعر مسدس الغسيل يشمل شحن القاهرة والجيزة، وباقي المحافظات يتم تأكيد الشحن قبل اعتماد الطلب.</small>
   `;
 }
 
@@ -1161,12 +1161,11 @@ function updateCartUI() {
 
 /* Context-aware cart merchandising. The current catalog is the only source of truth:
    suggestions are never fabricated and saving is the incremental per-supplier freight relief. */
-const SUPPLIER_LABELS = Object.freeze({prof:"بروف",safqa:"صفقة"});
 const productCategory = product => product.category || "general";
 const isShoeProduct = product => productCategory(product) === "shoes";
 function getSmartCartSuggestions(items) {
   const payable = items.filter(item => item.role !== "trial" && PRODUCTS[item.productId]);
-  if (!payable.length) return {supplierId:null,supplierName:"",suggestions:[],shoeContext:false,hasMatchingSupplier:false};
+  if (!payable.length) return {supplierId:null,suggestions:[],shoeContext:false,hasMatchingSupplier:false};
   const inCart = new Set(items.map(item => item.productId));
   const supplierGroups = [...new Set(payable.map(item => supplierFor(item.productId)))].map(id => {
     const existing = payable.filter(item => supplierFor(item.productId) === id);
@@ -1190,7 +1189,7 @@ function getSmartCartSuggestions(items) {
   const shoeContext = chosen.existing.some(item => isShoeProduct(getProduct(item.productId)));
   suggestions.sort((a,b)=> Number(b.category === (shoeContext?"shoes":productCategory(getProduct(chosen.existing[0].productId)))) -
     Number(a.category === (shoeContext?"shoes":productCategory(getProduct(chosen.existing[0].productId)))));
-  return {supplierId:chosen.id,supplierName:SUPPLIER_LABELS[chosen.id]||chosen.id,
+  return {supplierId:chosen.id,
     suggestions:suggestions.slice(0,3),shoeContext,hasMatchingSupplier:!!suggestions.length};
 }
 function renderSmartCartRecommendations() {
@@ -1203,31 +1202,31 @@ function renderSmartCartRecommendations() {
   const saved=plan.suggestions[0]?.saving||0;
   if(!plan.suggestions.length){
     root.innerHTML=`<div class="ssf-smart-empty">
-       <strong>منتجات تانية من نفس المورد</strong>
-       <p>حاليًا مفيش منتجات إضافية متاحة من ${plan.supplierName} في المتجر. خصم الشحن بيتحسب على المنتجات المؤهلة من نفس المورد فقط، ومش بينطبق بين بروف وصفقة.</p>
+       <strong>اقتراحات إضافية لطلبك</strong>
+       <p>حاليًا مفيش اقتراحات إضافية متاحة للطلب ده. تقدر تكمل الشراء عادي، وأي خصم مستحق هيظهر في الإجمالي.</p>
      </div>`;
     return;
   }
   const heading=isShoe?"كوتشي تاني يكمل اختيارك":"منتجات تانية تناسب طلبك";
   const subheading=saved>0?
-    `اقتراحات من ${plan.supplierName} · توفير الشحن عند إضافة منتج تاني من نفس المورد`:
-    `اقتراحات من ${plan.supplierName} · الخصم حسب سياسة الشحن`;
+    `منتجات مختارة ممكن توفّر في الشحن عند إضافتها للطلب`:
+    `منتجات متاحة ممكن تناسب اختياراتك`;
   root.innerHTML=`<div class="ssf-smart-head">
-     <div><span class="ssf-smart-kicker">اقتراحات مخصوصة لسلتك · ${plan.supplierName}</span><h3 id="ssfSmartTitle">${heading}</h3><p>${subheading}</p></div>
+     <div><span class="ssf-smart-kicker">اختيارات ممكن تعجبك</span><h3 id="ssfSmartTitle">${heading}</h3><p>${subheading}</p></div>
      <span class="ssf-smart-saving">${saved>0?`توفير حتى ${money(saved)}`:"منتجات مقترحة"}</span>
    </div><div class="ssf-smart-rail">${plan.suggestions.map(product=>`
      <article class="ssf-smart-card">
        <img src="${product.image}" alt="${product.name}" loading="lazy" width="80" height="80">
        <div class="ssf-smart-card-main">
          <strong>${product.name}</strong>
-         <small>${plan.supplierName} · ${product.category==="shoes"?"ألوان ومقاسات مختلفة":"منتج إضافي"}</small>
+         <small>${product.category==="shoes"?"ألوان ومقاسات مختلفة":"اختيار إضافي"}</small>
          <div class="ssf-smart-prices">${product.saving>0?
            `<del>${money(product.price)}</del><b>${money(product.priceAfterSaving)}</b><em>خصم ${product.percent}٪ (توفير ${money(product.saving)} شحن)</em>`:
            `<b>${money(product.price)}</b>`}</div>
          <button type="button" data-ssf-smart-product="${product.productId}">${product.category==="shoes"?"اختيار اللون والمقاس":"عرض المنتج وإضافته"}</button>
        </div>
      </article>`).join("")}</div>
-   <small class="ssf-smart-disclaimer">النسبة تقريبية من سعر المنتج؛ الخصم الفعلي توفير في شحن منتجات نفس المورد. الاختيار للتجربة عند الاستلام لا يُحتسب كمنتج شراء إضافي.</small>`;
+   <small class="ssf-smart-disclaimer">نسبة الخصم ناتجة عن توفير الشحن للمنتجات المؤهلة، ومش خصم مستقل على سعر المنتج. اختيار التجربة ما بيتحسبش شراء إلا عند استلامه.</small>`;
   $$("[data-ssf-smart-product]",root).forEach(button=>button.addEventListener("click",()=>{
     const id=button.dataset.ssfSmartProduct;
     const product=PRODUCTS[id];
@@ -1267,7 +1266,7 @@ function renderCart() {
     const suggestions=getSmartCartSuggestions(cart);
     const label=discountedMore.querySelector("b");
     if(label) label.textContent=suggestions.hasMatchingSupplier
-      ? suggestions.shoeContext ? "＋ إضافة كوتشي تاني" : "＋ منتجات أخرى من نفس المورد"
+      ? suggestions.shoeContext ? "＋ إضافة كوتشي تاني" : "＋ شوف العروض المتاحة"
       : "＋ تصفح باقي المنتجات";
   }
   if (checkoutBtn) {
@@ -1282,7 +1281,7 @@ function renderCart() {
         <div class="cart-line-top">
           <img src="/assets/carwash48-real-kit.webp" width="180" height="180" alt="مسدس غسيل لاسلكي ببطاريتين">
           <div class="cart-item-main">
-            <span class="role-tag purchase">منتج عناية السيارات · صفقة</span>
+            <span class="role-tag purchase">منتج عناية السيارات</span>
             <b>مسدس غسيل لاسلكي ببطاريتين</b>
             <small>الطقم الكامل · لا يحتاج مقاس</small>
             <div class="cart-primary-price"><b>${money(999)}</b><small>شامل شحن القاهرة والجيزة</small></div>
@@ -1420,10 +1419,10 @@ function renderAddProductPicker(mode = "purchase") {
                  Number(supplierFor(a.id)===plan.supplierId));
   const note=$("#addProductNote"),grid=$("#addProductGrid"),title=$("#addProductTitle"),kicker=$("#addProductKicker");
   if(title)title.textContent=addProductMode==="trial"?"اختيار كوتشي للتجربة":"اختيار منتج إضافي";
-  if(kicker)kicker.textContent=addProductMode==="trial"?"تجربة عند الاستلام":"اقتراحات حسب السلة والمورد";
+  if(kicker)kicker.textContent=addProductMode==="trial"?"تجربة عند الاستلام":"اختيارات مناسبة لسلتك";
   if(note)note.innerHTML=addProductMode==="trial"
     ? `<b>◇ اختيار إضافي للتجربة</b><span>يمكن تجربة كوتشي إضافي عند الاستلام بدون التزام بشرائه. الخصم لا يدخل الحساب إلا عند الاحتفاظ بالمنتج.</span>`
-    : `<b>＋ منتجات إضافية</b><span>منتجات نفس المورد ممكن توفّر في الشحن. المنتجات من مورد مختلف تظهر بسعرها الكامل من غير خصم تجميع.</span>`;
+    : `<b>＋ منتجات إضافية</b><span>هتلاقي السعر والخصم المستحق لكل منتج بوضوح قبل الإضافة. المنتجات من غير عرض هتظهر بسعرها المعتاد.</span>`;
   if(grid){
     const original=calcTotals(cart);
     grid.innerHTML=available.map(product=>{
@@ -1433,11 +1432,11 @@ function renderAddProductPicker(mode = "purchase") {
       const percent=Math.round(saving/product.price*100);
       return `<button class="add-product-card" type="button" data-picker-product="${product.id}">
         <img src="${product.hero}" alt="${product.name}" width="240" height="200" loading="lazy">
-        <span><b>${product.name}</b><small>${SUPPLIER_LABELS[supplier]||supplier} • ${isShoeProduct(product)?product.sizeSummary:"منتج متاح"}</small></span>
+        <span><b>${product.name}</b><small>${isShoeProduct(product)?`المقاسات: ${product.sizeSummary}`:"منتج متاح"}</small></span>
         <em>${addProductMode==="trial"?
            "اختيار للتجربة عند الاستلام" : saving>0?
            `<del>${money(product.price)}</del><strong>${money(product.price-saving)}</strong><small>خصم ${percent}٪ (توفير شحن ${money(saving)})</small>`:
-           `<strong>${money(product.price)}</strong><small>بدون خصم تجميع بين الموردين</small>`}</em>
+           `<strong>${money(product.price)}</strong><small>السعر المعروض بدون خصم إضافي</small>`}</em>
       </button>`;
     }).join("") || '<p class="ssf-smart-empty-list">مفيش منتجات تانية متاحة للاختيار حاليًا.</p>';
     $$("[data-picker-product]",grid).forEach(button=>button.addEventListener("click",()=>{
@@ -1481,7 +1480,7 @@ function openCheckout(items) {
   const itemsContainer = $("#checkoutItems");
   if (itemsContainer) {
     itemsContainer.innerHTML = checkoutState.items.map(item => {
-      if (isCarItem(item)) return `<div class="checkout-line role-purchase"><div><span class="role-tag purchase">صفقة · عناية السيارات</span>
+      if (isCarItem(item)) return `<div class="checkout-line role-purchase"><div><span class="role-tag purchase">عناية السيارات</span>
         <b>مسدس غسيل لاسلكي ببطاريتين</b><small>الطقم الكامل، لا يحتاج مقاس · السعر يشمل القاهرة والجيزة</small>
         </div><strong>${money(999)}</strong></div>`;
       const product = getProduct(item.productId);
@@ -1552,7 +1551,7 @@ function ensureV17UI() {
     block.innerHTML = `
       <div class="cart-add-more-head">
         <span aria-hidden="true">＋</span>
-        <div><b id="cartAddMoreTitle">أضف منتجات تانية بسهولة</b><small>توفير الشحن ينطبق على المنتجات المؤهلة من نفس المورد فقط؛ واختيار التجربة متاح للأحذية.</small></div>
+        <div><b id="cartAddMoreTitle">أضف منتجات تانية بسهولة</b><small>أي خصم شحن مستحق بيظهر تلقائيًا، وتجربة اختيار إضافي متاحة للأحذية.</small></div>
       </div>
       <div class="cart-add-actions">
         <button type="button" data-add-product-mode="purchase"><b>＋ منتجات تانية</b><small>شوف المتاح والخصم الحقيقي</small></button>
@@ -1569,7 +1568,7 @@ function ensureV17UI() {
     const smart=document.createElement("section");
     smart.id="ssfSmartCart";
     smart.className="ssf-smart-cart";
-    smart.setAttribute("aria-label","اقتراحات مخصصة حسب منتجات السلة والمورد");
+    smart.setAttribute("aria-label","اقتراحات مناسبة لمنتجات السلة");
     smart.hidden=true;
     const next=$("#cartAddMore")||$("#cartSummary");
     if(next) next.before(smart);
@@ -1800,8 +1799,8 @@ function checkoutMessage(data, items, orderId) {
   });
   const carShippingPending = bought.some(isCarItem) && !["القاهرة","الجيزة"].includes(data.governorate?.trim());
   rows.push((carShippingPending ? "إجمالي مبدئي قبل تأكيد شحن عناية السيارات: " : "الإجمالي شامل الشحن: ") + money(total.total));
-  if(total.discount)rows.push("خصم توفير الشحن للمنتجات من نفس المورد: " + money(total.discount));
-  if(bought.some(isCarItem)) { rows.push("منتجات صفقة وبروف لها شحن مستقل، ولا يوجد خصم بين الموردين."); if(!["القاهرة","الجيزة"].includes(data.governorate?.trim())) rows.push("تنبيه: إجمالي الطلب مبدئي؛ يُراجع فرق شحن مسدس الغسيل لهذه المحافظة قبل تأكيد الأوردر."); }
+  if(total.discount)rows.push("خصم شحن على منتجات مؤهلة: " + money(total.discount));
+  if(bought.some(isCarItem) && !["القاهرة","الجيزة"].includes(data.governorate?.trim())) rows.push("تنبيه: إجمالي الطلب مبدئي؛ يُراجع فرق شحن مسدس الغسيل لهذه المحافظة قبل تأكيد الأوردر.");
   if(trials.length)rows.push("التجربة دون التزام، والدفع للأزواج المستلمة فقط");
   rows.push("الاسم: " + data.name.trim(), "موبايل: " + normalizePhone(data.phone), "المحافظة: " + data.governorate.trim(), "المنطقة: " + data.area.trim(), "العنوان: " + data.address.trim());
   if(data.notes?.trim()) rows.push("ملاحظات: " + data.notes.trim().slice(0,250));
