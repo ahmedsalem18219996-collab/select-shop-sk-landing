@@ -243,7 +243,7 @@ function productUrl(id, variantId = null) {
 
 const SUPPLIER_FREIGHT = Object.freeze({ prof: 80, safqa: 85 });
 const supplierFor = productId => getProduct(productId).supplierId || "prof";
-const isCarItem = item => item?.productId === "carwash48";
+function isCarItem(item) { return item?.productId === "carwash48"; }
 const displayVariant = item => isCarItem(item) ? "الطقم الكامل ببطاريتين" : getVariant(item.productId, item.variantId).name;
 const sizeDescription = item => isCarItem(item) ? "المنتج لا يحتاج مقاس" :
   (item.sizes.length === 2 ? "تجربة مقاسين (الاحتفاظ بمقاس واحد)" : "المقاس: " + item.sizes.join(" / "));
