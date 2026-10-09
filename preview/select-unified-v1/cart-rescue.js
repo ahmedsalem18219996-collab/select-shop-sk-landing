@@ -52,6 +52,20 @@
     openFallback();
   }
   document.addEventListener("click",function(event){
+    if(event.target?.closest?.("[data-close-sheet]") || event.target?.id==="sheetBackdrop"){
+      setTimeout(function(){
+        if(!opened())return;
+        // Safety exit only if the native store handler did not close the drawer.
+        const sheet=document.getElementById("cartSheet");
+        sheet?.classList.remove("show");
+        sheet?.setAttribute("aria-hidden","true");
+        const backdrop=document.getElementById("sheetBackdrop");
+        if(backdrop){backdrop.classList.remove("show");backdrop.hidden=true;}
+        document.body.classList.remove("sheet-open");
+        document.documentElement.classList.remove("sheet-open");
+      },80);
+      return;
+    }
     if(!event.target?.closest?.("[data-open-cart]"))return;
     // Native click handler runs first and remains the preferred route.
     setTimeout(function(){if(!opened())openReliable();},80);
