@@ -961,7 +961,9 @@ function updatePurchaseJourney() {
     } else if (sheetState.role === "trial") {
       primaryCta.textContent = "إضافة للتجربة عند الاستلام";
     } else if (sheetState.role === "purchase" && cart.length) {
-      primaryCta.textContent = `إضافة الزوج — ${money(Math.max(0, product.price - CONFIG.SHIPPING_FEE))}`;
+      const candidate={productId:product.id,role:"purchase"};
+      const saving=Math.max(0,calcTotals([...cart,candidate]).discount-calcTotals(cart).discount);
+      primaryCta.textContent = `إضافة الزوج — ${money(product.price-saving)}`;
     } else {
       primaryCta.textContent = `إضافة للسلة — ${money(product.price)}`;
     }
@@ -1240,17 +1242,24 @@ function renderCart() {
   if (clearCartBtn) clearCartBtn.hidden = !cart.length;
 
   const hasTrial = cart.some(item => item.role === "trial");
+  const hasPayableShoe=cart.some(item => item.role!=="trial" && isShoeProduct(getProduct(item.productId)));
   if (empty) empty.hidden = Boolean(cart.length);
   if (summary) summary.hidden = !cart.length;
   if (addMore) addMore.hidden = !cart.length;
   if (trialLimit) trialLimit.hidden = !hasTrial;
   const trialAddButton = addMore?.querySelector('[data-add-product-mode="trial"]');
-  if (trialAddButton) { trialAddButton.disabled = hasTrial; trialAddButton.setAttribute("aria-disabled", String(hasTrial)); }
+  if (trialAddButton) {
+    trialAddButton.hidden=!hasPayableShoe;
+    trialAddButton.disabled=hasTrial || !hasPayableShoe;
+    trialAddButton.setAttribute("aria-disabled",String(hasTrial||!hasPayableShoe));
+  }
   const discountedMore = $("#cartAddDiscounted");
   if (discountedMore) {
-    const hasShoe = cart.some(item => !isCarItem(item) && item.role !== "trial");
-    const label = discountedMore.querySelector("b");
-    if (label) label.textContent = hasShoe ? "＋ كوتشي إضافي بخصم شحن" : "＋ أضف كوتشي من المتجر";
+    const suggestions=getSmartCartSuggestions(cart);
+    const label=discountedMore.querySelector("b");
+    if(label) label.textContent=suggestions.hasMatchingSupplier
+      ? suggestions.shoeContext ? "＋ إضافة كوتشي تاني" : "＋ منتجات أخرى من نفس المورد"
+      : "＋ تصفح باقي المنتجات";
   }
   if (checkoutBtn) {
     checkoutBtn.disabled = !cart.length;
@@ -1502,17 +1511,28 @@ function ensureV17UI() {
     block.innerHTML = `
       <div class="cart-add-more-head">
         <span aria-hidden="true">＋</span>
-        <div><b id="cartAddMoreTitle">إضافة منتجات تانية؟</b><small>يمكن إضافة زوج تاني بخصم الشحن عند الاستحقاق، أو اختيار إضافي للتجربة عند الاستلام.</small></div>
+        <div><b id="cartAddMoreTitle">أضف منتجات تانية بسهولة</b><small>توفير الشحن ينطبق على المنتجات المؤهلة من نفس المورد فقط؛ واختيار التجربة متاح للأحذية.</small></div>
       </div>
       <div class="cart-add-actions">
-        <button type="button" data-add-product-mode="purchase"><b>＋ إضافة زوج تاني</b><small>السعر القديم + الجديد + نسبة الخصم</small></button>
-        <button type="button" data-add-product-mode="trial"><b>◇ اختيار موديل تاني</b><small>تجربة عند الاستلام • من غير التزام</small></button>
+        <button type="button" data-add-product-mode="purchase"><b>＋ منتجات تانية</b><small>شوف المتاح والخصم الحقيقي</small></button>
+        <button type="button" data-add-product-mode="trial"><b>◇ كوتشي إضافي للتجربة</b><small>اختيار عند الاستلام • من غير التزام</small></button>
       </div>
       <p class="cart-trial-limit" id="cartTrialLimit" hidden>فيه اختيار إضافي بالفعل. يمكن تعديله أو إضافة زوج جديد للشراء.</p>`;
     if (oldUpsell) oldUpsell.replaceWith(block);
     else $("#cartSummary")?.before(block);
   } else if (oldUpsell) {
     oldUpsell.remove();
+  }
+
+  if (!$("#ssfSmartCart")) {
+    const smart=document.createElement("section");
+    smart.id="ssfSmartCart";
+    smart.className="ssf-smart-cart";
+    smart.setAttribute("aria-label","اقتراحات مخصصة حسب منتجات السلة والمورد");
+    smart.hidden=true;
+    const next=$("#cartAddMore")||$("#cartSummary");
+    if(next) next.before(smart);
+    else $("#cartList")?.after(smart);
   }
 
   if (!$("#addProductSheet")) {
@@ -1538,7 +1558,7 @@ function ensureV17UI() {
     addButton.className = "btn secondary cart-add-discounted";
     addButton.type = "button";
     addButton.id = "cartAddDiscounted";
-    addButton.innerHTML = `<span><small>محتاجين حاجة تانية؟</small><b>＋ منتج تاني بخصم</b></span>`;
+    addButton.innerHTML = `<span><small>محتاجين حاجة تانية؟</small><b>＋ تصفح منتجات أخرى</b></span>`;
     const checkout = $("#cartCheckout");
     if (checkout) cartActions.insertBefore(addButton, checkout);
     else cartActions.appendChild(addButton);
