@@ -1,0 +1,74 @@
+/* SELECT SHOP — Smart cart merchandising · neutral palette only.
+   Compact, mobile-first suggestions inside the original cart sheet. */
+body.ssf-home .ssf-smart-cart{
+  border:1px solid #dde7e3;border-radius:17px;background:#fbfcfb;
+  padding:14px;margin:15px 0 13px;overflow:hidden;
+}
+body.ssf-home .ssf-smart-cart[hidden]{display:none!important}
+body.ssf-home .ssf-smart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:9px;margin-bottom:12px}
+body.ssf-home .ssf-smart-kicker{
+  color:#55776f;font-size:10px;font-weight:800;letter-spacing:0!important;
+  display:block;margin-bottom:4px;
+}
+body.ssf-home .ssf-smart-head h3{
+  margin:0;font-family:"Alexandria","IBM Plex Sans Arabic",Tahoma,sans-serif!important;
+  font-size:17px!important;font-weight:750!important;line-height:1.6!important;color:#183944!important;
+}
+body.ssf-home .ssf-smart-head p{font-size:10.5px;color:#6a7c83;line-height:1.75;margin:5px 0 0}
+body.ssf-home .ssf-smart-saving{
+  font-size:10px;color:#166d52;font-weight:800;white-space:nowrap;
+  background:#e7f4ed;border:1px solid #d0e7da;border-radius:100px;padding:5px 8px;margin-top:3px;
+}
+body.ssf-home .ssf-smart-rail{
+  display:flex;gap:10px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;
+  padding:3px 2px 10px;scrollbar-width:thin;scrollbar-color:#c3d4cc transparent;
+}
+body.ssf-home .ssf-smart-card{
+  display:flex;flex:0 0 min(235px,80%);scroll-snap-align:start;
+  background:#fff;border:1px solid #dfe8e5;border-radius:13px;
+  gap:9px;padding:10px;min-width:0;box-shadow:0 3px 10px #20362d06;
+}
+body.ssf-home .ssf-smart-card>img{
+  width:66px;height:79px;object-fit:contain;flex-shrink:0;
+  background:#f1f5f3;border-radius:9px;
+}
+body.ssf-home .ssf-smart-card-main{display:flex;flex-direction:column;align-items:stretch;min-width:0;flex:1}
+body.ssf-home .ssf-smart-card-main>strong{font-size:11.5px;line-height:1.55;color:#203640;font-weight:850}
+body.ssf-home .ssf-smart-card-main>small{font-size:9px;line-height:1.5;color:#7a8b8c}
+body.ssf-home .ssf-smart-prices{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px;margin:5px 0}
+body.ssf-home .ssf-smart-prices del{font-size:9px;color:#98a3a4}
+body.ssf-home .ssf-smart-prices b{font-size:13px;color:#154f40;font-weight:900}
+body.ssf-home .ssf-smart-prices em{flex:1 0 100%;font-size:9px;font-style:normal;color:#167252;font-weight:800;line-height:1.4}
+body.ssf-home .ssf-smart-card-main button{
+  margin-top:auto;border:1px solid #186f56;border-radius:9px;background:#17795b;color:#fff;
+  cursor:pointer;min-height:34px;padding:7px 5px;
+  font:750 10px/1.5 "IBM Plex Sans Arabic",Tahoma,sans-serif!important;
+}
+body.ssf-home .ssf-smart-card-main button:hover,body.ssf-home .ssf-smart-card-main button:focus-visible{
+  background:#0f624a;outline:2px solid #a9d8c3;outline-offset:2px;
+}
+body.ssf-home .ssf-smart-disclaimer{display:block;font-size:9px;color:#75868a;line-height:1.8;margin-top:7px}
+body.ssf-home .ssf-smart-empty{padding:5px 3px}
+body.ssf-home .ssf-smart-empty strong{color:#245249;font-size:13px}
+body.ssf-home .ssf-smart-empty p{color:#73848b;font-size:11px;line-height:1.85;margin:6px 0 0}
+body.ssf-home .ssf-smart-empty-list{font-size:12px;color:#73848b;margin:12px}
+body.ssf-home .cart-add-more{background:#fff!important;border-color:#dfe8e4!important}
+body.ssf-home .cart-add-more-head b{color:#213d42}
+body.ssf-home .cart-add-more-head small{color:#6b8281}
+body.ssf-home .cart-add-actions button{background:#f5f8f6!important;border-color:#dbe8e0!important;color:#245e50!important}
+body.ssf-home .cart-add-actions button[hidden]{display:none!important}
+body.ssf-home .add-product-note{background:#f0f6f2!important;border-color:#d9e9e0!important;color:#24584b!important}
+body.ssf-home .add-product-card{border-color:#dfe8e3!important;background:#fff!important}
+body.ssf-home .add-product-card:hover{border-color:#a5cdb8!important;background:#f7faf8!important}
+body.ssf-home .add-product-card em strong{color:#156a50!important}
+body.ssf-home .add-product-card em small{color:#27775f!important}
+body.ssf-home .add-product-card em del{color:#7f8b8b}
+@media(max-width:600px){
+  body.ssf-home .ssf-smart-cart{margin:10px 0 11px;padding:11px 10px}
+  body.ssf-home .ssf-smart-head{flex-direction:column;gap:4px}
+  body.ssf-home .ssf-smart-head h3{font-size:15px!important}
+  body.ssf-home .ssf-smart-head p{font-size:10px}
+  body.ssf-home .ssf-smart-saving{margin-top:0}
+  body.ssf-home .ssf-smart-card{flex-basis:min(218px,87%)}
+}
+@media(prefers-reduced-motion:reduce){body.ssf-home .ssf-smart-rail{scroll-behavior:auto!important}}
