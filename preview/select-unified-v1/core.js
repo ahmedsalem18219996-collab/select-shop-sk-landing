@@ -1339,6 +1339,8 @@ function openCart() {
   openSheet($("#cartSheet"));
   metaCheckout(cart);
 }
+// Standalone cart guard may re-try this native renderer when an in-app browser drops the click handler.
+window.SELECT_SHOP_OPEN_CART = openCart;
 
 function openCheckout(items) {
   resetCheckoutSubmission();
