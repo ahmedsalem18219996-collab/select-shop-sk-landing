@@ -72,3 +72,16 @@ body.ssf-home .add-product-card em del{color:#7f8b8b}
   body.ssf-home .ssf-smart-card{flex-basis:min(218px,87%)}
 }
 @media(prefers-reduced-motion:reduce){body.ssf-home .ssf-smart-rail{scroll-behavior:auto!important}}
+
+/* Footwear-only additional-pair action; deliberately absent on non-shoe cart items. */
+body.ssf-home .ssf-second-pair{margin-top:10px}
+body.ssf-home .ssf-second-pair button{
+ display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+ width:100%;min-height:44px;padding:9px 12px;border:1px dashed #b8d3c5;
+ border-radius:10px;background:#f3f9f5;color:#215f4c;cursor:pointer;
+ font:750 11px/1.6 "IBM Plex Sans Arabic",Tahoma,sans-serif;
+}
+body.ssf-home .ssf-second-pair button small{font:500 9px/1.6 "IBM Plex Sans Arabic",Tahoma,sans-serif;color:#698179}
+body.ssf-home .ssf-second-pair button:hover,body.ssf-home .ssf-second-pair button:focus-visible{
+ border-color:#338d6c;background:#e9f5ed;outline-offset:2px
+}
