@@ -17,6 +17,8 @@ jobs:
           persist-credentials: false
       - name: Run official component CLI in a disposable workspace
         shell: bash
+        env:
+          API_KEY_21ST: ${{ secrets.API_KEY_21ST }}
         run: |
           mkdir -p "$RUNNER_TEMP/probe/src/components/ui" "research/21st-mg-hook-question"
           cd "$RUNNER_TEMP/probe"
