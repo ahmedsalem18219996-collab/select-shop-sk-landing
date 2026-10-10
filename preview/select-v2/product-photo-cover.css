@@ -20,12 +20,14 @@
     #000 86%,rgba(0,0,0,.35) 95%,transparent 100%);
 }
 
-/* Global preview contract: current /assets product imagery AND any later
-   product image inside a known photo component, including remote URLs. */
+/* Global preview contract: product images already in main/dialog, current
+   /assets imagery and any later photo component even with remote URLs. */
 :is(
   img[src^="assets/"],
   img[src^="/assets/"],
   img[data-product-photo],
+  main img,
+  dialog img,
   .cardMediaClick img,
   .gatewayCard > img,
   .detailImage > img,
@@ -48,6 +50,8 @@
     img[src^="assets/"],
     img[src^="/assets/"],
     img[data-product-photo],
+  main img,
+  dialog img,
     .cardMediaClick img,
     .gatewayCard > img,
     .detailImage > img,
