@@ -420,3 +420,120 @@ body{
 @media(prefers-reduced-motion:reduce){
  .tiltedGridHero>.tgh-stage .tgh-band{filter:brightness(.9)!important}
 }
+
+
+/* SELECT SHOP — approved WhatsApp inquiry visibility pass */
+/* Green is reserved for a direct WhatsApp conversation, not an order event.
+   Restore the full tap target across Safari/iPhone and keep the BUY CTA lime. */
+.hero.premiumHero.limeHero.tiltedGridHero .heroActions a.ssInquiryButton{
+ background:#25d366!important;
+ background-image:none!important;
+ color:#092513!important;
+ border:2px solid #63ef9c!important;
+ box-shadow:0 4px 20px #20e0714d,0 0 0 1px #ffffff33 inset!important;
+ text-shadow:none!important;
+ font-family:"Alexandria","IBM Plex Sans Arabic",sans-serif!important;
+ font-weight:800!important;
+ font-size:clamp(11px,1.3vw,14px)!important;
+ letter-spacing:0!important;
+ line-height:1.45!important;
+ min-height:50px!important;
+ position:relative!important;
+ opacity:1!important;
+ visibility:visible!important;
+ -webkit-tap-highlight-color:transparent;
+ white-space:nowrap!important;
+ cursor:pointer!important
+}
+.hero.premiumHero.limeHero.tiltedGridHero .heroActions a.ssInquiryButton .ssIconWA{
+ width:22px!important;height:22px!important;
+ flex:0 0 22px!important;color:#092513!important
+}
+.hero.premiumHero.limeHero.tiltedGridHero .heroActions a.ssInquiryButton:hover{
+ background:#4cea8b!important;
+ border-color:#b5ffd0!important;
+ box-shadow:0 6px 22px #20e07170!important;
+ transform:translateY(-1px)
+}
+.hero.premiumHero.limeHero.tiltedGridHero .heroActions a.ssInquiryButton:active{
+ transform:translateY(1px)!important;background:#19b957!important
+}
+.hero.premiumHero.limeHero.tiltedGridHero .heroActions a.ssInquiryButton:focus-visible,
+.mobileBar a.ssMobileInquiry:focus-visible,
+.ssProductFooter a.ssDetailInquiry:focus-visible{
+ outline:3px solid #fff!important;outline-offset:3px!important
+}
+/* Persistent inquiry action on iPhone: unmistakably green, readable Arabic. */
+.mobileBar a.ssMobileInquiry{
+ background:#25d366!important;background-image:none!important;
+ border-color:#56e68d!important;
+ color:#0b2816!important;
+ font-family:"Alexandria","IBM Plex Sans Arabic",sans-serif!important;
+ font-weight:800!important;
+ font-size:10px!important;
+ line-height:1.25!important;
+ min-height:45px!important;
+ white-space:normal!important;
+ text-align:center!important;
+ gap:5px!important;
+ padding:7px 8px!important;
+ box-shadow:0 2px 12px #25d36640!important;
+ opacity:1!important;
+ visibility:visible!important
+}
+.mobileBar a.ssMobileInquiry .ssIconWA{
+ color:#0b2816!important;
+ width:19px!important;height:19px!important;
+ flex:0 0 19px!important
+}
+.mobileBar a.ssMobileInquiry span{
+ display:inline!important;
+ color:#0b2816!important;
+ font-size:inherit!important;
+ font-weight:800!important;
+ line-height:1.3!important;
+ white-space:normal!important
+}
+.mobileBar a.ssMobileInquiry:hover{background:#4cea8b!important}
+.ssProductFooter a.ssDetailInquiry{
+ background:#25d366!important;border-color:#56e68d!important;
+ color:#082313!important;
+ font-family:"Alexandria","IBM Plex Sans Arabic",sans-serif!important;
+ font-weight:800!important
+}
+.ssProductFooter a.ssDetailInquiry .ssIconWA{color:#082313!important}
+.ssMobileInquiryShort{display:none!important}
+@media(max-width:620px){
+ .hero.premiumHero.limeHero.tiltedGridHero .heroActions a.ssInquiryButton{
+  min-height:48px!important;
+  width:100%!important;
+  white-space:normal!important;
+  padding:8px 7px!important;
+  font-size:clamp(10px,2.7vw,12px)!important;
+  line-height:1.3!important;
+  gap:5px!important;
+  border-width:1.5px!important
+ }
+ .hero.premiumHero.limeHero.tiltedGridHero .heroActions a.ssInquiryButton .ssIconWA{
+  width:19px!important;height:19px!important;flex:0 0 19px!important
+ }
+ .mobileBar{
+  grid-template-columns:minmax(0,1fr) minmax(98px,.94fr) auto!important;
+  gap:5px!important
+ }
+ .mobileBar a.ssMobileInquiry{
+  width:100%!important;font-size:10px!important
+ }
+}
+@media(max-width:359px){
+ .mobileBar{grid-template-columns:minmax(0,1fr) minmax(75px,.8fr) auto!important}
+ .mobileBar a.ssMobileInquiry{font-size:10px!important;padding:6px 4px!important}
+ .mobileBar a.ssMobileInquiry .ssMobileInquiryLong{display:none!important}
+ .mobileBar a.ssMobileInquiry .ssMobileInquiryShort{display:inline!important}
+ .ssProductFooter a.ssDetailInquiry{font-size:0!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .hero.premiumHero.limeHero.tiltedGridHero .heroActions a.ssInquiryButton{
+  transform:none!important;transition:none!important
+ }
+}
