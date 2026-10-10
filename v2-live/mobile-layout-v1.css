@@ -1,0 +1,427 @@
+/* SELECT SHOP — REVIEW V2 | MOBILE LAYOUT SYSTEM
+ * Viewports: 320 / 360 / 375 / 390 / 414 / 430 / 620 / small tablets.
+ * Final design layer, after product-photo-cover.css.
+ * Styling only. No production store, checkout or catalog changes.
+ */
+@media (max-width:900px){
+  .container, .productsSection, .categoriesSection{min-width:0}
+  .shoeCardsGrid.unifiedCardsGrid{min-width:0}
+  .shoeCardsGrid .productCard{min-width:0}
+  .productCard .cardContent, .productCard .cardMedia{min-width:0}
+  .cardColors, .detailGallery{min-width:0}
+}
+
+/* Mobile starts: readable targets, stable hero and predictable padding. */
+@media (max-width:620px){
+  :root{--mobile-gutter:12px}
+  html{scroll-padding-top:117px!important;overflow-x:clip}
+  body{
+    min-width:0!important;
+    width:100%!important;max-width:100%!important;
+    overflow-x:clip!important;
+    padding-bottom:calc(92px + env(safe-area-inset-bottom,0px))!important
+  }
+  body.hasDialog{overflow:hidden!important}
+  .container{width:calc(100% - (var(--mobile-gutter) * 2))!important;max-width:100%!important}
+  img{max-width:100%}
+  :is(button,a,input,select,textarea){touch-action:manipulation}
+  :is(.hero,.productsSection,.categoriesSection,.merchGateway,.productCard,.editorialClosing,.siteFooter){min-width:0}
+
+  /* Banner and promo are compact without clipping Arabic text. */
+  .previewBanner{
+    padding:6px 10px!important;
+    gap:3px 8px!important;
+    font-size:9px!important;line-height:1.45!important;
+    min-height:36px!important;
+    flex-wrap:wrap!important;
+  }
+  .previewBanner strong{font-size:8px!important;white-space:nowrap}
+  .previewBanner span{min-width:0;overflow-wrap:anywhere}
+  .premiumTicker.promo{height:32px!important;min-height:32px!important}
+  .premiumTicker .tickerTrack{height:32px!important;align-items:center}
+  .premiumTicker .tickerPhrase{
+    font-size:9px!important;line-height:32px!important;
+    padding-inline:22px!important;gap:13px!important
+  }
+
+  /* Sticky header stays completely within the viewport. */
+  .siteHeader{
+    position:sticky!important;top:4px!important;
+    width:calc(100% - 12px)!important;max-width:100%!important;
+    margin:6px auto 0!important;
+    border-radius:6px!important
+  }
+  .siteHeader>.headerInner{
+    box-sizing:border-box!important;
+    width:100%!important;max-width:100%!important;
+    min-height:54px!important;padding:6px 10px!important;
+    display:flex!important;gap:8px!important;
+    align-items:center!important;justify-content:space-between!important
+  }
+  .siteHeader .premiumBrand{
+    min-width:0!important;flex:0 1 auto!important;gap:6px!important;
+    overflow:hidden!important
+  }
+  .siteHeader .premiumBrand .brandMark{
+    width:29px!important;height:29px!important;flex:0 0 29px!important;
+    font-size:20px!important
+  }
+  .siteHeader .premiumBrand .brandName{
+    display:flex!important;flex-wrap:wrap!important;
+    min-width:0!important;min-height:0!important;
+    font-size:clamp(15px,4.2vw,20px)!important;
+    white-space:nowrap!important;
+    line-height:1.05!important
+  }
+  .siteHeader .premiumBrand .brandWord{letter-spacing:-.075em}
+  .siteHeader .premiumBrand .brandName small{
+    font-size:6px!important;letter-spacing:.06em!important;
+    margin-top:4px!important;flex-basis:100%
+  }
+  .siteHeader .desktopNav{display:none!important}
+  .siteHeader .headerActions{display:flex!important;flex:0 0 auto!important;gap:5px!important;min-width:0}
+  .siteHeader .textAction{display:none!important}
+  .siteHeader .cartAction{
+    min-height:38px!important;padding:0 10px!important;gap:6px!important;
+    font-size:10px!important;white-space:nowrap
+  }
+  .siteHeader .cartAction strong{width:21px!important;height:21px!important;flex:0 0 21px}
+  .siteHeader .cartAction>span:last-child{display:none!important}
+  .siteHeader .mobileCategoryRail{
+    display:flex!important;width:100%!important;max-width:100%!important;
+    padding:0 10px 9px!important;gap:8px!important;
+    white-space:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;
+    scrollbar-width:none
+  }
+  .siteHeader .mobileCategoryRail::-webkit-scrollbar{display:none}
+  .siteHeader .mobileCategoryRail a{
+    flex:0 0 auto;min-height:30px;
+    display:inline-flex;align-items:center;
+    font-size:10px!important;padding:3px 5px!important
+  }
+
+  /* Hero: no overflow from the heavy English typography or the art panel. */
+  .hero.premiumHero.limeHero{
+    display:flex!important;flex-direction:column!important;
+    height:auto!important;min-height:0!important;max-width:100%!important;
+    margin-top:10px!important;overflow:hidden!important
+  }
+  .premiumHero.limeHero .heroText{
+    order:1!important;min-width:0!important;width:100%!important;
+    padding:23px 12px 16px!important;
+    align-items:center!important;text-align:center!important
+  }
+  .premiumHero.limeHero .heroEyebrow{
+    max-width:100%;gap:7px!important;
+    font-size:8px!important;letter-spacing:0!important;
+    justify-content:center
+  }
+  .premiumHero.limeHero .heroEyebrow>span:nth-child(2){min-width:0;overflow-wrap:anywhere}
+  .premiumHero.limeHero #heroTitle{
+    max-width:100%!important;width:100%!important;min-width:0!important;
+    font-size:clamp(30px,9.05vw,43px)!important;
+    line-height:1.04!important;
+    letter-spacing:-.075em!important;
+    white-space:normal!important;
+    margin:15px 0 5px!important;
+    text-align:center!important
+  }
+  .premiumHero.limeHero #heroTitle>span{
+    display:block!important;max-width:100%;
+    white-space:normal!important;overflow-wrap:normal!important
+  }
+  .premiumHero.limeHero .heroEnglish{
+    max-width:100%;font-size:clamp(8px,2.45vw,10px)!important;
+    letter-spacing:.06em!important;text-align:center!important
+  }
+  .premiumHero.limeHero .heroLead{
+    max-width:330px!important;font-size:11px!important;
+    line-height:1.75!important;margin:12px 0 15px!important
+  }
+  .premiumHero.limeHero .heroActions{
+    width:100%!important;max-width:380px!important;
+    display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    gap:7px!important
+  }
+  .premiumHero.limeHero .heroActions .button{
+    width:100%!important;min-width:0!important;
+    min-height:44px!important;gap:6px!important;
+    padding:9px 7px!important;font-size:9px!important;
+    white-space:normal!important;overflow-wrap:anywhere!important;
+    text-align:center!important;justify-content:center!important
+  }
+  .premiumHero.limeHero .heroActions .button span{flex:0 0 auto}
+  .premiumHero.limeHero .heroVisual.limeHeroArt.editorialStage{
+    order:2!important;
+    height:clamp(178px,48vw,228px)!important;min-height:178px!important;
+    width:100%!important;padding:18px 8px!important;
+    overflow:hidden!important
+  }
+  .editorialHeadline{width:100%!important;white-space:nowrap!important;min-width:0}
+  .editorialHeadline>span{font-size:clamp(23px,7vw,37px)!important}
+  .editorialHeadline>strong{
+    font-size:clamp(30px,9.0vw,48px)!important;
+    letter-spacing:-.08em!important;white-space:nowrap!important
+  }
+  .editorialIssue{font-size:7px!important;top:12px!important;right:13px!important}
+  .editorialFootline{bottom:10px!important;left:12px!important;right:12px!important;gap:8px!important}
+  .editorialFootline span{
+    font-size:6px!important;letter-spacing:0!important;
+    max-width:49%;overflow-wrap:anywhere
+  }
+
+  /* Trust bar keeps the Arabic meaning, not microscopic English only. */
+  .trust.trustSlim{
+    width:calc(100% - (var(--mobile-gutter) * 2))!important;
+    display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:0!important;min-height:54px!important;height:auto!important;
+    margin:8px auto 34px!important;overflow:hidden!important
+  }
+  .trust.trustSlim>div{
+    min-width:0!important;width:auto!important;padding:8px 3px!important;
+    display:flex!important;flex-wrap:wrap!important;
+    flex-direction:row!important;justify-content:center!important;
+    align-content:center!important;align-items:center!important;gap:2px 4px!important;
+    text-align:center!important
+  }
+  .trust.trustSlim>div:not(:last-child){border-inline-end:1px solid #4b583e}
+  .trust.trustSlim span{font-size:12px!important}
+  .trust.trustSlim strong{
+    font-size:clamp(7px,2vw,9px)!important;line-height:1.2!important;
+    letter-spacing:-.02em!important;overflow-wrap:anywhere
+  }
+  .trust.trustSlim small{
+    display:block!important;flex:0 0 100%;
+    font-size:8px!important;line-height:1.35!important;
+    color:#c9d7b9!important
+  }
+
+  /* Sections and categories: ONE full-width, readable tile per row. */
+  .sectionHead{min-width:0!important}
+  .sectionHead h2{
+    max-width:100%!important;font-size:clamp(24px,7vw,32px)!important;
+    line-height:1.22!important;letter-spacing:-.065em!important;
+    overflow-wrap:anywhere!important
+  }
+  .sectionHead p{line-height:1.7!important}
+  .categoriesSection{margin-bottom:36px!important}
+  .merchGateway{
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+    gap:9px!important;width:100%;min-width:0!important
+  }
+  .merchGateway .gatewayCard{
+    display:flex!important;align-items:stretch!important;
+    min-width:0!important;width:100%!important;
+    height:142px!important;min-height:142px!important;
+    border-radius:5px!important;padding:14px 16px!important;
+    overflow:hidden!important
+  }
+  .merchGateway .gatewayCopy{
+    width:62%!important;max-width:62%!important;min-width:0!important;
+    display:flex!important;flex-direction:column!important;gap:4px!important;
+    position:relative!important;z-index:3!important
+  }
+  .merchGateway .gatewayCopy small{font-size:9px!important;letter-spacing:0!important}
+  .merchGateway .gatewayCopy strong{
+    font-size:clamp(18px,5vw,23px)!important;line-height:1.3!important;
+    max-width:100%;overflow-wrap:anywhere
+  }
+  .merchGateway .gatewayCopy>span{display:block!important;font-size:9px!important}
+  .merchGateway .gatewayCopy b{
+    align-self:flex-start;max-width:100%!important;
+    font-size:10px!important;min-height:30px!important;
+    gap:8px!important;padding:5px 0!important;
+    margin-top:auto!important;white-space:normal!important
+  }
+  .merchGateway .gatewayCard>img{
+    display:block!important;
+    position:absolute!important;z-index:1!important;
+    width:35%!important;max-width:35%!important;
+    height:88%!important;max-height:88%!important;
+    left:2%!important;bottom:5%!important;
+    object-fit:contain!important;object-position:center!important
+  }
+  .merchGateway .gatewayCount{top:7px!important;left:9px!important;font-size:8px!important}
+
+  /* Product cards stay one column with unambiguous sizes and CTAs. */
+  .productsSection{margin-bottom:37px!important}
+  .toolbar{
+    display:flex!important;flex-wrap:wrap!important;
+    gap:8px!important;min-width:0!important;width:100%!important
+  }
+  .toolbar .tabs{
+    min-width:0!important;width:100%!important;
+    display:flex!important;gap:5px!important;flex-wrap:wrap!important
+  }
+  .toolbar .tab{
+    min-height:38px!important;min-width:0!important;
+    padding:8px 11px!important;font-size:10px!important
+  }
+  .toolbar .searchWrap{width:100%!important;max-width:100%!important;min-width:0!important}
+  .toolbar .searchWrap input{min-width:0!important;font-size:12px!important}
+  .shoeCardsGrid.unifiedCardsGrid{
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+    gap:13px!important;width:100%!important
+  }
+  .shoeCardsGrid .productCard{width:100%!important;min-width:0!important;overflow:hidden!important}
+  .shoeCardsGrid .cardMedia,
+  .shoeCardsGrid .carProductCard .cardMedia{
+    width:100%!important;min-width:0!important;
+    height:auto!important;aspect-ratio:1.4/1!important;
+    overflow:hidden!important
+  }
+  .shoeCardsGrid .cardMediaClick{width:100%!important;height:100%!important;padding:0!important}
+  .shoeCardsGrid .cardContent{
+    padding:14px 14px 16px!important;min-width:0!important;gap:8px!important
+  }
+  .shoeCardsGrid .cardTitle{
+    display:flex!important;flex-direction:row!important;
+    flex-wrap:wrap!important;align-items:center!important;
+    justify-content:space-between!important;gap:6px 10px!important;min-width:0!important
+  }
+  .shoeCardsGrid .cardTitle h3{
+    flex:1 1 auto!important;min-width:0!important;max-width:100%;
+    font-size:clamp(16px,4.6vw,19px)!important;overflow-wrap:anywhere!important
+  }
+  .shoeCardsGrid .cardTitle strong{flex:0 0 auto!important;font-size:18px!important}
+  .shoeCardsGrid .cardContent>p{min-height:0!important;font-size:11px!important;line-height:1.65!important}
+  .shoeCardsGrid .cardColors{
+    max-width:100%!important;min-width:0!important;
+    overflow-x:auto!important;overflow-y:hidden!important;
+    scrollbar-width:thin
+  }
+  .shoeCardsGrid .colorMini{
+    flex:0 0 54px!important;width:54px!important;min-width:54px!important;
+    height:54px!important
+  }
+  .shoeCardsGrid .cardVariantInfo{
+    display:flex!important;flex-direction:column!important;align-items:flex-start!important;
+    gap:3px!important;min-width:0!important;font-size:10px!important;
+    overflow-wrap:anywhere!important
+  }
+  .shoeCardsGrid .cardBottom{
+    display:flex!important;flex-direction:column!important;
+    align-items:stretch!important;gap:8px!important;min-width:0!important
+  }
+  .shoeCardsGrid .cardBottom .includedShipping{line-height:1.4}
+  .shoeCardsGrid .cardBottom button{
+    width:100%!important;min-width:0!important;min-height:46px!important;
+    padding:9px 11px!important;font-size:11px!important;
+    justify-content:center!important
+  }
+
+  /* Closing / footer never protrude beyond viewport. */
+  .editorialClosing.story{width:calc(100% - (var(--mobile-gutter) * 2))!important;min-width:0!important}
+  .editorialClosing .storyTitle{padding:19px 17px!important;min-width:0!important}
+  .editorialClosing .storyTitle h2{font-size:clamp(26px,7.3vw,35px)!important;overflow-wrap:anywhere}
+  .storyMotif{min-height:116px!important;height:116px!important}
+  .storyMotif strong{font-size:clamp(30px,8vw,42px)!important}
+  .siteFooter{overflow:hidden!important}
+  .siteFooter .container{min-width:0}
+  .footerTop strong{font-size:clamp(27px,8vw,37px)!important;white-space:nowrap!important}
+  .footerBottom{display:flex;flex-wrap:wrap;gap:7px!important}
+
+  /* Fixed bottom bar is visible above iPhone Safari's safe area. */
+  .mobileBar{
+    position:fixed!important;z-index:65!important;display:grid!important;
+    left:8px!important;right:8px!important;width:auto!important;
+    max-width:calc(100% - 16px)!important;
+    bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;
+    padding:6px!important;gap:7px!important;
+    grid-template-columns:minmax(0,1fr) auto!important;
+    min-height:56px!important;
+  }
+  .mobileBar a{
+    display:flex!important;align-items:center!important;justify-content:space-between!important;
+    min-width:0!important;min-height:43px!important;
+    padding:8px 12px!important;font-size:11px!important
+  }
+  .mobileBar button{
+    flex:0 0 auto!important;min-height:43px!important;
+    padding:8px 12px!important;font-size:11px!important
+  }
+  body.hasDialog .mobileBar{display:none!important}
+
+  /* Full-height dialogs: header/footer fixed, only the content scrolls. */
+  .drawer{
+    box-sizing:border-box!important;
+    width:100%!important;max-width:100%!important;
+    height:100dvh!important;max-height:100dvh!important;
+    margin:0!important;padding:0!important;overflow:hidden!important
+  }
+  .drawerHeader{padding:11px 13px!important;min-height:58px!important;flex:0 0 auto!important}
+  .drawerHeader>span{font-size:15px!important}
+  .drawerScroll{
+    min-width:0!important;overflow-y:auto!important;overflow-x:hidden!important;
+    overscroll-behavior-y:contain;
+    padding:12px 13px 20px!important
+  }
+  .drawerFooter{
+    min-width:0!important;flex:0 0 auto!important;
+    padding:10px 12px calc(12px + env(safe-area-inset-bottom,0px))!important;
+    gap:8px!important;align-items:center!important
+  }
+  .drawerFooter>span{font-size:16px!important;min-width:0!important}
+  .drawerFooter .button{min-height:44px!important;min-width:0!important;padding:9px 11px!important;font-size:11px!important}
+  .detailImage{aspect-ratio:1.45/1!important;min-width:0;max-height:295px}
+  .detailGallery{overflow-x:auto!important;max-width:100%}
+  .detailHeadline{
+    display:flex!important;flex-wrap:wrap!important;gap:9px!important;
+    min-width:0!important;align-items:center!important
+  }
+  .detailHeadline>div{min-width:0}
+  .detailHeadline h2{font-size:clamp(17px,4.5vw,21px)!important}
+  .cartItem{grid-template-columns:64px minmax(0,1fr) auto!important;gap:7px!important}
+  .cartItem>img{width:64px!important;height:73px!important}
+  .cartItem strong{font-size:11px!important;overflow-wrap:anywhere}
+  #checkoutForm :is(input,select,textarea){max-width:100%!important;width:100%!important;font-size:16px!important}
+  #orderPreviewText{white-space:pre-wrap!important;overflow-wrap:anywhere!important;max-width:100%}
+
+  /* Review feedback floats above the purchase bar without hiding it. */
+  #v2Feedback .v2FeedbackLauncher{
+    left:10px!important;
+    bottom:calc(76px + env(safe-area-inset-bottom,0px))!important;
+    min-height:37px!important;padding:7px 10px!important;
+    font-size:10px!important
+  }
+  #v2Feedback .v2FeedbackPanel{
+    width:100%!important;max-width:100%!important;
+    height:100dvh!important;max-height:100dvh!important;
+    overflow-y:auto!important
+  }
+}
+
+/* Smallest supported phones: one clean line of navigation, not tiny tiles. */
+@media(max-width:360px){
+ :root{--mobile-gutter:10px}
+ .siteHeader .premiumBrand .brandMark{display:none!important}
+ .siteHeader .premiumBrand .brandName{font-size:15px!important}
+ .siteHeader .cartAction{padding:0 8px!important;font-size:10px!important}
+ .premiumHero.limeHero #heroTitle{font-size:clamp(27px,8.7vw,32px)!important}
+ .premiumHero.limeHero .heroActions{grid-template-columns:minmax(0,1fr)!important}
+ .premiumHero.limeHero .heroActions .button{min-height:42px!important;font-size:10px!important}
+ .editorialHeadline>span{font-size:23px!important}
+ .editorialHeadline>strong{font-size:30px!important}
+ .editorialFootline span{font-size:5px!important}
+ .trust.trustSlim strong{font-size:7px!important}
+ .trust.trustSlim small{font-size:7px!important}
+ .merchGateway .gatewayCard{height:130px!important;min-height:130px!important}
+ .merchGateway .gatewayCopy{width:66%!important;max-width:66%!important}
+ .merchGateway .gatewayCopy strong{font-size:17px!important}
+ .merchGateway .gatewayCard>img{width:31%!important;max-width:31%!important}
+ .shoeCardsGrid .cardMedia,.shoeCardsGrid .carProductCard .cardMedia{aspect-ratio:1.35/1!important}
+ .shoeCardsGrid .cardTitle strong{font-size:16px!important}
+ .drawerFooter .button{font-size:10px!important;padding-inline:8px!important}
+}
+@media(min-width:621px) and (max-width:900px){
+ .container{width:calc(100% - 36px)!important}
+ .merchGateway{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .shoeCardsGrid.unifiedCardsGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .shoeCardsGrid .productCard{min-width:0}
+ .shoeCardsGrid .cardTitle{flex-wrap:wrap}
+ .shoeCardsGrid .cardBottom{flex-direction:column;align-items:stretch}
+ .shoeCardsGrid .cardBottom button{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+ .editorialBeam,.premiumTicker .tickerTrack{animation:none!important}
+}
