@@ -1,0 +1,564 @@
+/* SELECT SHOP V2 — LIME ATELIER VISUAL REVISION
+ * Owner review 2026-10-10 22:10 EET: industrial black / electric lime, bilingual
+ * minimal editorial, border-light animation, one unified product grid.
+ * CSS visual only. No commerce, payments, tracking or catalog modifications.
+*/
+:root{
+ --lime:#defc48;--lime-soft:#e8ff91;--paper:#141613;--lime-muted:#8e9581;
+ --orange:#defc48;--orange2:#dafa59;--night:#111310;--ink:#f4f5ed;
+ --lime-line:#454b3a;--lime-panel:#1b1e19;--lime-studio:#dedfd5
+}
+html{background:#10120f;scroll-padding-top:118px}
+body{
+ color:#f5f5ec;background:#10120f;
+ background-image:radial-gradient(ellipse 70vw 48vw at 80% 9%,#4e623226,transparent 69%),radial-gradient(ellipse 80vw 70vw at 0 63%,#333c252e,transparent 67%);
+}
+::selection{background:var(--lime);color:#11130e}
+.previewBanner{background:#252b1d!important;color:#dfdfce!important;border-color:#414b35!important}
+.premiumTicker.promo{background:#dafa59!important;border:0;height:43px!important;color:#171c10}
+.premiumTicker:before{background:linear-gradient(270deg,#dafa59,transparent)!important;width:26px}
+.premiumTicker:after{background:linear-gradient(90deg,#dafa59,transparent)!important;width:26px}
+.premiumTicker .tickerTrack{
+ animation:premiumMarquee 38s linear infinite!important;
+ will-change:transform
+}
+.premiumTicker .tickerTrack .tickerPhrase{
+ color:#171b0e;font-weight:850;letter-spacing:.075em;
+ font-size:11px!important;line-height:43px;
+ animation:tickerLetterLift 2.6s ease-in-out infinite;
+ text-shadow:0 0 0 transparent;
+}
+.premiumTicker .tickerPhrase:nth-child(2n){animation-delay:-1.25s}
+.premiumTicker .tickerPhrase:nth-child(3n){animation-delay:-.7s}
+.premiumTicker .tickerPhrase b{color:#4b5f1e!important;animation:tickerStar 3s linear infinite;display:inline-block}
+@keyframes tickerLetterLift{0%,100%{transform:translateY(0);letter-spacing:.075em}50%{transform:translateY(-2px);letter-spacing:.095em}}
+@keyframes tickerStar{50%{transform:rotate(65deg) scale(1.2)}}
+.siteHeader{
+ border-radius:4px!important;
+ background:#151a14eb!important;
+ border-color:#5f6946!important;box-shadow:0 10px 35px #000a;
+ backdrop-filter:blur(16px) saturate(1.1)
+}
+.premiumBrand .brandMark{
+ background:var(--lime)!important;color:#15180d!important;
+ border:1px solid #d6f66c!important;transform:none!important;
+ box-shadow:none!important;border-radius:3px!important
+}
+.premiumBrand .brandMark span{color:#1f2912}
+.premiumBrand:hover .brandMark{transform:none!important;box-shadow:0 0 16px #dafa5960!important}
+.premiumBrand .brandName{
+ font-family:"Manrope",sans-serif;font-weight:850;
+ overflow:visible;min-height:33px
+}
+.premiumBrand .brandName:after{display:none!important;animation:none!important;content:none!important}
+.premiumBrand .brandWord,.premiumBrand .brandWordAccent{
+ background:none!important;-webkit-background-clip:initial!important;
+ -webkit-text-stroke:0!important;color:#f4f4eb!important;
+ letter-spacing:-.075em;
+ animation:brandLetterFloat 5.2s ease-in-out infinite!important;
+ will-change:transform
+}
+.premiumBrand .brandWordAccent{
+ color:var(--lime)!important;animation-delay:-2.4s!important
+}
+@keyframes brandLetterFloat{
+ 0%,100%{transform:translateY(0);filter:brightness(1)}
+ 48%{transform:translateY(-2px);filter:brightness(1.16)}
+}
+.premiumBrand .brandName small{color:#aebc94;font-size:7px}
+.desktopNav a,.navCategoryButton{color:#e5e7db;font-weight:750}
+.desktopNav a:hover,.navCategoryButton:hover{color:#defc48}
+.desktopNav .navEn{color:#8c9481}
+.navCategoryButton i{color:#defc48}
+.navCategoryMenu{background:#1d221b;border-color:#5e694d}
+.navCategoryMenu a{color:#f0f2e5}
+.navCategoryMenu a:hover{color:#e4ff6e;background:#343c29}
+.navComing{border-color:#4d5a3c;color:#c1c8b4}
+.cartAction{
+ color:#11170b!important;background:var(--lime)!important;
+ background-image:none!important;border-color:var(--lime)!important;
+ box-shadow:none!important;border-radius:3px!important
+}
+.cartAction strong{background:#1d2514;color:#e4fc68}
+.cartAction:hover{background:#f0ff94!important}
+.mobileCategoryRail a{color:#d1dbc0}
+.mobileCategoryRail a[aria-current=page]{color:#e4fc67;border-color:#e4fc67}
+.premiumHero.limeHero{
+ margin-top:17px!important;
+ border:1px solid #454f3b!important;border-radius:3px!important;
+ background:
+  radial-gradient(ellipse 420px 260px at 72% 90%,#d4ef4b1c,transparent 65%),
+  linear-gradient(130deg,#1b2118 0%,#101510 53%,#1e2519 100%)!important;
+ box-shadow:0 15px 50px #0007
+}
+.premiumHero.limeHero:before{border-color:#daff6619}
+.premiumHero.limeHero .heroText{
+ align-items:center!important;max-width:none!important;
+ text-align:center!important;
+ padding:clamp(35px,4vw,59px) 24px 24px!important;
+ min-height:0!important
+}
+.heroEyebrow{color:#dae4c6!important;font-family:"Manrope",sans-serif;letter-spacing:.21em}
+.heroEyebrow i{color:#879378}
+.heroSpark{color:#dafa59!important}
+.premiumHero.limeHero #heroTitle{
+ font-family:"Manrope",sans-serif!important;font-weight:900!important;
+ font-size:clamp(56px,8.5vw,119px)!important;
+ line-height:.97!important;letter-spacing:-.075em!important;
+ margin:24px 0 5px!important;color:#f5f7ef!important;direction:ltr;
+ text-align:center!important;max-width:100%;
+}
+.premiumHero.limeHero #heroTitle .titleReveal{overflow:visible;padding:5px 0}
+.premiumHero.limeHero #heroTitle .titleRevealSecondary{margin-top:0}
+.premiumHero.limeHero #heroTitle em{
+ font-style:normal!important;color:var(--lime)!important;
+ background:none!important;-webkit-text-stroke:0!important;
+ text-shadow:0 0 55px #dafa5924
+}
+.premiumHero.limeHero .heroEnglish{
+ font:850 clamp(10px,1.45vw,16px)/1.4 "Manrope",sans-serif!important;
+ letter-spacing:.24em;color:#c7d0b9!important;direction:ltr;
+ display:block!important;margin-top:14px!important
+}
+.premiumHero.limeHero .heroLead{
+ color:#c6cdbd!important;max-width:600px!important;
+ font-size:13px!important;line-height:1.9!important;margin:17px 0 22px!important
+}
+.premiumHero.limeHero .heroActions{justify-content:center}
+.premiumHero.limeHero .heroActions .button{
+ min-height:48px!important;
+ border-radius:3px!important;
+ font:800 11px/1.4 "Manrope",sans-serif!important;
+ letter-spacing:.065em
+}
+.premiumHero.limeHero .heroActions .buttonPrimary,
+.buttonPrimary,.shoeCardsGrid .cardBottom button,.drawerFooter .buttonPrimary{
+ background:var(--lime)!important;color:#10150b!important;
+ border-color:var(--lime)!important;box-shadow:none!important
+}
+.premiumHero.limeHero .heroActions .buttonPrimary:hover,
+.buttonPrimary:hover,.shoeCardsGrid .cardBottom button:hover{background:#f0ff9e!important}
+.premiumHero.limeHero .heroActions .buttonOutline{
+ background:#181e17;border-color:#a0ad89;color:#f1f3eb
+}
+.premiumHero.limeHero .heroVisual.limeHeroArt{
+ height:clamp(190px,22vw,285px)!important;min-height:0!important;
+ display:flex!important;align-items:center;justify-content:center;
+ overflow:hidden!important;
+ background:radial-gradient(ellipse at center,#2a372328 0%,#161c15 65%,#111610 100%)!important
+}
+.premiumHero.limeHero .heroVisual:before{background-size:48px 48px;opacity:.6}
+.artGrid{position:absolute;inset:0;background-image:linear-gradient(90deg,#d3ec5212 1px,transparent 1px),linear-gradient(#d3ec5212 1px,transparent 1px);background-size:44px 44px;mask-image:radial-gradient(ellipse,#000,transparent 77%);pointer-events:none}
+.artOrbit{
+ position:absolute;width:clamp(270px,43vw,600px);aspect-ratio:1;
+ border:1px solid #d7fb4234;border-radius:50%;
+ box-shadow:0 0 55px #dafa5910,0 0 45px #b6dc3920 inset;
+ transform:rotate(-26deg);pointer-events:none
+}
+.artOrbitA:before,.artOrbitB:before{
+ content:"";position:absolute;border-radius:50%;inset:22%;
+ border:1px solid #dafa592c;box-shadow:0 0 25px #dafa5929
+}
+.artOrbitB{width:clamp(210px,32vw,450px);height:auto;transform:rotate(28deg) scaleX(1.8);border-color:#dafa5918}
+.artDisc{
+ width:clamp(190px,22vw,265px);aspect-ratio:1;position:relative;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;z-index:2;
+ border-radius:50%;color:#14200e;
+ background:radial-gradient(circle at 30% 24%,#f1ffac,#d5f54d 40%,#a6bd34 89%);
+ border:1px solid #f6ffc4;box-shadow:0 0 0 11px #d9ff4c16,0 0 70px #bdf1394c;
+ animation:discDrift 9s ease-in-out infinite
+}
+.artDisc:after{content:"";position:absolute;inset:13px;border:1px solid #3547243b;border-radius:50%;pointer-events:none}
+.artDisc>span{font:850 12px "Manrope";letter-spacing:.29em;direction:ltr}
+.artDisc>strong{font:900 clamp(50px,6vw,75px)/1 "Manrope";letter-spacing:-.17em;padding-right:.12em;direction:ltr}
+.artDisc>strong>span{color:#46552a;font-size:.5em;vertical-align:top;margin-left:.18em}
+.artDisc>small{font:800 8px "Manrope";letter-spacing:.09em}
+@keyframes discDrift{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-9px) rotate(5deg)}}
+.artCaption{position:absolute;bottom:15px;left:24px;display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.artCaption>span{font:750 9px "Manrope";color:#bec9aa}
+.artCaption>b{font:850 12px "Manrope";color:var(--lime);letter-spacing:.1em}
+.artSpark{position:absolute;color:#dafa59;line-height:1;animation:discDrift 8s infinite alternate}
+.artSparkA{top:24px;left:22%;font-size:31px}
+.artSparkB{bottom:44px;right:20%;font-size:24px;animation-delay:-3s}
+.premiumHero.limeHero .heroSideNote{color:#b8c4a6}
+.premiumHero.limeHero .heroSideNote span{color:#d9fa59}
+.trust.trustSlim{
+ display:flex!important;align-items:center;justify-content:space-between;
+ gap:0!important;padding:0!important;
+ margin-top:10px!important;margin-bottom:55px!important;
+ border:1px solid #303a2b;border-radius:3px;background:#191f17;
+ min-height:48px;
+}
+.trust.trustSlim>div{
+ display:flex!important;justify-content:center;align-items:center;gap:9px;
+ padding:8px 12px!important;flex:1;min-width:0;
+ border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important
+}
+.trust.trustSlim>div:not(:last-child){border-left:1px solid #414a38!important}
+.trust.trustSlim span{font-size:18px!important;line-height:1;color:var(--lime)!important;grid-row:auto!important}
+.trust.trustSlim strong{font:800 10px "Manrope";letter-spacing:.01em;color:#f4f5eb!important;white-space:nowrap}
+.trust.trustSlim small{color:#a9b39e!important;font-size:9px!important;white-space:nowrap}
+.sectionHead .eyebrow,.merchShelfEyebrow{color:var(--lime)!important}
+.sectionHead h2{
+ font-family:"Manrope","Alexandria",sans-serif;
+ color:#f7f7ee!important;letter-spacing:-.06em!important;font-size:clamp(25px,3.4vw,46px)
+}
+.sectionHead h2 em{color:var(--lime)!important;font-style:normal}
+.sectionHead p{color:#aeb9a4!important}
+.categoriesSection{margin-bottom:58px!important}
+.shopGatewayHeading{margin-bottom:15px!important}
+.merchGateway{gap:9px!important}
+.gatewayCard{
+ min-height:133px!important;border-radius:4px!important;
+ padding:14px 20px!important;
+ background:linear-gradient(105deg,#1d241a,#151b16)!important;
+ border:1px solid #4a5641!important;box-shadow:none!important
+}
+.gatewayCard:after{inset:6px!important;border:1px solid #e6fa7040!important}
+.gatewayCopy{gap:4px!important;width:64%!important}
+.gatewayCopy small{font:750 9px "Manrope";color:#c4d5ae!important;letter-spacing:.12em}
+.gatewayCopy strong{font:780 clamp(15px,1.8vw,23px) "Alexandria";color:#f3f5e9!important}
+.gatewayCopy>span{font-size:9px;color:#c4cdb9!important}
+.gatewayCopy b{
+ font-size:9px!important;min-height:28px!important;
+ padding:6px 8px!important;margin-top:auto!important;
+ background:transparent!important;color:var(--lime)!important;
+ border:0!important;border-bottom:1px solid #bedb68!important;
+ border-radius:0!important;gap:11px
+}
+.gatewayCopy b i{color:var(--lime)}
+.gatewayCard img{
+ width:34%!important;height:94%!important;bottom:1%!important;left:3px!important;
+ max-width:210px!important;
+ object-fit:contain!important;object-position:center;
+ -webkit-mask-image:radial-gradient(ellipse 90% 86% at center,#000 59%,transparent 100%)!important;
+ mask-image:radial-gradient(ellipse 90% 86% at center,#000 59%,transparent 100%)!important;
+ filter:drop-shadow(0 8px 13px #0004)
+}
+.gatewayCard:hover img{transform:translateY(-3px)!important}
+.gatewayCard:before{
+ content:"";position:absolute;z-index:1;left:2%;top:8%;
+ width:34%;height:88%;pointer-events:none;
+ background:radial-gradient(ellipse,#dafa593d 0%,transparent 73%);
+ animation:edgePulse 6s ease-in-out infinite
+}
+.gatewayCar:before{animation-delay:-2.6s}
+.gatewayCount{color:#9bac8a!important}
+@keyframes edgePulse{0%,100%{opacity:.35;transform:scale(.91)}50%{opacity:.8;transform:scale(1.06)}}
+.productsSection{margin-bottom:45px!important}
+.productsSection .sectionHead{margin-bottom:18px!important}
+.toolbar{border-color:#414f35!important}
+.tab{border-radius:3px!important}
+.tab.active{background:var(--lime)!important;color:#12170c!important;border-color:var(--lime)!important}
+.tab:not(.active){background:#202720!important;border-color:#454f41!important;color:#d4ddcf!important}
+.searchWrap{background:#1d231b!important;border:1px solid #515c47!important}
+.searchWrap input{color:#f3f4ee!important}
+.searchWrap input::placeholder{color:#8e9987}
+.merchCountLabel{color:#a5b297}
+.merchShelf{margin-bottom:38px!important}
+.unifiedShelf{margin-bottom:45px!important}
+.shoeCardsGrid.unifiedCardsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.shoeCardsGrid .productCard{
+ background:#191f19!important;border:1px solid #48513d!important;
+ border-radius:5px!important;box-shadow:0 8px 28px #0004!important;
+ transition:border-color .25s,transform .25s,box-shadow .25s!important;
+ min-width:0;overflow:hidden
+}
+.shoeCardsGrid .productCard:hover{border-color:#b5d751!important;box-shadow:0 16px 38px #0008,0 0 24px #b8e64419!important}
+.shoeCardsGrid .cardMedia{
+ background:linear-gradient(135deg,#e0e2d8,#cdd0c6 65%,#bfc4b8)!important;
+ aspect-ratio:1.53/1!important;isolation:isolate!important;
+ position:relative;overflow:hidden;border-radius:0!important
+}
+.shoeCardsGrid .cardMedia:before{
+ content:"";position:absolute;inset:7px!important;
+ background:radial-gradient(ellipse at 50% 50%,#b6d95a22,transparent 75%)!important;
+ border:1px solid #dfff7670;border-radius:5px!important;
+ box-shadow:inset 0 0 45px #dcf75d27,0 0 20px #a0cd5340;
+ pointer-events:none;z-index:0
+}
+.shoeCardsGrid .cardMedia:after{
+ content:"";position:absolute;inset:0;z-index:3;
+ border:2px solid transparent;border-radius:0;
+ background:
+  linear-gradient(120deg,transparent 15%,#dafa5988 50%,transparent 72%) border-box;
+ background-size:280% 100%;background-position:130% center;
+ -webkit-mask:linear-gradient(#fff 0 0) padding-box,linear-gradient(#fff 0 0);
+ -webkit-mask-composite:xor;mask-composite:exclude;
+ animation:edgeLightTravel 7.5s linear infinite;
+ pointer-events:none
+}
+@keyframes edgeLightTravel{0%,10%{background-position:130% center;opacity:.5}48%,62%{opacity:1}88%,100%{background-position:-140% center;opacity:.5}}
+.shoeCardsGrid .cardMediaClick{padding:18px 22px!important;z-index:1;overflow:hidden}
+.shoeCardsGrid .cardMediaClick img{
+ max-width:100%;max-height:100%;object-fit:contain!important;
+ -webkit-mask-image:radial-gradient(ellipse 87% 83% at center,#000 76%,transparent 100%)!important;
+ mask-image:radial-gradient(ellipse 87% 83% at center,#000 76%,transparent 100%)!important;
+ filter:drop-shadow(0 12px 16px #0003)!important;
+ transition:transform .55s cubic-bezier(.2,.8,.2,1)
+}
+.shoeCardsGrid .cardMediaClick:hover img{transform:scale(1.035) translateY(-4px)}
+.shoeCardsGrid .cardTag{
+ background:#191d17;color:#e8f6cf;border:1px solid #536440!important;
+ border-radius:2px!important;font:800 9px "Manrope"!important;
+}
+.shoeCardsGrid .cardIndex{color:#26351d!important;background:#defc4888!important}
+.shoeCardsGrid .cardQuick{
+ z-index:5;background:#1f2918;color:var(--lime);border:1px solid #cde75850;border-radius:3px
+}
+.shoeCardsGrid .cardContent{
+ background:#191e18!important;padding:19px 19px 17px!important;gap:10px!important
+}
+.shoeCardsGrid .cardCategory{color:#bcdca2!important}
+.shoeCardsGrid .cardTitle h3{color:#f2f5eb!important}
+.shoeCardsGrid .cardTitle strong{color:var(--lime)!important;font-weight:800}
+.shoeCardsGrid .cardContent>p{color:#a9b6a1!important}
+.merchColorHeader{color:#d4dfcf!important;border-color:#414b37!important}
+.merchColorHeader strong{color:#9cad94!important}
+.shoeCardsGrid .colorMini{border:1px solid #626d59!important;border-radius:4px!important;background:#dce0d4!important}
+.shoeCardsGrid .colorMini.active{border:2px solid var(--lime)!important;box-shadow:0 0 0 2px #dafa5933!important}
+.cardVariantInfo{background:#252c21!important;color:#c2cdb9!important;border-radius:3px!important}
+.cardVariantInfo>span:first-child{color:#e1eda2!important}
+.shoeCardsGrid .cardBottom{border-color:#3d4b37!important}
+.shoeCardsGrid .cardBottom button{
+ min-height:44px!important;border-radius:3px!important;
+ font:800 11px "IBM Plex Sans Arabic",sans-serif!important
+}
+.shoeCardsGrid .cardBottom button span{transition:transform .25s;display:inline-block}
+.shoeCardsGrid .cardBottom button:hover span{transform:translate(-5px,-3px)}
+.includedShipping{color:#bcd8ac!important}
+.carProductCard .cardMedia{
+ background:linear-gradient(135deg,#dfe3da,#c9d1ca)!important
+}
+.carProductCard .cardCategory{color:#d3f0a7}
+.carProductCard .cardTitle h3{font-family:"IBM Plex Sans Arabic",sans-serif!important;font-weight:800;font-size:clamp(17px,1.75vw,21px)}
+.editorialClosing.story{
+ grid-template-columns:1.02fr .98fr;
+ min-height:255px!important;margin-bottom:51px!important;
+ background:#1b2119!important;border:1px solid #46583b!important;
+ border-radius:3px!important;overflow:hidden
+}
+.editorialClosing .storyTitle{padding:30px 42px!important}
+.editorialClosing .storyTitle h2{
+ font:850 clamp(30px,3vw,46px)/1.2 "Manrope",sans-serif!important;
+ letter-spacing:-.07em;color:#f7f9ee
+}
+.editorialClosing .storyTitle h2 em{color:var(--lime)!important}
+.editorialClosing .storyTitle p{font-size:11px;color:#b3c1ac}
+.editorialClosing .buttonPrimary{min-height:44px!important}
+.storyMotif{position:relative;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at center,#4a603a70,#1b2518 68%);min-height:240px}
+.storyMotif:before{content:"";position:absolute;width:240px;aspect-ratio:1;border:1px solid #dafa5959;border-radius:50%;box-shadow:0 0 34px #dafa5914}
+.storyMotif span{font-size:clamp(130px,15vw,240px);color:#cfff4d30;line-height:1;animation:slowSpin 24s linear infinite}
+@keyframes slowSpin{to{transform:rotate(360deg)}}
+.storyMotif strong{position:absolute;z-index:1;color:#eafea3;font:900 clamp(30px,5vw,69px) "Manrope";letter-spacing:-.1em}
+.siteFooter{background:#121712!important;border-top:1px solid #4b5d3e!important}
+.footerTop strong{color:#f3f5e8!important}.footerTop strong span{color:var(--lime)!important}
+.footerTop>span,.footerBottom{color:#aeba9b!important}
+.footerBottom{border-color:#45533a!important}
+.footerBottom a{color:var(--lime)!important}
+.drawer{
+ background:#191d17!important;color:#f2f6e9!important;
+ box-shadow:-14px 0 60px #000b!important
+}
+.drawerHeader,.drawerFooter{
+ background:#1d221b!important;border-color:#4b5741!important;color:#f3f7ec!important
+}
+.drawerHeader>span,.detailHeadline h2,.detailHeadline strong,.cartItem strong,.cartItemPrice b{color:#f4f7ec!important}
+.drawerHeader small,.detailHeadline small{color:#b7d98b!important}
+.drawerHeader>button{
+ border-radius:3px!important;background:#2e3529!important;
+ color:#f4fae7!important;border-color:#626e54!important
+}
+.drawerScroll{background:#191d18!important;color:#f4f5ee!important}
+.detailImage,.cartItem>img{
+ background:linear-gradient(140deg,#dce0d8,#cbd2c7)!important;border-radius:4px!important
+}
+.detailImage img{
+ max-width:100%;max-height:100%;object-fit:contain!important;
+ -webkit-mask-image:radial-gradient(ellipse 86% 83% at center,#000 73%,transparent 100%)!important;
+ mask-image:radial-gradient(ellipse 86% 83% at center,#000 73%,transparent 100%)!important
+}
+.detailImage:after{
+ content:"";position:absolute;inset:5px;border:1px solid #c4e85f9a;
+ border-radius:3px;pointer-events:none;
+ box-shadow:inset 0 0 35px #cdf75820,0 0 20px #a8db3c40;
+ animation:edgePulse 6s ease-in-out infinite
+}
+.detailImage span{background:#1e281b!important;color:#ddfa74!important}
+.detailGallery button{background:#dee3da!important;border-color:#6e8462!important;border-radius:4px!important}
+.detailGallery button.active{border-color:var(--lime)!important;box-shadow:0 0 0 2px #dafa5938}
+.detailDescription{color:#c5d1c1!important}
+.detailStep{border-color:#455241!important}
+.detailStep h3{color:var(--lime)!important}
+.detailStep h3 span{color:#ecf1e6!important}
+.variantButton,.sizeButton,.roleOption{
+ background:#2b3328!important;border-color:#5b6b51!important;
+ color:#f1f6eb!important;border-radius:3px!important
+}
+.variantButton span,.variantButton small,.roleOption b,.roleOption small{color:#ecf3e6!important}
+.variantButton.active,.sizeButton.active{
+ background:var(--lime)!important;color:#151c0e!important;border-color:var(--lime)!important
+}
+.variantButton.active span,.variantButton.active small{color:#151b10!important}
+.tryTwo{color:#d5e6c8!important}
+.tryTwo input,.roleOption input{accent-color:var(--lime)!important}
+.secondSize,.detailMessage,.cartPolicy{background:#263222!important;color:#d5e3be!important;border-radius:3px!important}
+.detailMessage{border-right:2px solid var(--lime)}
+.drawerFooter .buttonOutline.dark{
+ color:#eaf5dd!important;background:#303a2b!important;border-color:#778b65!important
+}
+.cartItem{border-color:#485440!important}
+.cartItemPrice button{color:#e1ff8f!important}
+.cartMath{background:#293326!important;border-color:#576e47!important;color:#f5f9ef!important;border-radius:4px!important}
+.cartMath .discount strong{color:var(--lime)!important}
+.cartGrand{border-color:#657b55!important}
+#checkoutForm>label{color:#e9f2e1!important}
+#checkoutForm :is(input,select,textarea){
+ background:#283126!important;color:#f2f6ee!important;
+ border-color:#637058!important;border-radius:4px!important
+}
+#checkoutForm :is(input,select,textarea)::placeholder{color:#9ca998!important}
+#checkoutSummary,.previewAlert{
+ background:#263322!important;border:1px solid #506843!important;
+ color:#e1f5cd!important;border-radius:4px!important
+}
+.messagePreview{background:#212a1e!important;color:#f0f7e7!important;border-color:#657750!important}
+.messagePreview pre{background:#151d15!important;color:#f1f5e9!important}
+.toast{background:#dafa59!important;color:#14190c!important}
+.mobileBar{
+ background:#1d261aee!important;border:1px solid #8caa6d!important;
+ border-radius:5px!important;box-shadow:0 8px 40px #000a!important
+}
+.mobileBar a{color:#f2f7ea!important}
+.mobileBar a span{color:var(--lime)!important}
+.mobileBar button{
+ background:var(--lime)!important;color:#15190e!important;border-radius:3px!important
+}
+.mobileBar button strong{background:#213018!important;color:#e7fc83!important}
+#v2Feedback .v2FeedbackLauncher{
+ background:#252b1e!important;color:#f2f5e8!important;
+ border-color:var(--lime)!important
+}
+#v2Feedback .v2FeedbackLauncher[aria-expanded=true]{background:var(--lime)!important;color:#14190e!important}
+@media(max-width:850px){
+ .trust.trustSlim>div{padding:7px 8px!important;gap:6px}
+ .trust.trustSlim strong{font-size:9px!important}
+ .trust.trustSlim small{font-size:8px!important}
+ .shoeCardsGrid.unifiedCardsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:620px){
+ html{scroll-padding-top:132px}
+ body{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))!important}
+ .premiumTicker.promo{height:33px!important}
+ .premiumTicker .tickerTrack .tickerPhrase{font-size:9px!important;line-height:33px!important;letter-spacing:.05em!important}
+ .siteHeader{top:5px!important;margin:7px auto 0!important;border-radius:3px!important}
+ .headerInner{min-height:54px!important}
+ .premiumBrand .brandName{min-height:28px}
+ .premiumBrand .brandName small{font-size:5px}
+ .premiumHero.limeHero{margin-top:12px!important}
+ .premiumHero.limeHero .heroText{padding:26px 13px 18px!important}
+ .heroEyebrow{font-size:8px!important;letter-spacing:.04em;gap:7px!important}
+ .heroEyebrow i{display:none}
+ .premiumHero.limeHero #heroTitle{
+  font-size:clamp(39px,10.8vw,61px)!important;
+  line-height:1!important;letter-spacing:-.075em!important;
+  margin:18px 0 7px!important;white-space:nowrap
+ }
+ .premiumHero.limeHero .heroEnglish{
+  font-size:9px!important;letter-spacing:.13em;margin-top:6px!important
+ }
+ .premiumHero.limeHero .heroLead{
+  font-size:10px!important;line-height:1.8!important;
+  max-width:270px!important;margin:12px 0 14px!important
+ }
+ .premiumHero.limeHero .heroActions{width:100%;max-width:390px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+ .premiumHero.limeHero .heroActions .button{
+  min-width:0!important;min-height:42px!important;
+  white-space:normal!important;text-align:center;
+  font-size:9px!important;padding:8px 6px!important;gap:3px
+ }
+ .premiumHero.limeHero .heroVisual.limeHeroArt{
+  height:clamp(150px,48vw,235px)!important;min-height:0!important;
+ }
+ .artDisc{width:clamp(115px,33vw,170px);box-shadow:0 0 0 6px #d9ff4c12,0 0 35px #bdf13939}
+ .artDisc>span{font-size:7px}
+ .artDisc>strong{font-size:clamp(32px,10vw,53px)}
+ .artDisc>small{font-size:5px}
+ .artDisc:after{inset:6px}
+ .artOrbit{width:clamp(195px,60vw,325px)}
+ .artOrbitB{width:clamp(145px,48vw,255px)}
+ .artCaption{left:10px;bottom:8px}
+ .artCaption>span{font-size:6px}
+ .artCaption>b{font-size:7px}
+ .artSparkA{left:16%;font-size:20px}
+ .artSparkB{right:15%;font-size:17px}
+ .hero.premiumHero .heroSideNote{display:none}
+ .trust.trustSlim{
+  flex-direction:row!important;display:flex!important;gap:0!important;
+  min-height:39px!important;margin:7px auto 35px!important;
+  overflow-x:hidden
+ }
+ .trust.trustSlim>div{flex:1 1 33.3%;padding:7px 3px!important;gap:4px!important;min-width:0}
+ .trust.trustSlim span{font-size:12px!important}
+ .trust.trustSlim strong{font-size:7px!important;white-space:normal;line-height:1.3}
+ .trust.trustSlim small{display:none!important}
+ .sectionHead h2{font-size:clamp(23px,7vw,31px)!important}
+ .categoriesSection{margin-bottom:39px!important}
+ .merchGateway{grid-template-columns:1fr 1fr!important;gap:7px!important}
+ .gatewayCard{min-height:116px!important;padding:9px 10px!important}
+ .gatewayCopy{width:78%!important;gap:3px!important}
+ .gatewayCopy small{font-size:6px!important}
+ .gatewayCopy strong{font-size:clamp(12px,3.1vw,16px)!important;line-height:1.45!important}
+ .gatewayCopy>span{display:none}
+ .gatewayCopy b{font-size:7px!important;padding:3px 0!important;gap:3px;min-height:23px!important}
+ .gatewayCard img{width:42%!important;height:83%!important;bottom:4px!important;left:-7px!important}
+ .gatewayCard:before{width:39%;height:79%;top:10%;left:0}
+ .gatewayCount{font-size:6px!important;left:5px!important;top:6px!important}
+ .toolbar{gap:7px!important}
+ .shoeCardsGrid.unifiedCardsGrid{grid-template-columns:1fr!important;gap:11px!important}
+ .shoeCardsGrid .cardMedia{aspect-ratio:1.47/1!important}
+ .shoeCardsGrid .cardMediaClick{padding:10px 13px!important}
+ .shoeCardsGrid .cardContent{padding:15px!important}
+ .shoeCardsGrid .cardTitle h3{font-size:19px!important}
+ .shoeCardsGrid .cardTitle strong{font-size:18px!important}
+ .carProductCard .cardTitle h3{font-size:16px!important}
+ .editorialClosing.story{grid-template-columns:1fr!important;min-height:0!important;margin-bottom:36px!important}
+ .editorialClosing .storyTitle{padding:20px!important}
+ .editorialClosing .storyTitle h2{font-size:31px!important}
+ .storyMotif{height:135px;min-height:135px!important}
+ .storyMotif span{font-size:150px}
+ .storyMotif strong{font-size:39px}
+ .mobileBar{
+  position:fixed!important;display:grid!important;
+  bottom:calc(7px + env(safe-area-inset-bottom,0px))!important;
+  right:8px!important;left:8px!important;width:auto!important;
+  max-width:calc(100vw - 16px)!important;
+  grid-template-columns:minmax(0,1fr) auto!important;gap:6px!important;
+  padding:6px!important;min-height:54px!important;
+ }
+ .mobileBar a{min-width:0!important;min-height:41px!important;padding:7px 11px!important;font-size:11px!important}
+ .mobileBar button{flex:0 0 auto;min-height:41px!important;padding:7px 12px!important;font-size:11px!important}
+ body.hasDialog .mobileBar{display:none!important}
+ .drawer{height:100dvh!important;width:100vw!important;max-width:100vw!important}
+ .drawerFooter{padding:11px 12px calc(13px + env(safe-area-inset-bottom,0px))!important}
+ .drawerFooter .button{min-height:46px!important;max-width:100%;padding:8px 13px!important;font-size:10px!important}
+}
+@media(max-width:360px){
+ .premiumHero.limeHero #heroTitle{font-size:36px!important}
+ .heroEyebrow{font-size:7px!important}
+ .premiumHero.limeHero .heroEnglish{font-size:8px!important}
+ .premiumHero.limeHero .heroActions .button{font-size:8px!important}
+ .gatewayCopy strong{font-size:12px!important}
+ .gatewayCopy b{font-size:6px!important}
+ .gatewayCard img{width:43%!important}
+ .carProductCard .cardTitle h3{font-size:15px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .premiumTicker .tickerTrack,.premiumTicker .tickerPhrase,.premiumTicker .tickerPhrase b,
+ .premiumBrand .brandWord,.artDisc,.artSpark,.artOrbit,.cardMedia:after,.gatewayCard:before,.storyMotif span{
+  animation:none!important;transform:none!important
+ }
+ .shoeCardsGrid .productCard,.shoeCardsGrid .cardMediaClick img,.shoeCardsGrid .cardBottom button span{
+  transition:none!important
+ }
+}
