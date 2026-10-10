@@ -15,7 +15,7 @@
   {id:'categories',title:'الأقسام',selector:'.categoriesSection'},
   {id:'shoeImages',title:'صور موديلات الأحذية',selector:'.shoeCardsGrid .cardMedia'},
   {id:'shoeCards',title:'كروت الأحذية',selector:'.shoeCardsGrid .productCard'},
-  {id:'car',title:'منتج السيارات',selector:'.carMerchShelf'},
+  {id:'car',title:'منتج السيارات',selector:'[data-product-id="carwash48"]'},
   {id:'details',title:'نافذة تفاصيل المنتج',selector:'.productDrawer'},
   {id:'cart',title:'السلة',selector:'.cartDrawer'},
   {id:'mobileCTA',title:'زر الموبايل السفلي',selector:'.mobileBar'},
