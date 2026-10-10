@@ -15,10 +15,18 @@ Never change, merge into, or deploy to `SELECT-SHOP-CLEAN`.
 - The existing Supabase backend `select-shop-orders` (project `zznqdwrohrycsjfpvkhc`) and private authenticated admin page `/preview/select-unified-v1/orders-admin/` remain independent of CLEAN.
 - These additions exist only on a development branch; no public site or database was changed.
 
+## Verified after setting up administrator (2026-10-11)
+
+- [x] Separate Supabase `select-shop-orders` has exactly one confirmed Auth account.
+- [x] Account authorized in `public.ss_order_admins` (exactly one authorized administrator).
+- [x] Verified order count remains 0 and catalog has 5 products.
+- [ ] Owner must test admin dashboard login with their own password; this login cannot be tested by the assistant.
+- [ ] Cloudflare Turnstile, private function secrets, E2E test and explicit go-live approval remain mandatory.
+
 ## Required before ANY live enablement
 
-1. In the isolated `select-shop-orders` project, create a dedicated administrator via Supabase Authentication > Users. Use a private password, never submit it in ChatGPT.
-2. Authorize that exact Supabase Auth user by adding their user UUID to `public.ss_order_admins`, keeping `RLS` and authenticated-only permissions.
+1. ✅ Created dedicated administrator in isolated `select-shop-orders` Supabase Authentication and verified email confirmation (one account).
+2. ✅ Authorized that exact account in `public.ss_order_admins` (one admin), with RLS enabled and no anonymous direct order access.
 3. Configure free Cloudflare Turnstile for `selectshopeg.com` and `www.selectshopeg.com`. Public site key goes in the client config; secret stays in Edge Function secrets.
 4. Configure `ORDER_HASH_SECRET` server-side. Do not store in public GitHub or client JS.
 5. Check current product IDs, variant sizes and prices against `public.ss_order_catalog`, including car-care's no-size server representation `[0]`, second-pair discounts and shipping reviews.
