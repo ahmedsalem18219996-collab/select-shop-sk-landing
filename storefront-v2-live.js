@@ -340,6 +340,9 @@
       ga("begin_checkout",{value:totals().total});
     }
     showDialog("checkoutDialog");
+    // Off by default; never bypass the owner QA dry-run or existing WhatsApp flow.
+    if(!testMode && window.SELECT_SHOP_DIRECT_ORDER_V2?.isEnabled?.())
+      void window.SELECT_SHOP_DIRECT_ORDER_V2.prepare().catch(err=>console.warn("Direct order preparation:",err?.name||"request_failed"));
   }
   const normalizePhone=val=>val.replace(/[٠-٩]/g,c=>String(c.charCodeAt(0)-1632)).replace(/[۰-۹]/g,c=>String(c.charCodeAt(0)-1776)).replace(/[\s\-()]/g,"");
   const orderReference=()=>("SS-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7)).toUpperCase();
@@ -362,7 +365,7 @@
     return lines.join("\n");
   }
   let submitting=false;
-  function submitLive(event){
+  async function submitLive(event){
     event.preventDefault();if(submitting)return;
     if(!cart.length){$("#formError").textContent="السلة فارغة";$("#formError").hidden=false;return}
     const form=event.currentTarget,d=Object.fromEntries(new FormData(form));
@@ -375,6 +378,34 @@
       return;
     }
     $("#formError").hidden=true;
+    if(!testMode && window.SELECT_SHOP_DIRECT_ORDER_V2?.isEnabled?.()){
+      submitting=true;
+      try{
+        const lineItems=cart.map(item=>({
+          productId:item.productId,variantId:item.variantId,
+          sizes:item.sizes.slice(),role:item.role
+        }));
+        const saved=await window.SELECT_SHOP_DIRECT_ORDER_V2.submit({
+          name:String(d.name||""),phone:String(d.phone||""),
+          governorate:String(d.region||""),area:String(d.area||""),
+          address:String(d.address||""),notes:String(d.notes||"")
+        },lineItems);
+        // Save only receipt metadata. Never put customer name, phone or address in browser storage.
+        try{localStorage.setItem("selectShopLastOrderV2",JSON.stringify({
+          orderId:saved.orderCode,createdAt:new Date().toISOString(),status:"saved"
+        }))}catch{}
+        cart=[];persist();renderCart();form.reset();
+        closeDialog("checkoutDialog");
+        window.SELECT_SHOP_DIRECT_ORDER_V2.receipt(saved);
+        showToast("تم تسجيل الأوردر بنجاح");
+      }catch(err){
+        // Keep cart and customer data in form after failures; retry uses same request id.
+        console.warn("Direct order not confirmed",err?.name||"request_failed");
+        $("#formError").textContent=err?.message||"تعذر حفظ الأوردر. حاول تاني بنفس البيانات.";
+        $("#formError").hidden=false;
+      }finally{submitting=false}
+      return;
+    }
     const orderId=orderReference(),t=totals(),message=textOrder(d,orderId);
     const target="https://wa.me/"+PHONE+"?text="+encodeURIComponent(message);
     const fallback=$("#whatsappFallback");fallback.href=target;fallback.hidden=false;
