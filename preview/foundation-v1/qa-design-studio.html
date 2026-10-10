@@ -1,0 +1,56 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>SELECT SHOP — Design Studio Internal QA</title><style>
+*{box-sizing:border-box}body{background:#11121c;color:#eee9e8;font:13px/1.9 Tahoma,Arial,sans-serif;margin:0;padding:18px}h1{font-size:23px;margin:0 0 5px}.subtitle{font-size:12px;color:#b2acb6;margin:0 0 18px}
+.results{padding:17px;background:#1d202a;border:1px solid #434757;border-radius:7px;margin:0 0 22px;max-width:850px}.test{padding:7px 0;border-bottom:1px solid #41424d}.test.pass{color:#8ce7ba}.test.fail{color:#ff9a9f}
+.frames{display:flex;flex-wrap:wrap;align-items:start;gap:26px;direction:ltr}.frame{display:flex;flex-direction:column;gap:7px}.frame strong{font:700 13px Tahoma;color:#eac4ab}iframe{box-sizing:content-box;display:block;background:white;border:5px solid #555762;border-radius:12px;box-shadow:0 16px 40px #0007}
+</style></head><body><h1>SELECT SHOP — اختبار لوحة التصميم</h1><p class="subtitle">فحص تلقائي في نسخة المعاينة فقط: 390px و320px، 13 اختيار، تبديل التصميم، التعليق على جزء، والتأكد من ظهور المنتجات. لا يرسل أي أوردرات.</p><div id="results" class="results">جارٍ تحميل واختبار المعاينة…</div><div class="frames"><div class="frame"><strong>390 × 844</strong><iframe id="p390" title="390px review mode" width="390" height="844" src="/preview/foundation-v1/?review=1&amp;qa=390"></iframe></div><div class="frame"><strong>320 × 720</strong><iframe id="p320" title="320px review mode" width="320" height="720" src="/preview/foundation-v1/?review=1&amp;qa=320"></iframe></div></div>
+<script>
+const result=document.getElementById('results'),rows=[];
+function record(label,pass,detail){rows.push({label,pass,detail});result.innerHTML='<strong>الفحوص المكتملة: '+rows.length+'</strong>'+rows.map(r=>'<div class="test '+(r.pass?'pass':'fail')+'">'+(r.pass?'✓':'✕')+' '+r.label+' — '+r.detail+'</div>').join('')}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function waitFrame(frame){return new Promise(resolve=>{if(frame.contentDocument?.readyState==='complete')return resolve();frame.addEventListener('load',resolve,{once:true});setTimeout(resolve,10000)})}
+async function run(){
+ const f=document.getElementById('p390'),small=document.getElementById('p320');
+ await Promise.all([waitFrame(f),waitFrame(small)]);await sleep(1800);
+ const w=f.contentWindow,d=f.contentDocument;
+ const w2=small.contentWindow,d2=small.contentDocument;
+ const saved=w.localStorage.getItem('selectShop:designReview:v1');
+ try{
+ record('العرض 390px',w.innerWidth===390&&d.documentElement.scrollWidth<=390,'innerWidth '+w.innerWidth+' / scrollWidth '+d.documentElement.scrollWidth);
+ record('العرض 320px',w2.innerWidth===320&&d2.documentElement.scrollWidth<=320,'innerWidth '+w2.innerWidth+' / scrollWidth '+d2.documentElement.scrollWidth);
+ const panel=d.getElementById('selectDesignPanel');
+ record('فتح لوحة المراجعة تلقائيًا',!!panel&&!panel.hidden,'open '+!!panel+' / hidden '+(panel?.hidden??'?'));
+ record('13 جزء و3 تشكيلات',d.querySelectorAll('.sdrSectionButton').length===13&&d.querySelectorAll('.sdrPreset').length===3,
+ 'parts '+d.querySelectorAll('.sdrSectionButton').length+' / presets '+d.querySelectorAll('.sdrPreset').length);
+ record('4 كروت أحذية + منتج سيارات',d.querySelectorAll('#productGrid .shoeCardsGrid .productCard').length===4&&d.querySelectorAll('#productGrid .carSpotlight').length===1,
+ 'shoes '+d.querySelectorAll('#productGrid .shoeCardsGrid .productCard').length+' / car '+d.querySelectorAll('#productGrid .carSpotlight').length);
+ const heroTab=d.querySelector('.sdrSectionButton[data-section="hero"]');heroTab?.click();
+ const heroChoice=Array.from(d.querySelectorAll('.sdrOption')).find(b=>b.textContent.includes('Image First'));heroChoice?.click();
+ record('تبديل عرض الهيرو إلى Image First',d.body.dataset.designHero==='image','body[data-design-hero] '+d.body.dataset.designHero);
+ const tickerTab=d.querySelector('.sdrSectionButton[data-section="ticker"]');tickerTab?.click();
+ const staticChoice=Array.from(d.querySelectorAll('.sdrOption')).find(b=>b.textContent.includes('ثابت'));staticChoice?.click();
+ const animation=w.getComputedStyle(d.querySelector('.tickerTrack')).animationName;
+ record('بانر ثابت بدون حركة',d.body.dataset.designTicker==='static'&&animation==='none','ticker '+d.body.dataset.designTicker+' / animation '+animation);
+ const cardsTab=d.querySelector('.sdrSectionButton[data-section="cards"]');cardsTab?.click();
+ const denseChoice=Array.from(d.querySelectorAll('.sdrOption')).find(b=>b.textContent.includes('Dense'));denseChoice?.click();
+ record('تغيير كروت المنتجات',d.body.dataset.designCards==='dense','cards '+d.body.dataset.designCards);
+ const pick=d.getElementById('sdrInspect');pick?.click();
+ const during=w.getComputedStyle(d.getElementById('selectDesignPanel')).display;
+ record('الموبايل: اللوحة تختفي وقت تحديد جزء',d.body.classList.contains('select-design-inspect')&&during==='none','panel display '+during);
+ d.querySelector('.premiumHero h1')?.dispatchEvent(new w.MouseEvent('click',{bubbles:true,cancelable:true}));
+ const after=w.getComputedStyle(d.getElementById('selectDesignPanel')).display;
+ record('النقر على النص يحدد قسم الخطوط ويرجع اللوحة',!d.body.classList.contains('select-design-inspect')&&after!=='none'&&d.querySelector('#sdrTitle')?.textContent==='الخطوط والتيكست',
+ 'section '+d.querySelector('#sdrTitle')?.textContent+' / display '+after);
+ const issue=d.getElementById('sdrIssue'),comment=d.getElementById('sdrComment');
+ issue.value='موبايل';issue.dispatchEvent(new w.Event('change',{bubbles:true}));
+ comment.value='الصورة صغيرة على الموبايل';comment.dispatchEvent(new w.Event('input',{bubbles:true}));
+ const report=w.SELECT_SHOP_DESIGN_STUDIO?.getReport?.()||'';
+ record('حفظ الملاحظة في تقرير قابل للنسخ',report.includes('الصورة صغيرة على الموبايل')&&report.includes('موبايل'),'report size '+report.length+' chars');
+ record('المنتجات والسلة ما اتغيروش',!!d.querySelector('#cartDialog')&&!!d.querySelector('#checkoutForm')&&d.querySelectorAll('#productGrid .productCard').length===4,'checkout/cart DOM safe');
+ }catch(e){record('خطأ أثناء الفحص',false,String(e))}
+ finally{
+ if(saved===null)w.localStorage.removeItem('selectShop:designReview:v1');
+ else w.localStorage.setItem('selectShop:designReview:v1',saved);
+ }
+}
+run();
+</script></body></html>
