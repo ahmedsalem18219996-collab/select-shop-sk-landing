@@ -1,10 +1,10 @@
-/* SELECT SHOP Review V2 — standalone brand interactions.
+/* SELECT SHOP LIVE V2 — standalone brand interactions.
    No cart, order, analytics or product pricing code.
    CSS-only transitions plus IntersectionObserver for scroll entrances.
 */
 (() => {
  "use strict";
- if (!window.SELECT_SHOP_PREVIEW_ONLY || !location.pathname.startsWith("/preview/select-v2/")) return;
+ if (!window.SELECT_SHOP_V2_LIVE) return;
  const $=s=>document.querySelector(s);
  const $$=s=>Array.from(document.querySelectorAll(s));
  const menuButton=$("#navCategoryButton"), menu=$("#navCategoryMenu");
@@ -50,5 +50,5 @@
  }
  // Use a single delegated handler for the arrow animation cue, CSS drives the motion.
  document.documentElement.classList.add("select-v2-ready");
- window.SELECT_SHOP_V2=Object.freeze({previewOnly:true,visuals:"ink-copper-iris",shippingPolicy:"proposed-only"});
+ window.SELECT_SHOP_V2=Object.freeze({previewOnly:false,visuals:"lime-atelier",shippingPolicy:"live-confirmed-only"});
 })();
