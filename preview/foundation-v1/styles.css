@@ -406,3 +406,5 @@ dialog::backdrop{background:#151016b8;backdrop-filter:blur(4px)}
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
  .hero:hover .heroShoeWrap img{transform:none}
 }
+/* The car-care shipping quote is intentionally conditional outside Cairo/Giza. */
+#checkoutSummary.shipping-warning{background:#fff1db;color:#9c3e24;border:2px solid #e69c55;box-shadow:0 0 0 3px #ffc78d36;font-weight:800;line-height:2}
