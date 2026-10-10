@@ -1,0 +1,28 @@
+name: Temporary storefront V2 direct-order safety
+on:
+  push:
+    branches:
+      - feature/temp-v2-direct-orders-staging
+    paths:
+      - "direct-order-v2*.js"
+      - "storefront-v2-live.js"
+      - "index.html"
+      - "orders-system/tests/direct-order-v2-safety.test.cjs"
+      - ".github/workflows/temp-v2-direct-orders-safety.yml"
+  pull_request:
+    paths:
+      - "direct-order-v2*.js"
+      - "storefront-v2-live.js"
+      - "index.html"
+      - "orders-system/tests/direct-order-v2-safety.test.cjs"
+      - ".github/workflows/temp-v2-direct-orders-safety.yml"
+permissions:
+  contents: read
+jobs:
+  safe-mock-tests:
+    name: No-network V2 direct-order tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Node tests without credentials or network API calls
+        run: node --test orders-system/tests/direct-order-v2-safety.test.cjs
