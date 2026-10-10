@@ -19,6 +19,7 @@
 - [x] Existing protected frontend adapter for direct orders (not active).
 - [x] Catalog has five product snapshots.
 - [x] Stage-only UX copy updated to describe direct registration, not WhatsApp.
+- [x] Published homepage (`/`, `index.html`) still uses `script-v17-safe.js` and WhatsApp checkout. The direct-order adapter exists only inside `/preview/select-unified-v1/` until an explicit rollout.
 - [ ] Dedicated admin Supabase Auth user created and granted `ss_order_admins` membership (**0 users, 0 admins** at inspection).
 - [ ] Cloudflare Turnstile configured for `selectshopeg.com` and `www.selectshopeg.com`.
 - [ ] Server-only secrets `TURNSTILE_SECRET_KEY` and `ORDER_HASH_SECRET` configured and checked.
