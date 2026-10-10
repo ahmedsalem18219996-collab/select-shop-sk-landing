@@ -61,6 +61,7 @@
    const {width,height}=stage.getBoundingClientRect();
    if(width<140||height<100)return;
    const isMobile=width<=620;
+   const axis=isMobile ? 43 : 47;
    const curve=rad(isMobile?76:78);
    const tileShare=isMobile ? 0.56 : 0.48;
    const tileHeight=Math.min(height*tileShare,(MAX_SHARE*width)/ASPECT);
@@ -93,7 +94,7 @@
      const tile=document.createElement("div");
      tile.className="tgh-tile";
      tile.style.cssText="width:"+rounded(tileWidth)+"px;height:"+rounded(tileHeight)+"px;"+
-       "left:calc(50% - "+rounded(tileWidth/2)+"px);top:calc(56% - "+rounded(tileHeight/2)+"px);"+
+       "left:calc(50% - "+rounded(tileWidth/2)+"px);top:calc("+axis+"% - "+rounded(tileHeight/2)+"px);"+
        "animation:"+name+" "+rounded(period)+"s linear "+rounded(-i*SPEED)+"s infinite;";
      for(let k=0;k<SLICES;k++){
        const facet=document.createElement("div");
@@ -123,7 +124,7 @@
    }
    band.replaceChildren(fragment);
    band.style.perspective=rounded(radius*CAMERA)+"px";
-   band.style.perspectiveOrigin="50% 56%";
+   band.style.perspectiveOrigin="50% "+axis+"%";
    stage.classList.add("tgh-ready");
  }
  const resize=window.ResizeObserver?new ResizeObserver(layout):null;
