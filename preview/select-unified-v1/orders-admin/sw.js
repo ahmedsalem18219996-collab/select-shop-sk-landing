@@ -1,5 +1,5 @@
-const STATIC_CACHE="select-orders-shell-v2";
-const STATIC=["./","./styles.css","./app.js","./config.js","./manifest.webmanifest","./icon.svg"];
+const STATIC_CACHE="select-orders-shell-v3";
+const STATIC=["./","./styles.css","./app.js","./affiliate.js","./affiliate-admin.js","./config.js","./manifest.webmanifest","./icon.svg"];
 self.addEventListener("install",event=>event.waitUntil(caches.open(STATIC_CACHE)
  .then(cache=>cache.addAll(STATIC)).then(()=>self.skipWaiting())));
 self.addEventListener("activate",event=>event.waitUntil(
