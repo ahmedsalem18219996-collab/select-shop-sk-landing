@@ -109,3 +109,46 @@ test('current temporary storefront homepage remains unchanged and WhatsApp-based
   assert.match(productionHome, /script-v17-safe\.js/);
   assert.doesNotMatch(productionHome, /orders-checkout\.js/);
 });
+
+test('direct checkout does not revert to WhatsApp ordering on reopening', async () => {
+  const nodes = new Map();
+  const createNode = () => ({ textContent: '', style: {}, setAttribute(name,value){this[name]=value} });
+  const names = [
+    '#checkoutForm','#ssfOrderCaptcha','#formError','#whatsappFallback',
+    '.checkout-required-guide strong','.checkout-required-guide span',
+    '.checkout-trust-notice p','.checkout-cta-wrap .whatsapp small',
+    '.checkout-cta-wrap .whatsapp b','.checkout-cta-wrap .whatsapp svg',
+  ];
+  names.forEach(name=>nodes.set(name,createNode()));
+  const fallback = nodes.get('#whatsappFallback');
+  fallback.href = 'https://wa.me/201289437444?text=REAL_ORDER_CONTENT';
+  let renderCount=0;
+  const context = {
+    window: { turnstile: { render:()=>{renderCount++;return 91} } },
+    document: {querySelector:q=>nodes.get(q)||null},
+    fetch:()=>{throw Error('UNEXPECTED_NETWORK_REQUEST')},
+    console,TextEncoder,crypto:globalThis.crypto,
+  };
+  vm.runInNewContext(configSource,context);
+  context.window.SELECT_SHOP_GUEST_ORDERS = {
+    ...context.window.SELECT_SHOP_GUEST_ORDERS,
+    enabled:true,
+    turnstileSiteKey:'site-test-placeholder',
+  };
+  vm.runInNewContext(checkoutSource,context);
+  await context.window.SELECT_SHOP_GUEST_CHECKOUT.prepare();
+  assert.equal(renderCount,1);
+  assert.equal(nodes.get('.checkout-cta-wrap .whatsapp b').textContent,'تأكيد الطلب وتسجيله');
+  assert.equal(nodes.get('.checkout-cta-wrap .whatsapp svg').style.display,'none');
+  assert.ok(decodeURIComponent(fallback.href).includes('عندي استفسار'));
+  assert.ok(!fallback.href.includes('REAL_ORDER_CONTENT'));
+  // core.js overwrites labels and fallback each time checkout opens.
+  fallback.href = 'https://wa.me/201289437444?text=ANOTHER_ORDER';
+  nodes.get('.checkout-cta-wrap .whatsapp b').textContent='إتمام الطلب على واتساب';
+  nodes.get('.checkout-cta-wrap .whatsapp small').textContent='فتح واتساب';
+  await context.window.SELECT_SHOP_GUEST_CHECKOUT.prepare();
+  assert.equal(renderCount,1,'Turnstile should not render a second time');
+  assert.equal(nodes.get('.checkout-cta-wrap .whatsapp b').textContent,'تأكيد الطلب وتسجيله');
+  assert.ok(!fallback.href.includes('ANOTHER_ORDER'));
+  assert.ok(decodeURIComponent(fallback.href).includes('عندي استفسار'));
+});
