@@ -2229,3 +2229,10 @@ body .dock-cart b{background:#ff8126!important}
  html body .multi-hero-products:before,html body .multi-hero-products a:first-child{animation:none!important;transition:none!important}
 }
 @keyframes ocGlowBreathe{0%,100%{opacity:.75;transform:scale(.985)}50%{opacity:.93;transform:scale(1.04)}}
+
+
+/* V19 final layout guard: existing desktop .hero has a LTR named-area
+   template. Reset it so the RTL copy remains on the RIGHT and photo on LEFT. */
+html body .multi-hero{direction:rtl!important;grid-template-areas:none!important}
+html body .multi-hero-copy{direction:rtl}
+html body .multi-hero-products{direction:ltr}
