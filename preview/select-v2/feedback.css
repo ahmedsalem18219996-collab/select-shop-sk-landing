@@ -70,4 +70,11 @@ body.v2fbPicking :is(.siteHeader,.premiumTicker,.premiumHero,.categoriesSection,
   padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px))
  }
 }
+/* SELECT SHOP V2 MODAL INTERACTION FIX
+   Annotation controls must never cover the product, cart or checkout dialogs.
+   Preview-only UI; product/cart/order logic is unchanged. */
+body.hasDialog #v2Feedback .v2FeedbackLauncher,
+body.hasDialog #v2Feedback .v2FeedbackPanel,
+body.hasDialog #v2Feedback .v2fbHint{display:none!important}
+
 @media(prefers-reduced-motion:reduce){.v2FeedbackLauncher{transition:none}}
