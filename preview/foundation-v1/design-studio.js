@@ -79,7 +79,7 @@
     '<div class="sdrTop"><div><small>SELECT SHOP / DESIGN STUDIO</small><h2>اختار الستايل بنفسك</h2><p>غيّر شكل أي جزء، وعلّم على اللي محتاج يتصلح.</p></div><button type="button" id="sdrClose" aria-label="إغلاق المراجعة">×</button></div>'+
     '<div class="sdrPresets"><span>تشكيلات جاهزة متناسقة</span><div id="sdrPresetOptions" class="sdrPresetOptions"></div></div>'+
     '<div class="sdrModes"><button type="button" id="sdrInspect" aria-pressed="false">◎ اختار جزء من الصفحة</button><button type="button" id="selectDesignCompare">مقارنة بالأصلي</button></div>'+
-    '<p class="sdrModeHint" id="sdrModeHint">اضغط على أي جزء من المتجر لتحديده، أو اختاره من القائمة.</p>'+
+    '<p class="sdrModeHint" id="sdrModeHint">اضغط على أي جزء من المتجر لتحديده، أو اختاره من القائمة. الاختيارات للمعاينة البصرية، وليست اختبار سرعة فعلي.</p>'+
     '<div class="sdrSections" id="sdrSections" role="group" aria-label="أجزاء المتجر"></div>'+
     '<div class="sdrEditing"><div class="sdrEditingHeading"><small>الجزء المحدد</small><h3 id="sdrTitle"></h3><p id="sdrHint"></p></div><div id="sdrOptions" class="sdrOptionGrid" role="group"></div>'+
     '<label for="sdrIssue">إيه المشكلة في الجزء ده؟</label><select id="sdrIssue"><option>شكل</option><option>أداء</option><option>سهولة استخدام</option><option>موبايل</option><option>غير ذلك</option></select>'+
@@ -87,6 +87,10 @@
     '<button type="button" id="sdrJump">↗ روح للجزء ده</button></div>'+
     '<div class="sdrFooter"><div class="sdrFootActions"><button type="button" id="sdrCopy" class="sdrMain">نسخ التقرير وإبعتهولي</button><button type="button" id="sdrDownload">تحميل .txt</button></div><button type="button" id="sdrReset">إرجاع الاختيارات الافتراضية</button><p id="sdrStatus" role="status" aria-live="polite">اختياراتك بتتحفظ على نفس الجهاز. محتاج تبعتلي التقرير علشان أشوفها.</p></div>';
   host.appendChild(panel);
+  const pickHint=make('div','sdrPickHint');
+  pickHint.id='sdrPickHint';
+  pickHint.innerHTML='<strong>اضغط على الجزء اللي عايز تعدّله</strong><small>بعد ما تختاره، هنرجعك للاختيارات وملاحظاتك.</small><button type="button" id="sdrCancelPick">إلغاء التحديد</button>';
+  host.appendChild(pickHint);
   document.body.appendChild(host);
   const presetEl=$('#sdrPresetOptions');
   for(const [id,name] of [['editorial','Dark Editorial'],['luxury','Clean Luxury'],['creative','Midnight Creative']]){
@@ -163,6 +167,7 @@
   }
   launcher.addEventListener('click',()=>panelOpen?closePanel():openPanel());
   $('#sdrClose').addEventListener('click',closePanel);
+  $('#sdrCancelPick').addEventListener('click',()=>{if(inspect)$('#sdrInspect').click()});
   $('#sdrInspect').addEventListener('click',()=>{
     inspect=!inspect;
     $('#sdrInspect').setAttribute('aria-pressed',String(inspect));
