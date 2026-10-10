@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>SELECT SHOP — Mobile QA Frames (Internal Preview)</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#11131a;color:#f8f3ef;font:13px/1.7 Tahoma,Arial,sans-serif;padding:22px}
+h1{font-size:21px;margin:0 0 6px}
+p{color:#bbb5c0;margin:0 0 17px}
+.frames{display:flex;flex-wrap:wrap;gap:23px;align-items:flex-start;justify-content:center;direction:ltr}
+.device{display:flex;flex-direction:column;gap:10px;width:max-content;max-width:100%}
+.device strong{font-size:13px;direction:ltr;letter-spacing:.1em}
+.device span{font-size:11px;color:#beb5c0}
+iframe{background:#fff;border:6px solid #454855;border-radius:15px;width:390px;height:844px;max-width:100%;box-shadow:0 20px 65px #0009}
+#small{width:320px}#tablet{width:768px;height:650px}
+.results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:15px 0 25px;direction:ltr}
+.result{padding:13px;border:1px solid #434452;border-radius:8px;background:#1b1c27;min-width:0}
+.result code{font-size:12px;overflow-wrap:anywhere;color:#efa980}
+.result b{display:block;color:#fff;font-size:11px;margin:4px 0}
+.good{color:#7ce9bd!important}.bad{color:#ff8c91!important}
+@media(max-width:900px){#tablet{display:none}.results{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<h1>SELECT SHOP — Responsive QA</h1>
+<p>أداة فحص داخلية مستقلة تعرض نفس المعاينة في إطارات موبايل بعرض CSS حقيقي (390px و320px) وتوضح وجود تمرير أفقي من عدمه.</p>
+<div class="results">
+<div class="result" id="r390">390px <b>جاري القياس…</b></div>
+<div class="result" id="r320">320px <b>جاري القياس…</b></div>
+<div class="result" id="r768">768px <b>جاري القياس…</b></div>
+</div>
+<div class="frames">
+<div class="device"><strong>390 × 844 · MOBILE</strong><span>CSS viewport width = 390px</span><iframe title="SELECT SHOP 390px mobile" id="wide" width="390" height="844" src="/preview/foundation-v1/?qa=390" loading="eager" onload="inspect('wide','r390')"></iframe></div>
+<div class="device"><strong>320 × 844 · SMALL PHONE</strong><span>CSS viewport width = 320px</span><iframe title="SELECT SHOP 320px mobile" id="small" width="320" height="844" src="/preview/foundation-v1/?qa=320" loading="eager" onload="inspect('small','r320')"></iframe></div>
+<div class="device"><strong>768 × 650 · TABLET</strong><span>CSS viewport width = 768px</span><iframe title="SELECT SHOP 768px tablet" id="tablet" width="768" height="650" src="/preview/foundation-v1/?qa=768" loading="lazy" onload="inspect('tablet','r768')"></iframe></div>
+</div>
+<script>
+function inspect(iframeId,resultId){
+  const frame=document.getElementById(iframeId),output=document.getElementById(resultId);
+  const probe=()=>{
+    try{
+      const w=frame.contentWindow,d=w.document,root=d.documentElement;
+      const overflow=root.scrollWidth-w.innerWidth;
+      const hero=d.querySelector(".premiumHero"),cta=d.querySelector(".mobileBar"),grid=d.querySelector(".productGrid");
+      const css=getComputedStyleInFrame(w,cta),x=hero?.getBoundingClientRect();
+      const cssOk=[...d.styleSheets].some(s=>String(s.href||"").includes("premium.css"));
+      const count=grid?.children.length??0;
+      const result=[
+        '<code>innerWidth '+w.innerWidth+'px · scrollWidth '+root.scrollWidth+'px</code>',
+        '<b class="'+(overflow<=1?"good":"bad")+'">Horizontal overflow: '+(overflow<=1?"PASS":"FAIL +"+overflow+"px")+'</b>',
+        'Product cards: '+count+'; ticker: '+Boolean(d.querySelector(".tickerTrack"))+'; premium.css loaded: '+cssOk,
+        'Hero width: '+Math.round(x?.width||0)+'px; CTA visible: '+(css.display!=="none")+'; CTA bottom: '+Math.round(cta?.getBoundingClientRect().bottom||0)+'px'
+      ];
+      output.innerHTML=result.join("<div>")+"</div>";
+    }catch(e){output.textContent="QA error: "+e.message}
+  };
+  setTimeout(probe,1600);setTimeout(probe,4500);
+}
+function getComputedStyleInFrame(w,el){return el?w.getComputedStyle(el):{display:"missing"}}
+</script>
+</body>
+</html>
