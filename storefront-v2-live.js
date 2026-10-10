@@ -20,6 +20,35 @@
   const fmt = n => new Intl.NumberFormat("ar-EG").format(n)+" جنيه";
   const htmlEsc = x => String(x ?? "").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
   const photo = src => /^(https?:\/\/|\/)/.test(src) ? src : "/"+src;
+  const iconPlay="<svg class=\"ssIcon\" viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 5.5 19 12 8 18.5z\"/></svg>";
+  const inquiryHref=message=>"https://wa.me/"+PHONE+"?text="+encodeURIComponent(message);
+  // Optional direct MP4/WebM links from product or variant; no placeholder players.
+  const videoUrl=(p,v)=>{
+    const raw=v.video||p.video;
+    if(typeof raw!=="string"||!raw.trim())return null;
+    try{
+      const u=new URL(raw,location.origin);
+      if(!["https:","http:"].includes(u.protocol)||!/\\.(mp4|webm)$/i.test(u.pathname))return null;
+      if(u.protocol==="http:"&&u.hostname!==location.hostname)return null;
+      return u.href;
+    }catch{return null}
+  };
+  function resetDetailVideo(){
+    const video=$("#detailVideoPlayer"),stage=$("#detailVideoWrap"),picture=$(".detailImage");
+    if(!video||!stage||!picture)return;
+    video.pause();video.removeAttribute("src");
+    stage.hidden=true;picture.hidden=false;
+  }
+  function showDetailVideo(){
+    if(!viewed)return;
+    const p=C[viewed.productId],v=selectedVariant(p.id,viewed.variantId),src=videoUrl(p,v);
+    if(!src)return;
+    const player=$("#detailVideoPlayer");
+    if(player.getAttribute("src")!==src)player.src=src;
+    $(".detailImage").hidden=true;$("#detailVideoWrap").hidden=false;
+    player.load();
+    $("#detailGallery button").forEach(b=>b.classList.toggle("active",b.matches("[data-show-video]")));
+  }
   const productCategory = id => id === "carwash48" ? "car" : "shoes";
   const classLabel = id => id === "carwash48" ? "عناية السيارات" : id === "sk" || id === "wk" ? "أحذية حريمي" : "أحذية رجالي وحريمي حسب المقاس";
   const selectedVariant = (productId,variantId) => C[productId]?.variants.find(v=>v.id===variantId)||C[productId]?.variants[0];
@@ -131,26 +160,26 @@
     const p=C[id],v=selectedVariant(id,cardVariant[id]),m=MERCH[id];
     const thumbs=p.variants.map(x=>'<button class="colorMini '+(x.id===v.id?'active':'')+'" type="button" data-color="'+htmlEsc(id)+'|'+htmlEsc(x.id)+'" aria-label="عرض '+htmlEsc(x.code+" "+x.name)+'" aria-pressed="'+String(x.id===v.id)+'"><img loading="lazy" src="'+htmlEsc(photo(x.image))+'" alt=""></button>').join("");
     return '<article class="productCard editorialCard" data-product-id="'+htmlEsc(id)+'">'+
-      '<div class="cardMedia"><button class="cardMediaClick" type="button" data-show-product="'+htmlEsc(id)+'" aria-label="استعراض صور وتفاصيل '+htmlEsc(p.name)+'"><img class="mainCardImage" src="'+htmlEsc(photo(v.image))+'" alt="'+htmlEsc(p.name+" "+v.name)+'" loading="lazy" width="700" height="700"></button><span class="cardTag">'+htmlEsc(m.tag)+'</span><span class="cardIndex">'+htmlEsc(v.code)+'</span><button class="cardQuick" type="button" data-show-product="'+htmlEsc(id)+'" aria-label="افتح '+htmlEsc(p.name)+'">↗</button></div>'+
+      '<div class="cardMedia"><button class="cardMediaClick" type="button" data-show-product="'+htmlEsc(id)+'" aria-label="استعراض صور وتفاصيل '+htmlEsc(p.name)+'"><img class="mainCardImage" src="'+htmlEsc(photo(v.image))+'" alt="'+htmlEsc(p.name+" "+v.name)+'" loading="lazy" width="700" height="700"></button><span class="cardTag">'+htmlEsc(m.tag)+'</span><span class="cardIndex">'+htmlEsc(v.code)+'</span><button class="cardQuick" type="button" data-show-product="'+htmlEsc(id)+'" aria-label="افتح '+htmlEsc(p.name)+'"><svg class="ssIcon ssIconArrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17.5 17.5 6.5M7.5 6.5h10v10"/></svg></button></div>'+
       '<div class="cardContent"><div class="cardCategory">'+htmlEsc(m.use)+' <span class="catalog-dot">•</span> '+htmlEsc(m.detail)+'</div>'+
       '<div class="cardTitle"><h3>'+htmlEsc(p.name)+'</h3><strong>'+fmt(p.price)+'</strong></div>'+
       '<p>'+htmlEsc(m.headline)+'. '+htmlEsc(p.description)+'</p>'+
       '<div class="merchColorHeader"><span>اختار الشكل واللون</span><strong>'+p.variants.length+' اختيارات</strong></div>'+
       '<div class="cardColors" role="group" aria-label="ألوان '+htmlEsc(p.name)+'">'+thumbs+'</div>'+
       '<div class="cardVariantInfo"><span class="variantSummary">'+htmlEsc(v.code+" — "+v.name)+'</span><span>المقاسات: '+htmlEsc(v.sizes.join("، "))+'</span></div>'+
-      '<div class="cardBottom"><span class="includedShipping">السعر شامل الشحن</span><button type="button" data-show-product="'+htmlEsc(id)+'">اختار المقاس واطلب <span aria-hidden="true">↗</span></button></div></div></article>';
+      '<div class="cardBottom"><span class="includedShipping">السعر شامل الشحن</span><button type="button" data-show-product="'+htmlEsc(id)+'">اختار المقاس واطلب <span aria-hidden="true"><svg class="ssIcon ssIconArrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17.5 17.5 6.5M7.5 6.5h10v10"/></svg></span></button></div></div></article>';
   }
   function carProductCard(){
     // Same visual card system as shoes. Cart and order rules remain untouched.
     const p=C.carwash48,v=p.variants[0];
     return '<article class="productCard editorialCard carProductCard" data-product-id="carwash48">'+
-     '<div class="cardMedia"><button class="cardMediaClick" type="button" data-show-product="carwash48" aria-label="صور وتفاصيل طقم غسيل السيارات"><img class="mainCardImage" loading="lazy" width="700" height="700" src="'+htmlEsc(photo(v.image))+'" alt="'+htmlEsc(p.name)+'"></button><span class="cardTag">CAR CARE / ESSENTIALS</span><span class="cardIndex">CW48</span><button class="cardQuick" type="button" data-show-product="carwash48" aria-label="فتح المنتج">↗</button></div>'+
+     '<div class="cardMedia"><button class="cardMediaClick" type="button" data-show-product="carwash48" aria-label="صور وتفاصيل طقم غسيل السيارات"><img class="mainCardImage" loading="lazy" width="700" height="700" src="'+htmlEsc(photo(v.image))+'" alt="'+htmlEsc(p.name)+'"></button><span class="cardTag">CAR CARE / ESSENTIALS</span><span class="cardIndex">CW48</span><button class="cardQuick" type="button" data-show-product="carwash48" aria-label="فتح المنتج"><svg class="ssIcon ssIconArrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17.5 17.5 6.5M7.5 6.5h10v10"/></svg></button></div>'+
      '<div class="cardContent"><div class="cardCategory">CAR CARE <span class="catalog-dot">•</span> طقم لاسلكي ببطاريتين</div>'+
      '<div class="cardTitle"><h3>'+htmlEsc(p.name)+'</h3><strong>'+fmt(p.price)+'</strong></div>'+
      '<p>طقم غسيل سيارات لاسلكي. اعرف تفاصيله وشوف كل المحتويات قبل الطلب.</p>'+
      '<div class="merchColorHeader"><span>محتويات الطقم</span><strong>طقم ببطاريتين</strong></div>'+
      '<div class="cardVariantInfo"><span>بدون مقاسات</span><span>شامل القاهرة والجيزة • شحن المحافظات يُؤكَّد</span></div>'+
-     '<div class="cardBottom"><span class="includedShipping">التوصيل حسب المحافظة</span><button type="button" data-show-product="carwash48">تفاصيل المنتج <span aria-hidden="true">↗</span></button></div></div></article>';
+     '<div class="cardBottom"><span class="includedShipping">التوصيل حسب المحافظة</span><button type="button" data-show-product="carwash48">تفاصيل المنتج <span aria-hidden="true"><svg class="ssIcon ssIconArrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17.5 17.5 6.5M7.5 6.5h10v10"/></svg></span></button></div></div></article>';
   }
   function renderProducts(){
     const list=ids.filter(id=>{
@@ -186,6 +215,7 @@
     const d=$("#"+id);if(d?.open)d.close();
     if(!$$("dialog[open]").length)document.body.classList.remove("hasDialog");
     if(id==="productDialog"){
+      resetDetailVideo();
       const u=new URL(location.href);u.searchParams.delete("product");u.searchParams.delete("variant");
       history.replaceState(null,"",u.pathname+u.search+u.hash);
     }
@@ -200,8 +230,12 @@
     $("#detailPrice").textContent=fmt(p.price);
     $("#detailFooterPrice").textContent=fmt(p.price);
     $("#detailDescription").textContent=p.description;
+    resetDetailVideo();
+    $("#detailInquiry").href=inquiryHref("أهلاً SELECT SHOP، عندي استفسار عن "+p.name+" — "+v.code+" ("+v.name+").");
+    const clip=videoUrl(p,v);
+    const videoTile=clip?'<button type="button" class="ssVideoThumb" data-show-video aria-label="عرض فيديو '+htmlEsc(p.name)+'">'+iconPlay+'<span>فيديو</span></button>':"";
     const thumbs=p.variants.map(item=>'<button type="button" data-detail-variant="'+htmlEsc(item.id)+'" class="'+(item.id===v.id?'active':'')+'" aria-pressed="'+(item.id===v.id)+'"><img src="'+htmlEsc(photo(item.image))+'" loading="lazy" alt="'+htmlEsc(item.name)+'"></button>').join("");
-    $("#detailGallery").innerHTML=thumbs;
+    $("#detailGallery").innerHTML=thumbs+videoTile;
     $("#detailVariants").innerHTML=p.variants.map(item=>'<button type="button" data-detail-variant="'+htmlEsc(item.id)+'" class="variantButton '+(item.id===v.id?'active':'')+'" aria-pressed="'+(item.id===v.id)+'"><span>'+htmlEsc(item.code)+'</span><small>'+htmlEsc(item.name)+'</small></button>').join("");
     const isShoe=SHOES.has(p.id);
     $("#sizeStep").hidden=!isShoe;
@@ -405,7 +439,15 @@
         $$(".colorMini",card).forEach(btn=>{const on=btn===color;btn.classList.toggle("active",on);btn.setAttribute("aria-pressed",String(on))});
       }
     });
-    $("#detailGallery").addEventListener("click",onDetailVariant);
+    $("#detailGallery").addEventListener("click",e=>{
+      if(e.target.closest("[data-show-video]")){showDetailVideo();return}
+      onDetailVariant(e);
+    });
+    $("[data-whatsapp-inquiry]").forEach(link=>link.addEventListener("click",e=>{
+      if(testMode){e.preventDefault();showToast("وضع الاختبار: تم تعطيل فتح واتساب");return}
+      ga("whatsapp_inquiry_click",{location:link.dataset.whatsappInquiry||"general",
+        item_id:link.dataset.whatsappInquiry==="product"&&viewed?selectedVariant(viewed.productId,viewed.variantId).id:"general"});
+    }));
     $("#detailVariants").addEventListener("click",onDetailVariant);
     $("#detailSizes").addEventListener("click",e=>{
       const b=e.target.closest("[data-size]");if(!b)return;
