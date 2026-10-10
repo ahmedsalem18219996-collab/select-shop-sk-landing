@@ -12,6 +12,7 @@ const content = rel => fs.readFileSync(path.join(root, rel), 'utf8');
 const configSource = content('preview/select-unified-v1/orders-config.js');
 const checkoutSource = content('preview/select-unified-v1/orders-checkout.js');
 const pageSource = content('preview/select-unified-v1/index.html');
+const productionHome = content('index.html');
 const serverSource = content('orders-system/supabase/functions/submit-order/index.ts');
 const adminConfig = content('preview/select-unified-v1/orders-admin/config.js');
 
@@ -101,4 +102,10 @@ test('page loads protected checkout adapter before storefront core', () => {
   const checkoutAt = pageSource.indexOf('orders-checkout.js');
   const coreAt = pageSource.indexOf('core.js');
   assert.ok(configAt >= 0 && checkoutAt > configAt && coreAt > checkoutAt);
+});
+
+// The actual published homepage still uses the existing WhatsApp flow.
+test('current temporary storefront homepage remains unchanged and WhatsApp-based', () => {
+  assert.match(productionHome, /script-v17-safe\.js/);
+  assert.doesNotMatch(productionHome, /orders-checkout\.js/);
 });
