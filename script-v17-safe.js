@@ -635,7 +635,7 @@ function renderCatalog() {
     const product = PRODUCTS[id];
     const index = Math.max(0, Math.min(product.variants.length - 1, cardVariantIndex[id] || 0));
     const variant = product.variants[index];
-    const thumbs = product.variants.slice(0,4).map((item, thumbIndex) => `
+    const thumbs = product.variants.map((item, thumbIndex) => `
       <button class="card-thumb ${thumbIndex === index ? "active" : ""}" type="button" data-card-thumb-product="${id}" data-card-thumb-index="${thumbIndex}" aria-label="${item.name}">
         <img src="${item.image}" alt="" loading="lazy">
       </button>
