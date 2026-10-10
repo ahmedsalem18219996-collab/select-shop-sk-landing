@@ -45,7 +45,7 @@ for(const id of required)ok(allId.includes(id),'Required functional node #'+id);
 const start=source.indexOf('const CONFIG =');
 const stop=source.indexOf('window.SELECT_SHOP_PRODUCTS =');
 ok(start>0 && stop>start,'Shared product catalog located');
-const data=vm.runInNewContext(source.slice(start,stop)+'\n({CONFIG,PRODUCTS});',{});
+const data=vm.runInNewContext(source.slice(start,stop)+'\n({CONFIG,PRODUCTS});',{SHOP_WHATSAPP_NUMBER:'201289437444'});
 const ps=Object.values(data.PRODUCTS), vs=ps.flatMap(p=>p.variants);
 ok(ps.length===4,'4 sneaker families');
 ok(vs.length===19,'19 sneaker color combinations');
