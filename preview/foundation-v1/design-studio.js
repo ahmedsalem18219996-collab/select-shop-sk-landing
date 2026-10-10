@@ -13,8 +13,8 @@
     {id:'header',title:'الهيدر والقائمة',hint:'طريقة ظهور الشعار والقائمة وأيقونة السلة',selector:'.siteHeader',choices:[['classic','Premium','أساسي'],['slim','Slim','نحيف'],['floating','Floating','عائم وشفاف']]},
     {id:'hero',title:'واجهة المتجر الأولى',hint:'مقارنة توزيع النص مع صورة المنتج',selector:'.premiumHero',choices:[['split','Split','نص وصورة'],['image','Image First','الصورة أكبر'],['stack','Statement','نص بالأعلى وصورة بعرض كامل']]},
     {id:'categories',title:'أقسام المتجر',hint:'دخول الأحذية أو عناية السيارات بدون زحمة',selector:'.categoriesSection',choices:[['editorial','Editorial','قسمين واضحين'],['photographic','Photo Focus','الصورة هي البطل'],['compact','Compact','أقسام مختصرة']]},
-    {id:'cards',title:'كروت الكوتشي',hint:'تجربة الصور والاختيارات والأسعار على الشاشة',selector:'.merchShelf:not(.carMerchShelf)',choices:[['showcase','Showcase','صورتان في الصف'],['dense','Dense','ثلاثة في الصف'],['list','Compare','قائمة للمقارنة']]},
-    {id:'photos',title:'خلفيات صور المنتجات',hint:'لون خلفية الصورة من غير تعديل الصورة الأصلية',selector:'.shoeCardsGrid',choices:[['warm','Warm Studio','فاتح دافئ'],['white','Clean White','أبيض محايد'],['graphite','Graphite','رمادي داكن']]},
+    {id:'cards',title:'كروت الكوتشي',hint:'تجربة الصور والاختيارات والأسعار على الشاشة',selector:'.shoeCardsGrid .productCard',choices:[['showcase','Showcase','صورتان في الصف'],['dense','Dense','ثلاثة في الصف'],['list','Compare','قائمة للمقارنة']]},
+    {id:'photos',title:'خلفيات صور المنتجات',hint:'لون خلفية الصورة من غير تعديل الصورة الأصلية',selector:'.shoeCardsGrid .cardMedia',choices:[['warm','Warm Studio','فاتح دافئ'],['white','Clean White','أبيض محايد'],['graphite','Graphite','رمادي داكن']]},
     {id:'car',title:'عرض منتج السيارات',hint:'هل نخليه قسم بارز أو مختصر؟',selector:'.carMerchShelf',choices:[['split','Spotlight','صورة ومعلومات'],['wide','Visual First','الصورة أكبر'],['compact','Compact','عرض مختصر']]},
     {id:'details',title:'نافذة تفاصيل المنتج',hint:'المسافة بين معرض الصور والألوان والمقاسات',selector:'.productDrawer',choices:[['comfortable','Comfortable','مساحات واسعة'],['compact','Compact','أقصر وأسهل'],['contrast','High Contrast','تباين أقوى']]},
     {id:'cta',title:'زر السلة على الموبايل',hint:'مكان وشكل زر الوصول للمنتجات والسلة',selector:'.mobileBar',choices:[['fixed','Fixed Bar','شريط كامل'],['mini','Compact','صغير'],['off','بدون شريط','القائمة فقط']]},
@@ -39,7 +39,7 @@
   for(const opt of options){
     const v=stored.notes?.[opt.id];
     if(v && typeof v==='object'){
-      notes[opt.id]={issue:['شكل','أداء','سهولة استخدام','موبايل','غير ذلك'].includes(v.issue)?v.issue:'شكل',comment:String(v.comment||'').slice(0,2000)};
+      notes[opt.id]={issue:['شكل','أداء','سهولة استخدام','موبايل','غير ذلك'].includes(v.issue)?v.issue:'شكل',comment:String(v.comment||'').slice(0,2000),target:String(v.target||'').slice(0,40)};
     }
   }
   let active=optionMap[stored.active] ? stored.active : 'hero';
@@ -118,7 +118,7 @@
   function renderOptions(){
     const opt=optionMap[active];if(!opt)return;
     $('#sdrTitle').textContent=opt.title;
-    $('#sdrHint').textContent=opt.hint;
+    $('#sdrHint').textContent=opt.hint+(notes[active]?.target?' — المنتج المحدد: '+(window.SELECT_FOUNDATION_CATALOG?.[notes[active].target]?.name||notes[active].target):'');
     optsEl.setAttribute('aria-label','اختيارات '+opt.title);
     optsEl.replaceChildren();
     for(const [value,title,desc] of opt.choices){
@@ -146,9 +146,14 @@
     highlight=optionMap[active]?.selector ? $(optionMap[active].selector):null;
     if(panelOpen && highlight)highlight.classList.add('sdrTarget');
   }
-  function selectSection(id,scroll=false){
+  function selectSection(id,scroll=false,productId=''){
     if(!optionMap[id])return;
-    active=id;persist();renderOptions();
+    active=id;
+    if(productId && window.SELECT_FOUNDATION_CATALOG?.[productId]){
+      if(!notes[id])notes[id]={issue:'شكل',comment:''};
+      notes[id].target=productId;
+    }
+    persist();renderOptions();
     if(scroll){
       const target=$(optionMap[id].selector);
       if(target && !target.closest('dialog:not([open])')) target.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'center'});
@@ -205,7 +210,7 @@
       const v=notes[o.id];
       if(v && String(v.comment||'').trim()){
         n++;
-        lines.push('['+o.title+'] ('+v.issue+'): '+v.comment.trim());
+        lines.push('['+o.title+(v.target?' — '+(window.SELECT_FOUNDATION_CATALOG?.[v.target]?.name||v.target):'')+'] ('+v.issue+'): '+v.comment.trim());
       }
     });
     if(!n)lines.push('لا توجد ملاحظات مكتوبة.');
@@ -237,13 +242,17 @@
   });
   document.addEventListener('click',event=>{
     if(!panelOpen||!inspect||event.target.closest('#selectDesignUi'))return;
-    const matched=options.slice().reverse().find(o=>{
-      const t=$(o.selector);
-      return !!t && (t===event.target || t.contains(event.target)) && !(t.closest('dialog:not([open])'));
-    });
+    let matched=null, node=event.target;
+    // Pick the closest actual element: headline -> typography, image -> photo, card text -> cards.
+    while(node && node!==document.body){
+      matched=options.slice().reverse().find(o=>node.matches?.(o.selector));
+      if(matched)break;
+      node=node.parentElement;
+    }
     if(!matched)return;
     event.preventDefault();event.stopImmediatePropagation();
-    selectSection(matched.id,false);
+    const productId=event.target.closest('[data-product-id]')?.dataset.productId||'';
+    selectSection(matched.id,false,productId);
     $('#sdrInspect').click(); // stop selection after one click so buying controls are safe again
     setStatus('اتحدد جزء «'+matched.title+'». اختار شكلًا أو اكتب ملاحظتك.');
   },true);
