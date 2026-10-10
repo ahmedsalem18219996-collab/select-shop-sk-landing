@@ -376,3 +376,27 @@ body[data-design-tech="quiet"] .techShowcase .techWordmarkMount:after{
  body[data-design-motion="lively"] :is(.productCard,.gatewayCard,.button,.heroShoeWrap img){transition:none!important;transform:none!important}
  .tickerTrack{animation:none!important}
 }
+
+/* Tap-to-select mode: release full-screen panel on phones, then reopen it after selection. */
+.sdrPickHint{display:none}
+@media(max-width:620px){
+ .select-design-inspect #selectDesignPanel{display:none!important}
+ .select-design-inspect #selectDesignLauncher{display:none!important}
+ .select-design-inspect .sdrPickHint{
+   display:flex;position:fixed;z-index:4010;
+   top:calc(8px + env(safe-area-inset-top,0px));right:9px;left:9px;
+   padding:12px 13px;align-items:center;gap:7px;flex-wrap:wrap;
+   color:#fff2e9;background:#25212e;
+   border:1px solid #dbad93;border-radius:8px;
+   box-shadow:0 9px 32px #000a;
+ }
+ .sdrPickHint strong{font-size:11px;flex:1 1 56%}
+ .sdrPickHint small{font-size:9px;color:#c9c0c9;flex:1 1 100%;order:3}
+ #sdrCancelPick{
+   border:1px solid #ac8986;border-radius:5px;
+   background:#453b46;color:#f4e9e7;
+   min-height:32px;padding:5px 8px;font-size:10px
+ }
+ .select-design-inspect #selectDesignUi{pointer-events:none}
+ .select-design-inspect .sdrPickHint,.select-design-inspect .sdrPickHint *{pointer-events:auto}
+}
