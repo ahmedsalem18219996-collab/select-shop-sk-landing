@@ -34,3 +34,18 @@ input::placeholder{color:#849e9d}.message{font-size:12px;line-height:1.8;color:#
 .toast{position:fixed;bottom:25px;left:50%;transform:translateX(-50%);background:#20594e;color:#fff;padding:12px 20px;border-radius:12px;z-index:20;box-shadow:0 9px 28px #0007;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}.toast.show{opacity:1}
 @media(max-width:680px){.topbar{padding:12px 13px;align-items:flex-start}.header-actions{justify-content:flex-end}.connection{font-size:10px}.header-actions .ghost{padding:7px;font-size:11px}.main{padding:18px 12px 95px}.intro,.login{padding:22px}.dash-head{align-items:flex-start}.dash-head h1{font-size:24px}.live{margin-top:11px}.stats{grid-template-columns:repeat(2,1fr);gap:8px}.stats article{padding:14px}.stats article b{font-size:26px}.orders-panel{padding:12px}.toolbar{display:grid}.filters{width:100%;gap:6px}.filters select{min-width:0;width:42%}.filters input{min-width:0;flex:1;width:58%}.order-card{padding:11px;gap:8px}.order-card h3{font-size:13px}.order-card p{font-size:11px}.order-side strong{font-size:14px}.order-side button{font-size:10px}.modal-actions{position:sticky;bottom:0;background:#122932;padding-bottom:max(15px,env(safe-area-inset-bottom))}}
 @media(prefers-reduced-motion:reduce){.toast{transition:none}}
+
+/* Private affiliate handoff — two independent tracking cards for mixed orders. */
+.affiliate-panel{padding-bottom:18px}.affiliate-muted{color:var(--muted)!important;font-size:12px!important}
+.affiliate-cards{display:grid;gap:12px;margin-top:13px}
+.affiliate-card{background:#0d222b;border:1px solid #365a5d;border-radius:14px;padding:14px;display:grid;gap:12px}
+.affiliate-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.affiliate-card-head strong{color:#b4f0db;font-size:15px}.affiliate-card-head span{color:var(--muted);font-size:11px}
+.affiliate-items{background:#142e35;border-radius:9px;padding:9px 11px}
+.affiliate-items p{margin:4px 0;font-size:12px;line-height:1.7}
+.affiliate-copy{width:100%;min-height:39px}
+.affiliate-card label{display:grid;gap:7px;font-size:12px}.affiliate-card input,.affiliate-card select{min-height:41px}
+.affiliate-card .affiliate-save{width:100%;min-height:43px}
+.affiliate-message{margin:0!important;color:#a9efd0!important;font-size:12px!important;min-height:18px}
+.affiliate-message[data-problem="true"],.affiliate-error{color:#ffbd99!important}
+@media(max-width:680px){.affiliate-card{padding:12px}.affiliate-card-head{align-items:flex-start}}
