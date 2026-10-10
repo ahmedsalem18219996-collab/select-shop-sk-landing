@@ -13,6 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/preview/foundation-v1/styles.css?v=1">
 <link rel="stylesheet" href="/preview/foundation-v1/premium.css?v=3">
+<link rel="stylesheet" href="/preview/foundation-v1/merch.css?v=1">
 <script>window.SELECT_SHOP_PREVIEW_ONLY=true;</script>
 <script defer src="/preview/foundation-v1/catalog.js?v=1"></script>
 <script defer src="/preview/foundation-v1/app.js?v=1"></script>
@@ -41,7 +42,7 @@
     <span class="eyebrow"><i></i> SELECT SHOP / EDITION 01 <span class="heroDash">—</span> MADE FOR YOUR DAY</span>
     <h1 id="heroTitle">اختيارات <em>على ذوقك.</em><br><span class="heroOutlineText">لكل يوم.</span></h1>
     <p>أحذية ومستلزمات عملية مختارة بعناية. تفاصيل واضحة وصور حقيقية للمنتجات، عشان تختار اللي يناسبك من غير تعقيد.</p>
-    <div class="heroActions"><a class="button buttonPrimary" href="/preview/foundation-v1/#products">تصفح المنتجات <span aria-hidden="true">↗</span></a><a class="button buttonOutline" href="/preview/foundation-v1/#collections">اكتشف الأقسام <span aria-hidden="true">↓</span></a></div>
+    <div class="heroActions"><button type="button" class="button buttonPrimary" data-feature-product="alex">شوف ALEX بالألوان <span aria-hidden="true">↗</span></button><button type="button" class="button buttonOutline" data-feature-product="carwash48">منتجات للسيارة <span aria-hidden="true">↗</span></button></div><p class="heroPriceFootnote">ALEX Premium — <span data-price-product="alex">السعر عند اختيار المنتج</span> شامل الشحن</p>
     <div class="heroFeatures"><span>01 <b>صور واضحة</b></span><span>02 <b>اختيارات مناسبة</b></span><span>03 <b>معاينة قبل الدفع</b></span></div>
   </div>
   <div class="heroVisual" aria-label="مجموعة من منتجات SELECT SHOP">
@@ -59,27 +60,35 @@
  <div><span>◈</span><strong>معاينة عند الاستلام</strong><small>حسب شروط المنتج والتوصيل</small></div>
 </section>
 
-<section class="categoriesSection container" id="collections">
- <div class="sectionHead"><div><span class="eyebrow">01 / DISCOVER</span><h2>كل احتياجاتك. <em>في مكان واحد.</em></h2></div><p>كل فئة ليها احتياجاتها. اختار اللي بتدور عليه.</p></div>
- <div class="categoryCards">
-  <button class="categoryTile categoryShoes" type="button" data-filter="shoes" aria-label="تصفح الأحذية"><div class="categoryTileCopy"><small>01 / FOOTWEAR</small><strong>أحذية</strong><span>حريمي ورجالي — ألوان ومقاسات</span><b>استكشف المجموعة ↗</b></div><img src="assets/sk-1.jpg" alt="" loading="lazy"></button>
-  <button class="categoryTile categoryCare" type="button" data-filter="car" aria-label="تصفح العناية بالسيارات"><div class="categoryTileCopy"><small>02 / CAR CARE</small><strong>عناية السيارات</strong><span>منتجات عملية للمشاوير والحياة</span><b>استكشف المجموعة ↗</b></div><img src="assets/carwash48-real-kit.webp" alt="" loading="lazy"></button>
-  <button class="categoryTile categoryAll" type="button" data-filter="all" aria-label="تصفح جميع المنتجات"><div class="categoryTileCopy"><small>03 / EVERYTHING</small><strong>كل المنتجات</strong><span>كله متجمع في مكان واحد</span><b>شوف الكل ↗</b></div><span class="categoryArt" aria-hidden="true">SELECT.</span></button>
- </div>
+<section class="categoriesSection container" id="collections" aria-labelledby="collectionHeading">
+  <div class="sectionHead shopGatewayHeading"><div><span class="eyebrow">01 / START HERE</span><h2 id="collectionHeading">إنت بتدوّر <em>على إيه؟</em></h2></div><p>ادخل على القسم اللي يهمّك بدل ما تلف في منتجات مش بتدور عليها.</p></div>
+  <div class="merchGateway">
+    <button class="gatewayCard gatewayFootwear" data-filter="shoes" type="button" aria-label="اعرض موديلات الأحذية حريمي ورجالي">
+      <span class="gatewayCopy"><small>FOOTWEAR / أحذية</small><strong>موديلات لكل ستايل</strong><span>اختار اللون، شوف المقاسات، وقارن بين 4 موديلات.</span><b>استعرض الأحذية <i aria-hidden="true">↗</i></b></span>
+      <img src="assets/wk_1.jpg" alt="" width="650" height="650" loading="lazy">
+      <span class="gatewayCount">04 MODELS</span>
+    </button>
+    <button class="gatewayCard gatewayCar" data-filter="car" type="button" aria-label="اعرض منتج غسيل السيارات">
+      <span class="gatewayCopy"><small>CAR CARE / عناية السيارات</small><strong>حل عملي لعربيتك</strong><span>مسدس غسيل لاسلكي ببطاريتين، بسعر وشحن واضحين.</span><b>شوف طقم الغسيل <i aria-hidden="true">↗</i></b></span>
+      <img src="assets/carwash48-real-kit.webp" alt="" width="650" height="650" loading="lazy">
+      <span class="gatewayCount">01 PRODUCT</span>
+    </button>
+  </div>
 </section>
 
 <section class="productsSection container" id="products">
- <div class="sectionHead"><div><span class="eyebrow">02 / THE COLLECTION</span><h2>منتجات مختارة. <em>تفاصيل تفرق.</em></h2></div><p>الصور والمقاسات والأسعار مرتبطة ببيانات المنتجات الحالية.</p></div>
+ <div class="sectionHead"><div><span class="eyebrow">02 / THE COLLECTION</span><h2>اختيارات حقيقية. <em>بعيدًا عن الحيرة.</em></h2></div><p id="productsSubtitle">الأحذية في مجموعة مستقلة وعناية السيارات في عرض خاص؛ اختار المنتج اللي تحتاجه.</p></div>
  <div class="toolbar">
   <div class="tabs" role="group" aria-label="فلتر المنتجات"><button type="button" class="tab active" data-filter="all" aria-pressed="true">الكل</button><button type="button" class="tab" data-filter="shoes" aria-pressed="false">أحذية</button><button type="button" class="tab" data-filter="car" aria-pressed="false">عناية السيارات</button></div>
   <div class="searchWrap"><label for="searchInput" class="visuallyHidden">ابحث عن منتج</label><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="ابحث عن موديل أو منتج..." autocomplete="off"></div>
  </div>
+ <div class="merchCountLabel">المعروض حاليًا: <strong id="resultsCount">5</strong> منتجات</div>
  <div class="productGrid" id="productGrid" aria-live="polite"></div>
  <div class="emptyState" id="emptyState" hidden>مفيش منتجات بنفس البحث. <button type="button" id="resetFilters">عرض كل المنتجات</button></div>
 </section>
 
 <section class="story container" aria-label="اختيار مناسب">
-  <div class="storyTitle"><span class="eyebrow">03 / SHOP SMARTER</span><h2>تفاصيل أقل.<br><em>اختيار أفضل.</em></h2><p>اختار اللون والمقاس اللي يناسبك، وراجع السلة والسعر قبل خطوة تأكيد الطلب. تجربة واضحة من أول صورة لحد الاستلام.</p><a class="button buttonPrimary" href="/preview/foundation-v1/#products">ابدأ الاختيار ↗</a></div>
+  <div class="storyTitle"><span class="eyebrow">03 / SHOP SMARTER</span><h2>شوف التفاصيل.<br><em>واختار بثقة.</em></h2><p>قارن الموديلات، اختار اللون والمقاس المتاح، وراجع سعر المنتج وتكلفة الشحن قبل تأكيد الطلب.</p><a class="button buttonPrimary" href="/preview/foundation-v1/#products">ابدأ الاختيار ↗</a></div>
   <div class="storyPhoto"><img src="assets/wk_1.jpg" loading="lazy" alt="كوتشي رياضي من مجموعة WK"><span>DETAILS THAT MATTER / SELECT SHOP</span></div>
 </section>
 </main>
