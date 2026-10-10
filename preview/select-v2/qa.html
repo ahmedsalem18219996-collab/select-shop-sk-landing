@@ -27,10 +27,10 @@ const w=frames[0].contentWindow,d=frames[0].contentDocument;
 const products=d.querySelectorAll('#productGrid .productCard');
 test('all 5 unified product cards',products.length===5&&!!d.querySelector('.unifiedCardsGrid [data-product-id=carwash48]'),'count '+products.length);
 test('exact 4 shoe and 1 car',d.querySelectorAll('.unifiedCardsGrid [data-product-id]:not([data-product-id=carwash48])').length===4&&d.querySelectorAll('[data-product-id=carwash48]').length===1,'4 footwear + 1 car-care');
-test('electric lime palette',!!w.getComputedStyle(d.querySelector('.cartAction')).backgroundColor.includes('218')||w.getComputedStyle(d.querySelector('.cartAction')).color!=='','brand var '+w.getComputedStyle(d.documentElement).getPropertyValue('--lime'));
+test('electric lime palette',w.getComputedStyle(d.documentElement).getPropertyValue('--lime').trim()==='#defc48','brand var '+w.getComputedStyle(d.documentElement).getPropertyValue('--lime'));
 test('animated marquee and brand',w.getComputedStyle(d.querySelector('.tickerTrack')).animationName!=='none'&&w.getComputedStyle(d.querySelector('.premiumBrand .brandWord')).animationName.includes('brandLetterFloat'),'ticker/brand');
 test('image edge glow animation',w.getComputedStyle(d.querySelector('.cardMedia'),'::after').animationName.includes('edgeLightTravel'),'edge '+w.getComputedStyle(d.querySelector('.cardMedia'),'::after').animationName);
-test('feedback annotator present',!!d.querySelector('#v2fbPick')&&!!d.querySelector('#v2FeedbackLauncher'),'feedback selector');
+test('feedback annotator present',!!d.querySelector('#v2fbPick')&&!!d.querySelector('.v2FeedbackLauncher'),'feedback selector');
 const prior=w.localStorage.getItem('selectShopReviewV2:cart');
 try{
  d.querySelector('.mobileCategoryRail [data-nav-filter=car]')?.click();
