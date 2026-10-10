@@ -89,13 +89,17 @@
       '<div class="cardVariantInfo"><span class="variantSummary">'+htmlEsc(v.code+" — "+v.name)+'</span><span>المقاسات: '+htmlEsc(v.sizes.join("، "))+'</span></div>'+
       '<div class="cardBottom"><span class="includedShipping">السعر شامل الشحن</span><button type="button" data-show-product="'+htmlEsc(id)+'">اختار المقاس واطلب <span aria-hidden="true">↗</span></button></div></div></article>';
   }
-  function carSpotlight(){
-    const p=C.carwash48, v=p.variants[0];
-    return '<article class="carSpotlight" data-product-id="carwash48">'+
-       '<div class="carSpotlightImage"><span class="carSpotlightIndex">SELECT / CAR CARE</span><button class="carSpotlightImageButton" data-show-product="carwash48" type="button" aria-label="اعرض تفاصيل طقم غسيل السيارات"><img loading="lazy" width="850" height="700" src="'+htmlEsc(photo(v.image))+'" alt="طقم غسيل سيارات لاسلكي ببطاريتين وملحقاته"></button><span class="carSpotlightPhotoNote">صورة الطقم الفعلي المعروض</span></div>'+
-       '<div class="carSpotlightBody"><span class="carSpotlightEyebrow">للبيت والعربية / CAR CARE</span><h3>'+htmlEsc(p.name)+'</h3><p class="carSpotlightDescription">طقم لاسلكي ببطاريتين، يسحب المياه من جردل ويخليك تغسل العربية من غير وصلة مياه ثابتة.</p>'+
-       '<div class="carSpotlightSpecs"><span><b>02</b> بطاريتين مع الطقم</span><span><b>↗</b> سحب المياه من جردل</span><span><b>✓</b> معاينة قبل الدفع</span></div>'+
-       '<div class="carSpotlightPurchase"><div><small>شحن مجاني لجميع المحافظات (عرض المعاينة)</small><strong>'+fmt(p.price)+'</strong><span>العرض التجريبي يحتاج تأكيدًا قبل إطلاقه</span></div><button type="button" data-show-product="carwash48">اعرف التفاصيل واطلب <span aria-hidden="true">↗</span></button></div></div></article>';
+  function carProductCard(){
+    // Same visual card system as shoes. Cart and order rules remain untouched.
+    const p=C.carwash48,v=p.variants[0];
+    return '<article class="productCard editorialCard carProductCard" data-product-id="carwash48">'+
+     '<div class="cardMedia"><button class="cardMediaClick" type="button" data-show-product="carwash48" aria-label="صور وتفاصيل طقم غسيل السيارات"><img class="mainCardImage" loading="lazy" width="700" height="700" src="'+htmlEsc(photo(v.image))+'" alt="'+htmlEsc(p.name)+'"></button><span class="cardTag">CAR CARE / ESSENTIALS</span><span class="cardIndex">CW48</span><button class="cardQuick" type="button" data-show-product="carwash48" aria-label="فتح المنتج">↗</button></div>'+
+     '<div class="cardContent"><div class="cardCategory">CAR CARE <span class="catalog-dot">•</span> طقم لاسلكي ببطاريتين</div>'+
+     '<div class="cardTitle"><h3>'+htmlEsc(p.name)+'</h3><strong>'+fmt(p.price)+'</strong></div>'+
+     '<p>طقم غسيل سيارات لاسلكي. اعرف تفاصيله وشوف كل المحتويات قبل الطلب.</p>'+
+     '<div class="merchColorHeader"><span>محتويات الطقم</span><strong>طقم ببطاريتين</strong></div>'+
+     '<div class="cardVariantInfo"><span>بدون مقاسات</span><span>شحن مجاني مقترح في المعاينة*</span></div>'+
+     '<div class="cardBottom"><span class="includedShipping">*قبل اعتماد العرض تجاريًا</span><button type="button" data-show-product="carwash48">تفاصيل المنتج <span aria-hidden="true">↗</span></button></div></div></article>';
   }
   function renderProducts(){
     const list=ids.filter(id=>{
@@ -104,13 +108,12 @@
       const txt=[p.name,p.short,p.description,...p.variants.map(v=>v.name+" "+v.code)].join(" ").toLowerCase();
       return matchesFilter&&(!search||txt.includes(search));
     });
-    const shoes=list.filter(id=>SHOES.has(id)), cars=list.filter(id=>id==="carwash48");
     $("#emptyState").hidden=list.length!==0;
-    const shoeSection=shoes.length?'<section class="merchShelf" aria-label="موديلات الأحذية"><div class="merchShelfHeader"><div><span class="merchShelfEyebrow">FOOTWEAR / THE EDIT</span><h3>اختار ستايلك، وشوف الألوان.</h3></div><span>'+shoes.length+' موديلات بألوان ومقاسات مختلفة</span></div><div class="shoeCardsGrid">'+shoes.map(shoeCard).join("")+'</div></section>':"";
-    const carSection=cars.length?'<section class="merchShelf carMerchShelf" aria-label="عناية السيارات"><div class="merchShelfHeader"><div><span class="merchShelfEyebrow">CAR CARE / THE SELECTION</span><h3>منتجات عملية لكل يوم.</h3></div><span>شحن مجاني مقترح لكل المحافظات في المعاينة</span></div>'+carSpotlight()+'</section>':"";
-    $("#productGrid").innerHTML=shoeSection+carSection;
+    const shoeCount=list.filter(id=>SHOES.has(id)).length;
+    const cards=list.map(id=>SHOES.has(id)?shoeCard(id):carProductCard()).join("");
+    $("#productGrid").innerHTML=list.length?'<section class="merchShelf unifiedShelf" aria-label="كل المنتجات"><div class="shoeCardsGrid unifiedCardsGrid">'+cards+'</div></section>':"";
     const count=$("#resultsCount");if(count)count.textContent=String(list.length);
-    const subtitle=$("#productsSubtitle");if(subtitle)subtitle.textContent=filter==="shoes"?"شوف كل موديل، بدّل الألوان، واختار المقاس المتاح للون نفسه.":filter==="car"?"عرض كامل لطقم غسيل السيارات قبل ما تضيفه للسلة.":"الأحذية في مجموعة مستقلة وعناية السيارات في عرض خاص؛ اختار المنتج اللي تحتاجه.";
+    const subtitle=$("#productsSubtitle");if(subtitle)subtitle.textContent=filter==="shoes"?"اختار اللون والمقاس حسب الموديل.":filter==="car"?"منتجات عناية السيارات بدون مقاسات.":"كل المنتجات في نفس تصميم الكروت؛ التفاصيل بتختلف حسب المنتج.";
   }
   function applyFilter(next){
     filter=["all","shoes","car"].includes(next)?next:"all";
