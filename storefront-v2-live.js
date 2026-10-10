@@ -306,6 +306,9 @@
       ga("begin_checkout",{value:totals().total});
     }
     showDialog("checkoutDialog");
+    // Staging-only feature: default remains disabled; owner dry-run never calls orders API.
+    if(!testMode && window.SELECT_SHOP_DIRECT_ORDER_V2?.isEnabled?.())
+      void window.SELECT_SHOP_DIRECT_ORDER_V2.prepare().catch(err=>console.warn("Direct order setup:",err));
   }
   const normalizePhone=val=>val.replace(/[٠-٩]/g,c=>String(c.charCodeAt(0)-1632)).replace(/[۰-۹]/g,c=>String(c.charCodeAt(0)-1776)).replace(/[\s\-()]/g,"");
   const orderReference=()=>("SS-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7)).toUpperCase();
@@ -328,7 +331,7 @@
     return lines.join("\n");
   }
   let submitting=false;
-  function submitLive(event){
+  async function submitLive(event){
     event.preventDefault();if(submitting)return;
     if(!cart.length){$("#formError").textContent="السلة فارغة";$("#formError").hidden=false;return}
     const form=event.currentTarget,d=Object.fromEntries(new FormData(form));
@@ -341,6 +344,35 @@
       return;
     }
     $("#formError").hidden=true;
+    // An order is only successful when the isolated Supabase endpoint confirms persistence.
+    // This branch does NOT run in test mode and is OFF in the public config.
+    if(!testMode && window.SELECT_SHOP_DIRECT_ORDER_V2?.isEnabled?.()){
+      submitting=true;
+      try{
+        const items=cart.map(i=>({
+          productId:i.productId,variantId:i.variantId,
+          sizes:i.sizes.slice(),role:i.role
+        }));
+        const result=await window.SELECT_SHOP_DIRECT_ORDER_V2.submit({
+          name:String(d.name||""),phone:String(d.phone||""),
+          governorate:String(d.region||""),area:String(d.area||""),
+          address:String(d.address||""),notes:String(d.notes||"")
+        },items);
+        // Record the confirmed receipt code only (no customer PII).
+        try{localStorage.setItem("selectShopLastOrderV2",JSON.stringify({
+          orderId:result.orderCode,createdAt:new Date().toISOString(),status:"saved"
+        }))}catch{}
+        cart=[];persist();renderCart();form.reset();
+        closeDialog("checkoutDialog");
+        window.SELECT_SHOP_DIRECT_ORDER_V2.receipt(result);
+        showToast("تم تسجيل الأوردر بنجاح");
+      }catch(error){
+        console.error("Direct-order save failed",error?.name||"request_failed");
+        $("#formError").textContent=error?.message||"تعذر حفظ الأوردر. حاول بنفس البيانات.";
+        $("#formError").hidden=false;
+      }finally{submitting=false}
+      return;
+    }
     const orderId=orderReference(),t=totals(),message=textOrder(d,orderId);
     const target="https://wa.me/"+PHONE+"?text="+encodeURIComponent(message);
     const fallback=$("#whatsappFallback");fallback.href=target;fallback.hidden=false;
