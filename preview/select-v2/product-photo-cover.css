@@ -1,0 +1,204 @@
+/* SELECT SHOP V2 — mandatory product-photo edge cover.
+   Opaque JPG/WEBP catalog shots often have a square studio background.
+   Every product-photo surface gets an edge treatment on the ACTUAL image,
+   not a glow border around its enclosing rectangular card.
+   Preview-only stylesheet. No order, catalog, price, analytics or route code.
+*/
+
+/* Both directions of the alpha mask intersect on modern Chromium/Safari.
+   This hides all four straight sides and corners rather than just the corners.
+   A radial fallback applies where compositing isn't available. */
+:root{
+  --ss-photo-vignette:radial-gradient(ellipse 62% 61% at 50% 50%,
+    #000 49%,rgba(0,0,0,.97) 60%,rgba(0,0,0,.7) 73%,
+    rgba(0,0,0,.26) 86%,transparent 100%);
+  --ss-photo-cover-x:linear-gradient(90deg,
+    transparent 0%,rgba(0,0,0,.28) 5%,#000 14%,
+    #000 86%,rgba(0,0,0,.28) 95%,transparent 100%);
+  --ss-photo-cover-y:linear-gradient(180deg,
+    transparent 0%,rgba(0,0,0,.35) 5%,#000 14%,
+    #000 86%,rgba(0,0,0,.35) 95%,transparent 100%);
+}
+
+/* Global preview contract: current /assets product imagery AND any later
+   product image inside a known photo component, including remote URLs. */
+:is(
+  img[src^="assets/"],
+  img[src^="/assets/"],
+  img[data-product-photo],
+  .cardMediaClick img,
+  .gatewayCard > img,
+  .detailImage > img,
+  .detailGallery img,
+  .colorMini img,
+  .cartItem > img,
+  .heroProductTile img,
+  .heroMini img,
+  .carSpotlightImage img
+){
+  -webkit-mask-image:var(--ss-photo-vignette)!important;
+  mask-image:var(--ss-photo-vignette)!important;
+  -webkit-mask-repeat:no-repeat!important;
+  mask-repeat:no-repeat!important;
+  -webkit-mask-size:100% 100%!important;
+  mask-size:100% 100%!important;
+}
+@supports (mask-composite:intersect){
+  :is(
+    img[src^="assets/"],
+    img[src^="/assets/"],
+    img[data-product-photo],
+    .cardMediaClick img,
+    .gatewayCard > img,
+    .detailImage > img,
+    .detailGallery img,
+    .colorMini img,
+    .cartItem > img,
+    .heroProductTile img,
+    .heroMini img,
+    .carSpotlightImage img
+  ){
+    -webkit-mask-image:var(--ss-photo-cover-x),var(--ss-photo-cover-y)!important;
+    mask-image:var(--ss-photo-cover-x),var(--ss-photo-cover-y)!important;
+    -webkit-mask-composite:source-in!important;
+    mask-composite:intersect!important;
+  }
+}
+
+/* CRITICAL: the source JPG is approximately square, while product cards
+   are landscape. A 100%-wide IMG with object-fit:contain leaves invisible
+   letterboxing in its CSS box, so the fade misses the REAL white square.
+   Let the IMG box follow the actual picture's aspect ratio. */
+.shoeCardsGrid .cardMediaClick{
+  box-sizing:border-box!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;height:100%!important;
+  padding:clamp(8px,1.7vw,18px)!important;
+  background:transparent!important;
+  overflow:hidden!important;
+}
+.shoeCardsGrid .cardMediaClick img,
+.shoeCardsGrid .cardMediaClick .mainCardImage{
+  flex:0 1 auto!important;
+  display:block!important;
+  width:auto!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  min-width:0!important;
+  padding:0!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  background:transparent!important;
+  mix-blend-mode:normal!important;
+  filter:drop-shadow(0 7px 11px #15200b25)!important;
+}
+.shoeCardsGrid .productCard:hover .cardMediaClick img,
+.shoeCardsGrid .cardMediaClick:hover img{
+  filter:drop-shadow(0 10px 13px #17240a35)!important;
+}
+
+/* The white center of an opaque studio image now softly flows into a
+   muted-lime background. The edge of the CARD is dark, not another frame. */
+.shoeCardsGrid .cardMedia{
+  isolation:isolate!important;
+  background:radial-gradient(ellipse 68% 94% at 50% 52%,
+    #f9fbf4 0%,#ecf3e1 37%,#d8e5c5 57%,
+    #758967 80%,#202a1c 100%)!important;
+}
+.shoeCardsGrid .cardMedia::before{
+  content:none!important;display:none!important;
+  border:none!important;box-shadow:none!important;
+}
+.shoeCardsGrid .cardMedia::after{
+  content:""!important;display:block!important;
+  position:absolute;inset:0;z-index:2!important;
+  border:0!important;border-radius:0!important;
+  background:linear-gradient(90deg,#18201740,transparent 15%,transparent 85%,#18201740)!important;
+  box-shadow:none!important;
+  -webkit-mask:none!important;mask:none!important;
+  filter:none!important;opacity:1!important;
+  animation:none!important;pointer-events:none;
+}
+.shoeCardsGrid .cardTag,.shoeCardsGrid .cardQuick,
+.shoeCardsGrid .cardIndex{z-index:4!important}
+.shoeCardsGrid .cardMediaClick::before,
+.shoeCardsGrid .cardMediaClick::after{
+  content:none!important;display:none!important
+}
+
+/* Category gateways: an actual square-stage box, not a tall rectangular
+   <img> with a small square object-fit JPG floating inside it. */
+.gatewayCard > img{
+  width:min(42%,136px)!important;
+  height:auto!important;
+  aspect-ratio:1/1!important;
+  max-width:42%!important;
+  max-height:91%!important;
+  left:3%!important;bottom:5%!important;
+  object-fit:contain!important;object-position:center!important;
+  mix-blend-mode:normal!important;
+  filter:drop-shadow(0 9px 12px #0004)!important;
+}
+.gatewayCar > img{left:3%!important;bottom:5%!important}
+.gatewayCard::before{
+  background:radial-gradient(ellipse at 50% 50%,#e5ff6b2a,transparent 77%)!important
+}
+
+/* Detail drawer: fade the JPG where it ends, even though the drawer's
+   stage is landscape. The cover must not conceal the product badge. */
+.detailImage{
+  isolation:isolate!important;
+  background:radial-gradient(ellipse 72% 93% at 50% 50%,
+    #f8faf1 0%,#ecf2e1 48%,#becdb2 73%,#293426 100%)!important;
+}
+.detailImage > img{
+  display:block!important;
+  width:auto!important;
+  height:calc(100% - 14px)!important;
+  max-width:100%!important;max-height:100%!important;
+  padding:0!important;object-fit:contain!important;
+  object-position:center!important;mix-blend-mode:normal!important;
+  filter:drop-shadow(0 7px 12px #202c1826)!important;
+}
+.detailImage::after{
+  content:""!important;display:block!important;
+  position:absolute;inset:0;z-index:2!important;
+  border:0!important;border-radius:inherit!important;
+  box-shadow:none!important;filter:none!important;animation:none!important;
+  background:linear-gradient(90deg,#1c241d45,transparent 17%,transparent 83%,#1c241d45)!important;
+  pointer-events:none
+}
+.detailImage #detailBadge{z-index:4!important}
+
+/* Thumbnails/cart: preserve square image boxes and cover their true edges. */
+:is(.colorMini,.detailGallery button){
+  background:#e2ebd7!important;overflow:hidden!important;
+}
+:is(.colorMini img,.detailGallery img){
+  display:block!important;object-fit:contain!important;
+  mix-blend-mode:normal!important
+}
+.cartItem > img{
+  background:#dce7d2!important;
+  object-fit:contain!important;
+  mix-blend-mode:normal!important
+}
+
+/* Future product-photo instances can opt in using data-product-photo.
+   Images are covered at their intrinsic stage dimensions, not by card borders. */
+img[data-product-photo]{object-fit:contain}
+@media(max-width:620px){
+  .shoeCardsGrid .cardMediaClick{padding:9px 11px!important}
+  .gatewayCard > img{
+    width:42%!important;max-width:42%!important;
+    height:auto!important;max-height:90%!important;
+    bottom:5%!important;left:2%!important
+  }
+  .detailImage > img{height:calc(100% - 10px)!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .gatewayCard > img,.shoeCardsGrid .cardMediaClick img{transition:none!important}
+}
