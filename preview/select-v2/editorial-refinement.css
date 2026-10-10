@@ -1,0 +1,156 @@
+/* SELECT SHOP / PREVIEW V2 — Editorial refresh, 2026-10-10
+ * Scope: visual-only adjustments; no production products, checkout or analytics.
+ * Replaces the orbital hero and the illuminated RECTANGLE on product photos.
+ * Product photography stays original. Soft blending on light studio backgrounds.
+ */
+
+/* Editorial visual stage: angular, typographic, deliberately NOT circular. */
+.premiumHero.limeHero:before{display:none!important}
+.premiumHero.limeHero .heroVisual.limeHeroArt.editorialStage{
+ position:relative!important;isolation:isolate;box-sizing:border-box;
+ height:clamp(225px,23.5vw,310px)!important;min-height:225px!important;
+ padding:25px clamp(18px,3vw,55px)!important;
+ display:flex!important;align-items:center;justify-content:center;
+ background:
+  linear-gradient(112deg,transparent 0 15%,#d6f96009 15% 15.3%,transparent 15.3% 68%,#d6f9600b 68% 68.25%,transparent 68.25%),
+  linear-gradient(117deg,#161e14 0%,#192419 42%,#121b13 100%)!important;
+ overflow:hidden!important;text-align:center
+}
+.premiumHero.limeHero .editorialStage::before{
+ content:"";position:absolute;inset:0;z-index:0;
+ background-image:linear-gradient(#d8f2630d 1px,transparent 1px),linear-gradient(90deg,#d8f2630d 1px,transparent 1px);
+ background-size:49px 49px;opacity:.75;pointer-events:none;
+ -webkit-mask-image:linear-gradient(90deg,transparent,#000 13%,#000 87%,transparent);
+ mask-image:linear-gradient(90deg,transparent,#000 13%,#000 87%,transparent)
+}
+.premiumHero.limeHero .editorialStage::after{
+ content:"";position:absolute;inset:-30% 20% 0;z-index:0;
+ background:linear-gradient(112deg,transparent 36%,#d6ff4812 45%,#dcff5c24 51%,transparent 61%);
+ transform:skewX(-19deg);pointer-events:none
+}
+.editorialGrid{
+ position:absolute;inset:12% 8%;border-block:1px solid #dafa5920;
+ background:repeating-linear-gradient(90deg,transparent 0,transparent calc(25% - 1px),#dafa5915 calc(25% - 1px),#dafa5915 25%);
+ pointer-events:none;z-index:1
+}
+.editorialBeam{position:absolute;width:20%;height:190%;top:-45%;pointer-events:none;z-index:1;
+ background:linear-gradient(90deg,transparent,#dafa5918 45%,#e2ff7240 49%,transparent 56%);
+ transform:rotate(29deg);filter:blur(2px);opacity:.6;
+ animation:editorialSweep 11s ease-in-out infinite alternate
+}
+.editorialBeamFirst{right:12%}
+.editorialBeamSecond{left:11%;opacity:.32;animation-delay:-5s;animation-duration:14s}
+@keyframes editorialSweep{from{translate:-15px 0;opacity:.26}to{translate:18px 0;opacity:.63}}
+.editorialIssue{
+ position:absolute;top:19px;right:clamp(16px,3vw,45px);z-index:2;
+ font:800 9px/1.5 "Manrope",sans-serif;letter-spacing:.23em;direction:ltr;
+ color:#d8f5ac
+}
+.editorialIssue span{color:var(--lime)}
+.editorialHeadline{
+ z-index:2;position:relative;display:flex;flex-direction:column;
+ align-items:center;justify-content:center;gap:0;
+ direction:ltr;line-height:.98;white-space:nowrap;max-width:100%;
+ animation:editorialReveal .85s ease-out both
+}
+.editorialHeadline>span{
+ display:block;font:850 clamp(33px,6.2vw,91px)/1 "Manrope",sans-serif;
+ letter-spacing:-.075em;color:transparent;
+ -webkit-text-stroke:1px #ecf4d6a8
+}
+.editorialHeadline>strong{
+ display:flex;align-items:baseline;justify-content:center;gap:.06em;
+ font:900 clamp(41px,8vw,126px)/1 "Manrope",sans-serif;
+ letter-spacing:-.075em;color:#e2fc69;
+ text-shadow:0 6px 40px #c5f45818
+}
+.editorialHeadline .editorialArrow{
+ font:650 .42em/1 "Manrope",sans-serif;letter-spacing:0;
+ color:#f4f8e4;transform:translateY(-.5em)
+}
+.editorialFootline{
+ position:absolute;bottom:16px;right:clamp(16px,3vw,45px);left:clamp(16px,3vw,45px);
+ display:flex;align-items:center;justify-content:space-between;gap:10px;z-index:2;
+ color:#9fb18f;font:800 8px/1.4 "Manrope",sans-serif;
+ letter-spacing:.13em;direction:ltr
+}
+@keyframes editorialReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Preserve clean studio shots while making the LIGHT follow each shoe instead
+   of drawing an animated rectangle over the photo. Native photo files currently
+   include their backgrounds, so soft blending avoids false cutout silhouettes. */
+.shoeCardsGrid .cardMedia{
+ background:
+  radial-gradient(ellipse 64% 66% at 51% 55%,#ebf5d0 0%,#f2f5e9 60%,transparent 100%),
+  linear-gradient(160deg,#f8faf4,#e9efe0 64%,#dbe4d0)!important;
+ isolation:isolate!important
+}
+.shoeCardsGrid .cardMedia::before{
+ content:""!important;display:block!important;position:absolute;inset:8% 12% 9%!important;
+ border:0!important;border-radius:50%!important;
+ background:radial-gradient(ellipse at 50% 54%,#d4f27e70 0%,#e5f9ba55 36%,transparent 76%)!important;
+ box-shadow:none!important;filter:blur(23px)!important;
+ opacity:.82!important;pointer-events:none;z-index:0!important
+}
+.shoeCardsGrid .cardMedia::after{display:none!important;animation:none!important}
+.shoeCardsGrid .cardMediaClick{z-index:1!important;padding:clamp(13px,2.5vw,28px)!important;overflow:hidden!important;isolation:isolate}
+.shoeCardsGrid .cardMediaClick::before{
+ content:"";position:absolute;inset:24% 10% 14%;pointer-events:none;z-index:0;
+ background:radial-gradient(ellipse at center,#d4f4776b,transparent 68%);
+ filter:blur(32px);opacity:.63;
+ transition:opacity .4s ease,transform .5s ease
+}
+.shoeCardsGrid .cardMediaClick img{
+ position:relative;z-index:1;display:block;
+ width:100%!important;height:100%!important;
+ object-fit:contain!important;object-position:center!important;
+ mix-blend-mode:multiply;
+ -webkit-mask-image:radial-gradient(ellipse 105% 100% at center,#000 53%,#000e 78%,transparent 100%)!important;
+ mask-image:radial-gradient(ellipse 105% 100% at center,#000 53%,#000e 78%,transparent 100%)!important;
+ filter:drop-shadow(0 16px 19px #38463120) drop-shadow(0 0 10px #ceef7670)!important;
+ transform:translateY(0) scale(1)!important;
+ transition:transform .45s cubic-bezier(.2,.8,.2,1),filter .4s!important
+}
+.shoeCardsGrid .productCard:hover .cardMediaClick img,
+.shoeCardsGrid .cardMediaClick:hover img{
+ transform:translateY(-3px) scale(1.025)!important;
+ filter:drop-shadow(0 19px 22px #38463130) drop-shadow(0 0 14px #ceef768a)!important
+}
+.shoeCardsGrid .productCard:hover .cardMediaClick::before{opacity:.9;transform:scale(1.08)}
+/* Car care has its own kit photo; don't recolor it with sneaker blend rules. */
+.shoeCardsGrid .carProductCard .cardMediaClick img{
+ mix-blend-mode:normal!important;
+ -webkit-mask-image:radial-gradient(ellipse 99% 96% at center,#000 64%,transparent 100%)!important;
+ mask-image:radial-gradient(ellipse 99% 96% at center,#000 64%,transparent 100%)!important
+}
+.shoeCardsGrid .carProductCard .cardMedia{
+ background:linear-gradient(150deg,#f2f4ed,#e1e8dc)!important
+}
+/* UI should read as product photography, not a glowing framed rectangle. */
+.shoeCardsGrid .cardTag{box-shadow:0 3px 12px #181c1430}
+.shoeCardsGrid .cardIndex{z-index:2}
+
+/* Mobile: legible typography with no overflow and balanced media rhythm. */
+@media(max-width:620px){
+ .premiumHero.limeHero .heroVisual.limeHeroArt.editorialStage{
+  height:clamp(177px,51vw,230px)!important;min-height:177px!important;
+  padding:23px 10px!important
+ }
+ .editorialGrid{inset:16% 5%}
+ .editorialIssue{top:12px;right:14px;font-size:7px;letter-spacing:.13em}
+ .editorialHeadline>span{font-size:clamp(25px,7.2vw,37px);line-height:1.05}
+ .editorialHeadline>strong{font-size:clamp(31px,9.7vw,52px);letter-spacing:-.08em}
+ .editorialFootline{right:12px;left:12px;bottom:10px;font-size:6px;letter-spacing:.055em}
+ .editorialFootline span:last-child{max-width:51%;text-align:right}
+ .shoeCardsGrid .cardMediaClick{padding:13px 18px!important}
+ .shoeCardsGrid .cardMediaClick::before{inset:24% 8% 16%}
+}
+@media(max-width:360px){
+ .editorialHeadline>span{font-size:24px}
+ .editorialHeadline>strong{font-size:30px}
+ .editorialFootline{font-size:5px}
+}
+@media(prefers-reduced-motion:reduce){
+ .editorialBeam,.editorialHeadline{animation:none!important;translate:none!important;transform:none!important}
+ .shoeCardsGrid .cardMediaClick img{transition:none!important}
+}
