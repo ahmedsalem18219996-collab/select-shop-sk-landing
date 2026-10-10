@@ -28,7 +28,7 @@
   <span class="wordmark-type"><strong><i>SELECT</i><em>SHOP</em></strong><small>ONE SHOP FOR EVERYTHING</small></span>
  </a>
  <nav class="head-nav" aria-label="قائمة المتجر">
-  <a href="#catalog">الكوتشيات</a><a href="#carCare">عناية السيارات</a><a href="#howToOrder">طريقة الطلب</a>
+  <a href="#collections">الأقسام</a><a href="#catalog">الكوتشيات</a><a href="#carCare">عناية السيارات</a><a href="#howToOrder">طريقة الطلب</a>
  </nav>
  <div class="head-actions"><a href="#contact" class="head-contact">تواصل معنا</a>
   <button class="cart-trigger" type="button" data-open-cart aria-label="فتح سلة التسوق">
@@ -51,7 +51,7 @@
  </div>
  <div class="hero-message">
   <div class="hero-message-tag">SELECT SHOP / <span id="heroCode">ALEX Sneakers</span></div>
-  <h1 id="heroHeading">كوتشيات يومية. <em>ستايل يختلف.</em></h1>
+  <h1 id="heroHeading">ستايلك <em>ملكك.</em></h1>
   <p id="heroDescription">موديلات متعددة وصور أصلية واختيار مقاسات قبل الطلب.</p>
   <div class="hero-actions"><button id="heroBuy" class="btn primary" type="button">اختاري المقاس واطلبي <span aria-hidden="true">←</span></button><a class="btn ghost" href="#catalog">شوفي كل الموديلات</a></div>
   <div class="hero-meta"><span id="heroVariantName">أسود</span><span>سعر شامل الشحن: <b id="heroPrice">٥٤٠</b> جنيه</span></div>
@@ -63,8 +63,30 @@
  <article><b>02</b><div><h2>اختاري مقاسين لو محتارة</h2><p>اختيار مقاسين للتجربة، مش شراء زوجين</p></div></article>
  <article><b>03</b><div><h2>عايني قبل الدفع</h2><p>تأكيد الطلب بعد اختيار الأنسب</p></div></article>
 </section>
+<section class="collections shell" id="collections" aria-labelledby="collectionsTitle">
+ <div class="section-top"><div><small>SELECT SHOP / SHOP BY CATEGORY</small><h2 id="collectionsTitle">اختاري القسم اللي يناسبك</h2><p>كل قسم ليه موديلاته ومقاساته، وسهل ترجعي لكل المنتجات في أي وقت.</p></div></div>
+ <div class="collection-grid">
+  <a class="collection-card collection-women" href="#catalog" data-category-filter="women" aria-label="تصفحي موديلات الكوتشيات الحريمي">
+   <div class="collection-art"><img src="assets/wk_1.jpg" alt="كوتشي WK حريمي من منتجات SELECT SHOP" loading="lazy" width="520" height="520"></div>
+   <div class="collection-content"><small>01 / WOMEN</small><h3>كوتشيات حريمي</h3><p>SK وWK · مقاسات 37–41</p><span class="collection-cta">تصفحي الموديلات <b aria-hidden="true">←</b></span></div>
+  </a>
+  <a class="collection-card collection-men" href="#catalog" data-category-filter="men" aria-label="تصفحي موديلات الكوتشيات الرجالي">
+   <div class="collection-art"><img src="assets/alex01.jpg" alt="كوتشي ALEX من منتجات SELECT SHOP" loading="lazy" width="520" height="520"></div>
+   <div class="collection-content"><small>02 / MEN</small><h3>كوتشيات رجالي</h3><p>ALEX وEQWAL · المقاسات حسب اللون</p><span class="collection-cta">تصفحي الموديلات <b aria-hidden="true">←</b></span></div>
+  </a>
+  <a class="collection-card collection-auto" href="#carCare" aria-label="شاهدي قسم عناية السيارات الجاري تجهيزه">
+   <div class="collection-art"><img src="assets/carwash48-real-kit.webp" alt="طقم غسيل سيارات 48V" loading="lazy" width="520" height="520"></div>
+   <div class="collection-content"><small>03 / AUTO CARE</small><h3>عناية السيارات</h3><p>طقم غسيل 48V · القسم قيد التجهيز</p><span class="collection-cta">اعرفي التفاصيل <b aria-hidden="true">←</b></span></div>
+  </a>
+ </div>
+</section>
 <section class="catalog shell" id="catalog" aria-labelledby="catalogTitle">
  <div class="section-top"><div><small>SELECT SHOP / OUR SELECTION</small><h2 id="catalogTitle">كل الموديلات</h2><p>دوسي على أي لون عشان صورة الكوتشي تتغير، وبعدها اختاري المقاس.</p></div><span class="section-counter">04 MODELS <i></i> 19 COLORS</span></div>
+ <div class="catalog-filter-bar" role="group" aria-label="اختاري نوع الكوتشيات">
+  <button type="button" data-category-filter="all" aria-pressed="true">كل الموديلات</button>
+  <button type="button" data-category-filter="women" aria-pressed="false">حريمي</button>
+  <button type="button" data-category-filter="men" aria-pressed="false">رجالي</button>
+ </div>
  <div class="browser-controls" hidden><span id="browserCurrent">ALEX</span><span id="browserCount">1 / 4</span><button id="catalogPrev" type="button" aria-label="السابق"></button><button id="catalogNext" type="button" aria-label="التالي"></button></div>
  <div class="model-rail" id="modelRail" tabindex="0" aria-label="تصفح موديلات الكوتشي"></div>
 </section>
@@ -351,4 +373,38 @@
 </script>
 <div id="previewBlockedToast" class="preview-blocked-toast" role="status" hidden>دي معاينة فقط. الطلب الحقيقي يتم من الموقع الأساسي بعد اعتماد التصميم.</div>
 <script src="/preview/rebuild-v20/engine.js?v=1"></script>
+<script>
+(function () {
+  // Presentation-only category controls. No checkout, analytics or canonical product mutations.
+  const catalog = document.getElementById("catalog");
+  const title = document.getElementById("catalogTitle");
+  const counter = catalog?.querySelector(".section-counter");
+  const categories = {
+    all: { title: "كل الموديلات", counter: "04 MODELS · 19 COLORS" },
+    women: { title: "كوتشيات حريمي", counter: "02 MODELS · 10 COLORS" },
+    men: { title: "كوتشيات رجالي", counter: "02 MODELS · 09 COLORS" }
+  };
+  function applyCategory(category, shouldScroll) {
+    if (!catalog || !categories[category]) return;
+    document.body.dataset.collection = category;
+    if (title) title.textContent = categories[category].title;
+    if (counter) counter.textContent = categories[category].counter;
+    document.querySelectorAll("[data-category-filter]").forEach(button => {
+      const current = button.dataset.categoryFilter === category;
+      if (button.tagName === "BUTTON") button.setAttribute("aria-pressed", String(current));
+      button.classList.toggle("is-active", current);
+    });
+    if (category === "men") {
+      // EQWAL03 has only women's sizes; default to EQWAL04 in men's category.
+      document.querySelector('[data-card-thumb-product="eqwal"][data-card-thumb-index="1"]')?.click();
+    }
+    if (shouldScroll) catalog.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start"});
+  }
+  document.querySelectorAll("[data-category-filter]").forEach(button => button.addEventListener("click", event => {
+    event.preventDefault();
+    applyCategory(button.dataset.categoryFilter, true);
+  }));
+  applyCategory("all", false);
+})();
+</script>
 </body></html>
