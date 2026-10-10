@@ -10,53 +10,59 @@ permissions:
 jobs:
   inspect:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - name: Run official component CLI in a disposable workspace
+      - name: Download original registry component using secret
         shell: bash
         env:
           API_KEY_21ST: ${{ secrets.API_KEY_21ST }}
         run: |
-          mkdir -p "$RUNNER_TEMP/probe/src/components/ui" "research/21st-mg-hook-question"
-          cd "$RUNNER_TEMP/probe"
-          printf '{"name":"select-ui-component-probe","private":true,"type":"module","version":"1.0.0"}\n' > package.json
-          cat > components.json <<'EOF'
-          {
-            "$schema":"https://ui.shadcn.com/schema.json",
-            "style":"new-york",
-            "rsc":false,
-            "tsx":true,
-            "tailwind":{"config":"tailwind.config.ts","css":"src/globals.css","baseColor":"neutral","cssVariables":true},
-            "aliases":{"components":"@/components","utils":"@/lib/utils","ui":"@/components/ui"}
-          }
-          EOF
-          cat > tsconfig.json <<'EOF'
-          {"compilerOptions":{"target":"ES2022","module":"ESNext","moduleResolution":"Bundler","baseUrl":".","paths":{"@/*":["./src/*"]},"jsx":"react-jsx"}}
-          EOF
-          touch src/globals.css
-          set +e
-          timeout 140s bash -c 'yes | npx --yes @21st-dev/cli add video/21st/mg-hook-question' > "$GITHUB_WORKSPACE/research/21st-mg-hook-question/cli-output.txt" 2>&1
-          CODE=$?
-          set -e
-          echo "exit_code=$CODE" > "$GITHUB_WORKSPACE/research/21st-mg-hook-question/status.txt"
-          find . -maxdepth 6 -type f -not -path './node_modules/*' -not -path './.git/*' | sort | head -150 >> "$GITHUB_WORKSPACE/research/21st-mg-hook-question/status.txt"
-          mkdir -p "$GITHUB_WORKSPACE/research/21st-mg-hook-question/source"
-          for dir in src/components video components; do
-            if [ -d "$dir" ]; then cp -a "$dir" "$GITHUB_WORKSPACE/research/21st-mg-hook-question/source/"; fi
-          done
-          tail -c 30000 "$GITHUB_WORKSPACE/research/21st-mg-hook-question/cli-output.txt" > "$GITHUB_WORKSPACE/research/21st-mg-hook-question/cli-output-short.txt"
-          rm -f "$GITHUB_WORKSPACE/research/21st-mg-hook-question/cli-output.txt"
-      - name: Save findings to research branch only
+          set -euo pipefail
+          DIR="$GITHUB_WORKSPACE/research/21st-mg-hook-question"
+          mkdir -p "$DIR"
+          if [ -z "${API_KEY_21ST:-}" ]; then
+            printf 'status=NO_SECRET\n' > "$DIR/status-auth.txt"
+            exit 0
+          fi
+          echo 'status=TOKEN_PRESENT' > "$DIR/status-auth.txt"
+          URL="https://21st.dev/r/video/21st/mg-hook-question?api_key=${API_KEY_21ST}"
+          CODE=$(curl -L -sS --max-time 100 -o "$RUNNER_TEMP/registry.json" -w '%{http_code}' "$URL" || true)
+          echo "http_status=$CODE" >> "$DIR/status-auth.txt"
+          if [ "$CODE" = "200" ] && python3 -m json.tool "$RUNNER_TEMP/registry.json" >/dev/null 2>&1; then
+            if grep -Fq "$API_KEY_21ST" "$RUNNER_TEMP/registry.json"; then
+              echo 'source=REDACTED_TOKEN_IN_RESPONSE' >> "$DIR/status-auth.txt"
+            else
+              cp "$RUNNER_TEMP/registry.json" "$DIR/original-registry.json"
+              python3 - <<'PY'
+          import json, pathlib
+          p=pathlib.Path('research/21st-mg-hook-question/original-registry.json')
+          d=json.loads(p.read_text())
+          text=['source=EXACT_REGISTRY_JSON','top_level_keys='+','.join(d.keys())]
+          files=d.get('files',[])
+          for item in files:
+              text.append('file='+str(item.get('path') or item.get('name') or 'unnamed'))
+          for k in ('dependencies','devDependencies','registryDependencies','type','name'):
+              if k in d:text.append(k+'='+str(d[k])[:1500])
+          p.with_name('source-index.txt').write_text('\n'.join(text)+'\n')
+          PY
+              echo 'source=DOWNLOADED' >> "$DIR/status-auth.txt"
+            fi
+          else
+            echo 'source=HTTP_FAILED' >> "$DIR/status-auth.txt"
+            # Minimal error diagnosis without dumping URLs, tokens or response contents.
+            echo "response_bytes=$(wc -c < "$RUNNER_TEMP/registry.json")" >> "$DIR/status-auth.txt" || true
+          fi
+      - name: Save safe results to research branch
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add research/21st-mg-hook-question/
-          git commit -m "research: capture original 21st hook-question CLI result" || exit 0
+          git add research/21st-mg-hook-question/status-auth.txt research/21st-mg-hook-question/original-registry.json research/21st-mg-hook-question/source-index.txt 2>/dev/null || git add research/21st-mg-hook-question/status-auth.txt
+          git commit -m "research: fetch licensed registry component with authorized 21st key" || exit 0
           HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           git -c http.extraheader="AUTHORIZATION: basic $HEADER" push origin HEAD:research-original-mg-hook-question-20261011
