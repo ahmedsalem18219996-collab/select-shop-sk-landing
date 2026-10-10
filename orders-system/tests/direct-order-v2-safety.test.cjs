@@ -90,6 +90,7 @@ test('valid CAPTCHA submits to isolated backend and converts car-care no-size to
  assert.ok(requests[0].url.includes('zznqdwrohrycsjfpvkhc.supabase.co'));
  const p=JSON.parse(requests[0].options.body);
  assert.deepEqual(Array.from(p.items[0].sizes),[0]);
+ assert.equal(p.items[0].variantId,'cw48','V2 catalog carwash48 must map to isolated database cw48');
  assert.equal(p.turnstileToken,'dummy-captcha-token');
  assert.match(p.idempotencyKey,/^[a-f0-9-]{36}$/);
  assert.ok(!('price' in p.items[0]));
