@@ -114,7 +114,10 @@ async function submit(customer,cartItems){
    notes:String(customer.notes||""),
    inquiry:""
  },items:cartItems.map(x=>({
-   productId:x.productId,variantId:x.variantId,
+   productId:x.productId,
+   // The current V2 catalog uses variant ID carwash48, while the isolated
+   // orders database deliberately uses cw48 for its no-size car-care variant.
+   variantId:x.productId==="carwash48"?"cw48":x.variantId,
    sizes:x.productId==="carwash48"?[0]:x.sizes.map(Number),
    role:x.role==="trial"?"trial":"purchase"
  }))};
