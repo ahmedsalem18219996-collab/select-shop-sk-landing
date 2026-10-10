@@ -10,7 +10,8 @@
   if (!C || !SETTINGS) throw Error("Foundation catalog failed to load");
   const ids = ["sk","alex","eqwal","wk","carwash48"];
   const SHOES = new Set(["sk","alex","eqwal","wk"]);
-  const KEY="selectShopCart:v2"; // shared with existing product-specific landing pages
+  const KEY="selectShopCart:v2"; // shoe cart shared with original ad landings
+  const CAR_CART_KEY="selectShopV2CarCart:v1"; // preserve car items when legacy shoe-only pages are visited
   const PHONE="201289437444";
   const GA4_ID="G-NB8PZCX35Z";
   const testMode=window.SELECT_SHOP_TEST_MODE===true;
@@ -47,6 +48,14 @@
         sizes:x.sizes.map(Number),role:x.role==="primary"?"purchase":x.role
       }));
     }
+    const carSaved=JSON.parse(localStorage.getItem(CAR_CART_KEY)||"null");
+    if(carSaved?.version===1 && Number.isFinite(carSaved?.savedAt) &&
+       carSaved.savedAt<=Date.now() && Date.now()-carSaved.savedAt<7*864e5 &&
+       Array.isArray(carSaved.items)) {
+      for(const i of carSaved.items.filter(validItem).filter(i=>i.productId==="carwash48")) {
+        if(!cart.some(x=>x.id===i.id))cart.push({...i,role:"purchase"});
+      }
+    }
   }catch{}
   const purchasedShoes=()=>cart.filter(i=>i.role==="purchase"&&SHOES.has(i.productId)).length;
   const normalizeCart=()=>{
@@ -60,14 +69,18 @@
   const persist=()=>{
     normalizeCart();
     try {
-      if(cart.length){
+      const shoes=cart.filter(i=>i.productId!=="carwash48");
+      const cars=cart.filter(i=>i.productId==="carwash48");
+      if(shoes.length){
         let foundPrimary=false;
-        const compatible=cart.map(i=>{
+        const compatible=shoes.map(i=>{
           const role=i.role==="trial"?"trial":(!foundPrimary?(foundPrimary=true,"primary"):"purchase");
           return {...i,role,tryTwo:i.sizes.length===2,billableQty:1};
         });
         localStorage.setItem(KEY,JSON.stringify({version:2,savedAt:Date.now(),items:compatible}));
       } else localStorage.removeItem(KEY);
+      if(cars.length)localStorage.setItem(CAR_CART_KEY,JSON.stringify({version:1,savedAt:Date.now(),items:cars}));
+      else localStorage.removeItem(CAR_CART_KEY);
     }catch{}
     $$("[data-cart-count]").forEach(el=>el.textContent=cart.length);
   };
