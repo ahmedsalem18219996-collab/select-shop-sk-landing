@@ -1,0 +1,166 @@
+/* Original motion from 21st.dev/21st/mg-hook-question — 21st.video/1.
+ * Owner-provided authorized registry source downloaded through API key.
+ * Remotion scene CSS and @keyframes extracted from scenes/hooks.ts hookQuestion.
+ * Provenance in original registry: MIT; original animation unmodified below.
+ * Adaptation is a lightweight CSS rendering of the motion, not a Remotion build. */
+
+.v-hook-question{color:var(--ink);font-family:var(--font-display)}
+.v-hook-question[data-backdrop="on"]{background:var(--paper)}
+.v-hook-question .grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");background-size:34cqw;opacity:.22;mix-blend-mode:overlay;pointer-events:none}
+.v-hook-question[data-backdrop="off"] .grain{display:none}
+.v-hook-question .glow{position:absolute;left:4cqw;top:20cqw;width:62cqw;height:40cqw;background:radial-gradient(closest-side,color-mix(in srgb,var(--accent) 34%,transparent),transparent);filter:blur(2cqw);opacity:0;animation:hook-question-glow 6s cubic-bezier(.2,.8,.2,1) infinite}
+.v-hook-question .top{position:absolute;left:7cqw;right:7cqw;top:4.4cqw;display:flex;align-items:center;animation:hook-question-chrome 6s cubic-bezier(.2,.8,.2,1) infinite}
+.v-hook-question .kick{font:500 1.6cqw/1.1 var(--font-mono);letter-spacing:.02em;color:color-mix(in srgb,var(--ink) 62%,transparent);display:flex;align-items:center}
+.v-hook-question .kick b{display:inline-block;width:.8cqw;height:.8cqw;border-radius:50%;background:var(--accent);margin-right:.9cqw;box-shadow:0 0 1cqw var(--accent)}
+.v-hook-question .brand{position:absolute;right:7cqw;top:4.4cqw;display:flex;align-items:center;gap:.8cqw;font:600 1.7cqw/1.1 var(--font-body);letter-spacing:-.01em;animation:hook-question-chrome 6s cubic-bezier(.2,.8,.2,1) infinite}
+.v-hook-question .brand i{width:1.6cqw;height:1.6cqw;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,var(--secondary) 40%,var(--accent))}
+.v-hook-question .qw{position:absolute;left:7cqw;right:7cqw;top:12.6cqw}
+.v-hook-question .q{font-weight:800;font-size:9.6cqw;line-height:1;letter-spacing:-.045em;transform-origin:0 50%;animation:hook-question-push 6s cubic-bezier(.45,0,.55,1) infinite}
+.v-hook-question .w{--delay:calc(var(--i) * .16s);display:inline-block;padding-bottom:.08em;animation:hook-question-rise 6s cubic-bezier(.2,.8,.2,1) infinite,hook-question-dim 6s cubic-bezier(.2,.8,.2,1) infinite}
+.v-hook-question .w:last-child{position:relative;background:linear-gradient(90deg,var(--accent) 50%,var(--ink) 50%);background-size:200% 100%;background-position:100% 0;-webkit-background-clip:text;background-clip:text;color:transparent;animation:hook-question-rise 6s cubic-bezier(.2,.8,.2,1) infinite,hook-question-wipe 6s cubic-bezier(.65,0,.35,1) infinite}
+.v-hook-question .w:last-child::after{content:"";position:absolute;left:.04em;right:.1em;bottom:0;height:.07em;border-radius:.04em;background:var(--accent);transform-origin:0 50%;transform:scaleX(0);animation:hook-question-ul 6s cubic-bezier(.65,0,.35,1) infinite}
+@container (max-aspect-ratio: 4/5){
+  .v-hook-question .top{left:8cqw;right:8cqw;top:9cqh}
+  .v-hook-question .kick{font-size:5.8cqw}
+  .v-hook-question .kick b{width:3cqw;height:3cqw;margin-right:3cqw}
+  .v-hook-question .qw{left:8cqw;right:8cqw;top:26cqh}
+  .v-hook-question .q{font-size:15.5cqw;line-height:1.02}
+  .v-hook-question .brand{left:8cqw;right:auto;top:auto;bottom:9cqh;font-size:6.2cqw;gap:2.4cqw}
+  .v-hook-question .brand i{width:6cqw;height:6cqw}
+  .v-hook-question .glow{left:-10cqw;top:30cqh;width:120cqw;height:70cqw}
+}
+@container (min-aspect-ratio: 4/5) and (max-aspect-ratio: 5/4){
+  .v-hook-question .top{top:7cqw}
+  .v-hook-question .kick{font-size:2.6cqw}
+  .v-hook-question .kick b{width:1.4cqw;height:1.4cqw}
+  .v-hook-question .qw{top:24cqh}
+  .v-hook-question .q{font-size:12.4cqw}
+  .v-hook-question .brand{left:7cqw;right:auto;top:auto;bottom:7cqw;font-size:2.8cqw}
+  .v-hook-question .brand i{width:2.6cqw;height:2.6cqw}
+}
+@keyframes hook-question-glow{0%,33%{opacity:0;transform:scale(.8)}46%{opacity:1;transform:scale(1)}86%{opacity:1;transform:scale(1.05)}93%,100%{opacity:0;transform:scale(1.05)}}
+@keyframes hook-question-chrome{0%{opacity:0}4%{opacity:1}88%{opacity:1}94%,100%{opacity:0}}
+@keyframes hook-question-push{0%,28%{transform:scale(1)}88%{transform:scale(1.04)}100%{transform:scale(1)}}
+@keyframes hook-question-rise{0%,4%{opacity:0;transform:translateY(.45em) rotate(3deg);filter:blur(.06em)}12%{opacity:1;transform:translateY(0) rotate(0deg);filter:blur(0)}86%{opacity:1;transform:none}92%,100%{opacity:0;transform:translateY(-.3em)}}
+@keyframes hook-question-dim{0%,40%{color:var(--ink)}47%,86%{color:color-mix(in srgb,var(--ink) 42%,transparent)}94%,100%{color:var(--ink)}}
+@keyframes hook-question-wipe{0%,35%{background-position:100% 0}41%,97%{background-position:0 0}100%{background-position:100% 0}}
+@keyframes hook-question-ul{0%,39%{transform:scaleX(0)}45%,86%{transform:scaleX(1)}90%,100%{transform:scaleX(0)}}
+
+
+/* Storefront-only layout bindings — preserve the original animation definitions.
+   This site is static HTML/JS, not React/Remotion; the original registry's
+   CSS motion is reused directly instead of shipping a Remotion runtime. */
+.editorialClosing.story.mgQuestionSection{
+ background:linear-gradient(145deg,#18241b,#111a14 72%,#243120)!important;
+ border-color:#506447!important;
+}
+.mgQuestionSection .storyTitle{
+ direction:rtl!important;text-align:right!important;
+ padding:clamp(22px,3vw,35px) clamp(19px,3.4vw,42px)!important;
+}
+.mgQuestionSection .storyTitle .eyebrow{
+ color:#cce3b7!important;letter-spacing:.08em!important
+}
+.mgQuestionSection .storyTitle h2{
+ direction:rtl!important;
+ font:800 clamp(23px,2.9vw,41px)/1.65 "Alexandria","IBM Plex Sans Arabic",sans-serif!important;
+ color:#f3f7ec!important;letter-spacing:-.025em!important;
+ overflow-wrap:break-word!important
+}
+.mgQuestionSection .storyTitle h2 em{
+ font:inherit!important;font-style:normal!important;color:#ddf77c!important
+}
+.mgQuestionSection .storyTitle p{
+ font:500 clamp(10px,1vw,12px)/2 "Alexandria","IBM Plex Sans Arabic",sans-serif!important;
+ color:#c4d5be!important;max-width:470px!important
+}
+.mgQuestionSection .storyTitle .buttonPrimary{
+ display:inline-flex!important;align-items:center!important;gap:8px!important;
+ min-height:44px!important;padding:10px 17px!important;
+ font:800 11px/1.5 "Alexandria",sans-serif!important;letter-spacing:0!important;
+ border-radius:7px!important
+}
+/* The real 21st component's chrome, word-rise, last-word wipe & underline. */
+.editorialClosing.story .storyMotif.v-hook-question.mgQuestionScene{
+ display:block!important;position:relative!important;
+ isolation:isolate!important;overflow:hidden!important;
+ box-sizing:border-box!important;direction:ltr!important;
+ padding:0!important;margin:0!important;
+ width:100%!important;height:100%!important;min-height:260px!important;
+ container-type:size!important;
+ background:var(--paper)!important;
+ border:0!important;border-inline-start:1px solid #536e4955!important;
+ border-radius:0!important
+}
+.storyMotif.v-hook-question.mgQuestionScene::before,
+.storyMotif.v-hook-question.mgQuestionScene::after{content:none!important;display:none!important}
+.storyMotif.v-hook-question.mgQuestionScene .q{
+ direction:rtl!important;text-align:right!important;
+ transform-origin:100% 50%!important;
+ font-family:var(--font-display)!important;
+ overflow-wrap:normal!important;white-space:normal!important
+}
+.storyMotif.v-hook-question.mgQuestionScene .w{
+ font-size:inherit!important;line-height:inherit!important;
+ font-weight:inherit!important;
+ margin:0 .06em!important;
+ direction:rtl!important;
+}
+.storyMotif.v-hook-question.mgQuestionScene .w:last-child{margin-inline-end:0!important}
+.storyMotif.v-hook-question.mgQuestionScene .kick,
+.storyMotif.v-hook-question.mgQuestionScene .brand{
+ direction:ltr!important;
+ font-family:var(--font-mono)!important;
+ white-space:nowrap!important
+}
+.storyMotif.v-hook-question.mgQuestionScene .brand{
+ color:#e9f4df!important;font-size:1.7cqw!important
+}
+.storyMotif.v-hook-question.mgQuestionScene .brand i{display:inline-block!important}
+.storyMotif.v-hook-question.mgQuestionScene .top{z-index:2!important}
+.storyMotif.v-hook-question.mgQuestionScene .qw{z-index:2!important}
+.storyMotif.v-hook-question.mgQuestionScene .grain{z-index:3!important}
+.storyMotif.v-hook-question.mgQuestionScene .glow{z-index:0!important}
+@media(max-width:620px){
+ .editorialClosing.story.mgQuestionSection{grid-template-columns:minmax(0,1fr)!important}
+ .mgQuestionSection .storyTitle{padding:18px 16px!important}
+ .mgQuestionSection .storyTitle h2{font-size:clamp(22px,6.6vw,31px)!important}
+ .mgQuestionSection .storyTitle p{font-size:10px!important;line-height:1.85!important}
+ .editorialClosing.story .storyMotif.v-hook-question.mgQuestionScene{
+  min-height:225px!important;height:225px!important;
+  border-inline-start:0!important;border-top:1px solid #536e4955!important
+ }
+ .storyMotif.v-hook-question.mgQuestionScene .q{
+  font-size:10.1cqw!important;line-height:1.07!important
+ }
+ .storyMotif.v-hook-question.mgQuestionScene .brand{
+  font-size:2.3cqw!important;right:7cqw!important
+ }
+ .storyMotif.v-hook-question.mgQuestionScene .kick{font-size:2.1cqw!important}
+ .storyMotif.v-hook-question.mgQuestionScene .qw{top:13cqw!important}
+}
+@media(max-width:359px){
+ .editorialClosing.story .storyMotif.v-hook-question.mgQuestionScene{
+  min-height:210px!important;height:210px!important
+ }
+ .storyMotif.v-hook-question.mgQuestionScene .q{font-size:10.2cqw!important}
+ .storyMotif.v-hook-question.mgQuestionScene .brand{font-size:2.6cqw!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .storyMotif.v-hook-question.mgQuestionScene .glow,
+ .storyMotif.v-hook-question.mgQuestionScene .top,
+ .storyMotif.v-hook-question.mgQuestionScene .brand,
+ .storyMotif.v-hook-question.mgQuestionScene .q,
+ .storyMotif.v-hook-question.mgQuestionScene .w,
+ .storyMotif.v-hook-question.mgQuestionScene .w:last-child,
+ .storyMotif.v-hook-question.mgQuestionScene .w:last-child::after{
+  animation:none!important;filter:none!important;transform:none!important;opacity:1!important
+ }
+ .storyMotif.v-hook-question.mgQuestionScene .w:last-child{
+   background:none!important;color:var(--accent)!important
+ }
+ .storyMotif.v-hook-question.mgQuestionScene .w:last-child::after{
+   transform:scaleX(1)!important
+ }
+}
+
