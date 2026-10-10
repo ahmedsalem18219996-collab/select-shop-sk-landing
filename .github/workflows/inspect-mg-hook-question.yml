@@ -1,0 +1,60 @@
+name: Inspect original 21st hook-question
+on:
+  push:
+    branches:
+      - research-original-mg-hook-question-20261011
+    paths:
+      - .github/workflows/inspect-mg-hook-question.yml
+permissions:
+  contents: write
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Run official component CLI in a disposable workspace
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/probe/src/components/ui" "research/21st-mg-hook-question"
+          cd "$RUNNER_TEMP/probe"
+          printf '{"name":"select-ui-component-probe","private":true,"type":"module","version":"1.0.0"}\n' > package.json
+          cat > components.json <<'EOF'
+          {
+            "$schema":"https://ui.shadcn.com/schema.json",
+            "style":"new-york",
+            "rsc":false,
+            "tsx":true,
+            "tailwind":{"config":"tailwind.config.ts","css":"src/globals.css","baseColor":"neutral","cssVariables":true},
+            "aliases":{"components":"@/components","utils":"@/lib/utils","ui":"@/components/ui"}
+          }
+          EOF
+          cat > tsconfig.json <<'EOF'
+          {"compilerOptions":{"target":"ES2022","module":"ESNext","moduleResolution":"Bundler","baseUrl":".","paths":{"@/*":["./src/*"]},"jsx":"react-jsx"}}
+          EOF
+          touch src/globals.css
+          set +e
+          timeout 140s bash -c 'yes | npx --yes @21st-dev/cli add video/21st/mg-hook-question' > "$GITHUB_WORKSPACE/research/21st-mg-hook-question/cli-output.txt" 2>&1
+          CODE=$?
+          set -e
+          echo "exit_code=$CODE" > "$GITHUB_WORKSPACE/research/21st-mg-hook-question/status.txt"
+          find . -maxdepth 6 -type f -not -path './node_modules/*' -not -path './.git/*' | sort | head -150 >> "$GITHUB_WORKSPACE/research/21st-mg-hook-question/status.txt"
+          mkdir -p "$GITHUB_WORKSPACE/research/21st-mg-hook-question/source"
+          for dir in src/components video components; do
+            if [ -d "$dir" ]; then cp -a "$dir" "$GITHUB_WORKSPACE/research/21st-mg-hook-question/source/"; fi
+          done
+          tail -c 30000 "$GITHUB_WORKSPACE/research/21st-mg-hook-question/cli-output.txt" > "$GITHUB_WORKSPACE/research/21st-mg-hook-question/cli-output-short.txt"
+          rm -f "$GITHUB_WORKSPACE/research/21st-mg-hook-question/cli-output.txt"
+      - name: Save findings to research branch only
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add research/21st-mg-hook-question/
+          git commit -m "research: capture original 21st hook-question CLI result" || exit 0
+          HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $HEADER" push origin HEAD:research-original-mg-hook-question-20261011
