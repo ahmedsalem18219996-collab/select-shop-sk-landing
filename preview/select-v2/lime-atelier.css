@@ -562,3 +562,42 @@ body{
   transition:none!important
  }
 }
+
+/* Visual-QA refinement: make motion and the illuminated image edges visible, even in still frames. */
+.premiumBrand .brandWord,.premiumBrand .brandWordAccent{
+ display:inline-block!important;transform-origin:center 70%;
+}
+.premiumHero.limeHero #heroTitle>.titleReveal:first-child{color:#f7f8f1!important}
+.premiumHero.limeHero #heroTitle>.titleReveal:last-child{color:var(--lime)!important}
+.shoeCardsGrid .cardMedia:before{
+ border:1px solid #e4ff8eb3!important;
+ box-shadow:inset 0 0 47px #ddff6590,0 0 19px #d4ff6060!important
+}
+.shoeCardsGrid .cardMedia:after{
+ border-width:3px!important;
+ filter:drop-shadow(0 0 5px #dafa598a)!important;
+ opacity:.85
+}
+.shoeCardsGrid .cardMediaClick img{
+ filter:drop-shadow(0 0 15px #e3ff7190) drop-shadow(0 11px 18px #2436214d)!important
+}
+.shoeCardsGrid .cardMediaClick:hover img{
+ filter:drop-shadow(0 0 22px #dafa59bc) drop-shadow(0 13px 20px #24362148)!important
+}
+.gatewayCard{
+ box-shadow:inset 0 0 17px #e4ff4b23!important;
+}
+.gatewayCard:after{
+ border:1px solid #e3ff739e!important;
+ box-shadow:inset 0 0 27px #dafa5947,0 0 11px #dafa591f!important;
+}
+.gatewayCard img{
+ filter:drop-shadow(0 0 13px #dafa597a) drop-shadow(0 8px 13px #0004)!important
+}
+@media(max-width:360px){
+ .shoeCardsGrid .cardContent>p{font-size:11px!important;line-height:1.8!important}
+ .trust.trustSlim strong{font-size:8px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .premiumBrand .brandWord,.premiumBrand .brandWordAccent{animation:none!important;transform:none!important}
+}
