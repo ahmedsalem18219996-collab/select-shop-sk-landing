@@ -49,6 +49,11 @@ async function prepare(){
  }catch{
    setError("التحقق الأمني غير متاح مؤقتًا. حاول تاني بعد شوية.");
  }
+ // Only when direct orders are enabled, replace old WhatsApp ordering instructions.
+ const guide=$(".checkout-required-guide strong");
+ if(guide)guide.textContent="بيانات التوصيل لتسجيل الطلب مباشرة";
+ const instruction=$(".checkout-required-guide span");
+ if(instruction)instruction.textContent="اكتبي الاسم والموبايل والمحافظة والمنطقة والعنوان، وبعدها اضغطي «إتمام الطلب». رقم الأوردر هيظهر بعد تأكيد حفظه.";
  const cue=$(".checkout-trust-notice p");
  if(cue)cue.textContent="الطلب بيتسجل مباشرة بعد التأكيد، وهيظهر رقم الطلب فورًا. الدفع عند الاستلام حسب شروط المعاينة.";
  const helper=$(".checkout-cta-wrap .whatsapp small");
