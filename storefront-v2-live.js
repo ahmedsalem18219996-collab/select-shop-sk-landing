@@ -28,7 +28,7 @@
     if(typeof raw!=="string"||!raw.trim())return null;
     try{
       const u=new URL(raw,location.origin);
-      if(!["https:","http:"].includes(u.protocol)||!/\\.(mp4|webm)$/i.test(u.pathname))return null;
+      if(!["https:","http:"].includes(u.protocol)||!/\.(mp4|webm)$/i.test(u.pathname))return null;
       if(u.protocol==="http:"&&u.hostname!==location.hostname)return null;
       return u.href;
     }catch{return null}
