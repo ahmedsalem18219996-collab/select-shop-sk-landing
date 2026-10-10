@@ -23,6 +23,33 @@ function loadTurnstile(){
  });
  return scriptPromise;
 }
+// Reapply these labels on EVERY opening: core.js rebuilds the WhatsApp copy each time.
+function renderDirectCheckoutCopy(){
+ const guide=$(".checkout-required-guide strong");
+ if(guide)guide.textContent="بيانات التوصيل لتسجيل الطلب مباشرة";
+ const instruction=$(".checkout-required-guide span");
+ if(instruction)instruction.textContent="اكتبي الاسم والموبايل والمحافظة والمنطقة والعنوان، وبعدها اضغطي «إتمام الطلب». رقم الأوردر هيظهر بعد تأكيد حفظه.";
+ const cue=$(".checkout-trust-notice p");
+ if(cue)cue.textContent="الطلب بيتسجل مباشرة بعد التأكيد، وهيظهر رقم الطلب فورًا. الدفع عند الاستلام حسب شروط المعاينة.";
+ const helper=$(".checkout-cta-wrap .whatsapp small");
+ if(helper)helper.textContent="التسجيل مباشر — بدون واتساب";
+ const action=$(".checkout-cta-wrap .whatsapp b");
+ if(action)action.textContent="تأكيد الطلب وتسجيله";
+ const icon=$(".checkout-cta-wrap .whatsapp svg");
+ if(icon)icon.style.display="none";
+ // core.js sets this link to an ORDER message before opening the sheet.
+ // In direct mode it must be an INQUIRY link instead.
+ const fallback=$("#whatsappFallback");
+ if(fallback){
+   const match=/^https:\/\/wa\.me\/([0-9]{8,16})(?:[/?#]|$)/.exec(fallback.href||"");
+   fallback.hidden=!match;
+   if(match){
+     fallback.href="https://wa.me/"+match[1]+"?text="+encodeURIComponent("مرحبًا SELECT SHOP، عندي استفسار عن المنتجات.");
+     fallback.textContent="واتساب للاستفسارات فقط";
+     fallback.setAttribute("aria-label","استفسار على واتساب فقط");
+   }
+ }
+}
 async function prepare(){
  if(!isEnabled())return;
  if(!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(cfg.supabaseUrl||"") ||
@@ -31,6 +58,7 @@ async function prepare(){
    return;
  }
  const form=$("#checkoutForm");if(!form)return;
+ renderDirectCheckoutCopy();
  let host=$("#ssfOrderCaptcha");
  if(!host){
    host=document.createElement("div");host.id="ssfOrderCaptcha";
@@ -49,17 +77,6 @@ async function prepare(){
  }catch{
    setError("التحقق الأمني غير متاح مؤقتًا. حاول تاني بعد شوية.");
  }
- // Only when direct orders are enabled, replace old WhatsApp ordering instructions.
- const guide=$(".checkout-required-guide strong");
- if(guide)guide.textContent="بيانات التوصيل لتسجيل الطلب مباشرة";
- const instruction=$(".checkout-required-guide span");
- if(instruction)instruction.textContent="اكتبي الاسم والموبايل والمحافظة والمنطقة والعنوان، وبعدها اضغطي «إتمام الطلب». رقم الأوردر هيظهر بعد تأكيد حفظه.";
- const cue=$(".checkout-trust-notice p");
- if(cue)cue.textContent="الطلب بيتسجل مباشرة بعد التأكيد، وهيظهر رقم الطلب فورًا. الدفع عند الاستلام حسب شروط المعاينة.";
- const helper=$(".checkout-cta-wrap .whatsapp small");
- if(helper)helper.textContent="هيظهر رقم الطلب بعد الحفظ";
- const fallback=$("#whatsappFallback");
- if(fallback){fallback.hidden=false;fallback.textContent="واتساب للاستفسارات فقط"}
 }
 async function digest(value){
  const bytes=new TextEncoder().encode(value);
