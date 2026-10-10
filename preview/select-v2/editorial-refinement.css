@@ -76,58 +76,77 @@
 }
 @keyframes editorialReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-/* Preserve clean studio shots while making the LIGHT follow each shoe instead
-   of drawing an animated rectangle over the photo. Native photo files currently
-   include their backgrounds, so soft blending avoids false cutout silhouettes. */
-.shoeCardsGrid .cardMedia{
- background:
-  radial-gradient(ellipse 64% 66% at 51% 55%,#ebf5d0 0%,#f2f5e9 60%,transparent 100%),
-  linear-gradient(160deg,#f8faf4,#e9efe0 64%,#dbe4d0)!important;
- isolation:isolate!important
+/* Product image edge correction, based on actual WK screenshot.
+   JPG source photos are opaque white studio photos (not transparent cutouts).
+   A coloured/gradient parent combined with an oval mask creates a visible
+   square photo sheet. Keep the photo visually continuous with its canvas.
+   No artificial glow or masking that clips the heel/toe silhouettes. */
+.shoeCardsGrid .cardMedia,
+.shoeCardsGrid .carProductCard .cardMedia{
+ position:relative;
+ isolation:isolate!important;
+ overflow:hidden!important;
+ background:#fff!important;
+ border:0!important;
+ box-shadow:none!important;
 }
-.shoeCardsGrid .cardMedia::before{
- content:""!important;display:block!important;position:absolute;inset:8% 12% 9%!important;
- border:0!important;border-radius:50%!important;
- background:radial-gradient(ellipse at 50% 54%,#d4f27e70 0%,#e5f9ba55 36%,transparent 76%)!important;
- box-shadow:none!important;filter:blur(23px)!important;
- opacity:.82!important;pointer-events:none;z-index:0!important
+.shoeCardsGrid .cardMedia::before,
+.shoeCardsGrid .cardMedia::after{
+ content:none!important;
+ display:none!important;
+ animation:none!important;
+ border:0!important;
+ box-shadow:none!important;
+ filter:none!important
 }
-.shoeCardsGrid .cardMedia::after{display:none!important;animation:none!important}
-.shoeCardsGrid .cardMediaClick{z-index:1!important;padding:clamp(13px,2.5vw,28px)!important;overflow:hidden!important;isolation:isolate}
-.shoeCardsGrid .cardMediaClick::before{
- content:"";position:absolute;inset:24% 10% 14%;pointer-events:none;z-index:0;
- background:radial-gradient(ellipse at center,#d4f4776b,transparent 68%);
- filter:blur(32px);opacity:.63;
- transition:opacity .4s ease,transform .5s ease
+.shoeCardsGrid .cardMediaClick{
+ position:relative;
+ z-index:1!important;
+ box-sizing:border-box;
+ width:100%!important;
+ height:100%!important;
+ overflow:hidden!important;
+ display:grid!important;
+ place-items:center!important;
+ padding:clamp(8px,1.5vw,18px)!important;
+ background:#fff!important;
+ isolation:auto!important
 }
-.shoeCardsGrid .cardMediaClick img{
- position:relative;z-index:1;display:block;
- width:100%!important;height:100%!important;
- object-fit:contain!important;object-position:center!important;
- mix-blend-mode:multiply;
- -webkit-mask-image:radial-gradient(ellipse 105% 100% at center,#000 53%,#000e 78%,transparent 100%)!important;
- mask-image:radial-gradient(ellipse 105% 100% at center,#000 53%,#000e 78%,transparent 100%)!important;
- filter:drop-shadow(0 16px 19px #38463120) drop-shadow(0 0 10px #ceef7670)!important;
- transform:translateY(0) scale(1)!important;
- transition:transform .45s cubic-bezier(.2,.8,.2,1),filter .4s!important
+.shoeCardsGrid .cardMediaClick::before,
+.shoeCardsGrid .cardMediaClick::after{
+ content:none!important;display:none!important;
+ background:none!important;box-shadow:none!important
+}
+.shoeCardsGrid .cardMediaClick img,
+.shoeCardsGrid .mainCardImage,
+.shoeCardsGrid .carProductCard .cardMediaClick img{
+ display:block!important;
+ position:relative;
+ z-index:1;
+ width:100%!important;
+ height:100%!important;
+ min-width:0;
+ max-width:100%;
+ max-height:100%;
+ object-fit:contain!important;
+ object-position:center!important;
+ background:transparent!important;
+ /* The product PHOTO must stay intact, especially the toe and sole. */
+ -webkit-mask-image:none!important;
+ mask-image:none!important;
+ mix-blend-mode:normal!important;
+ opacity:1!important;
+ filter:none!important;
+ transform:none!important;
+ transition:transform .45s cubic-bezier(.2,.8,.2,1)!important;
 }
 .shoeCardsGrid .productCard:hover .cardMediaClick img,
 .shoeCardsGrid .cardMediaClick:hover img{
- transform:translateY(-3px) scale(1.025)!important;
- filter:drop-shadow(0 19px 22px #38463130) drop-shadow(0 0 14px #ceef768a)!important
+ transform:scale(1.025)!important;
+ filter:none!important
 }
-.shoeCardsGrid .productCard:hover .cardMediaClick::before{opacity:.9;transform:scale(1.08)}
-/* Car care has its own kit photo; don't recolor it with sneaker blend rules. */
-.shoeCardsGrid .carProductCard .cardMediaClick img{
- mix-blend-mode:normal!important;
- -webkit-mask-image:radial-gradient(ellipse 99% 96% at center,#000 64%,transparent 100%)!important;
- mask-image:radial-gradient(ellipse 99% 96% at center,#000 64%,transparent 100%)!important
-}
-.shoeCardsGrid .carProductCard .cardMedia{
- background:linear-gradient(150deg,#f2f4ed,#e1e8dc)!important
-}
-/* UI should read as product photography, not a glowing framed rectangle. */
-.shoeCardsGrid .cardTag{box-shadow:0 3px 12px #181c1430}
+/* No inner bright stroke, even when the whole product card is hovered. */
+.shoeCardsGrid .cardTag{z-index:2;box-shadow:0 3px 12px #181c1430}
 .shoeCardsGrid .cardIndex{z-index:2}
 
 /* Mobile: legible typography with no overflow and balanced media rhythm. */
@@ -142,8 +161,7 @@
  .editorialHeadline>strong{font-size:clamp(31px,9.7vw,52px);letter-spacing:-.08em}
  .editorialFootline{right:12px;left:12px;bottom:10px;font-size:6px;letter-spacing:.055em}
  .editorialFootline span:last-child{max-width:51%;text-align:right}
- .shoeCardsGrid .cardMediaClick{padding:13px 18px!important}
- .shoeCardsGrid .cardMediaClick::before{inset:24% 8% 16%}
+ .shoeCardsGrid .cardMediaClick{padding:8px 10px!important}
 }
 @media(max-width:360px){
  .editorialHeadline>span{font-size:24px}
