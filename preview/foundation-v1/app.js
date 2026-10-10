@@ -308,6 +308,7 @@
         $(".mainCardImage",card).src=photo(v.image);
         $(".mainCardImage",card).alt=C[id].name+" "+v.name;
         $(".variantSummary",card).textContent=v.code+" · "+v.name;
+        const sizeHint=$(".cardVariantInfo > span:last-child",card);if(sizeHint)sizeHint.textContent="المقاسات: "+v.sizes.join("، ");
         $$(".colorMini",card).forEach(btn=>{const on=btn===color;btn.classList.toggle("active",on);btn.setAttribute("aria-pressed",String(on))});
       }
     });
