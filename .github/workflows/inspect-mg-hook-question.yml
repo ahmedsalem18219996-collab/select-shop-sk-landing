@@ -33,27 +33,40 @@ jobs:
           CODE=$(curl -L -sS --max-time 100 -o "$RUNNER_TEMP/registry.json" -w '%{http_code}' "$URL" || true)
           echo "http_status=$CODE" >> "$DIR/status-auth.txt"
           if [ "$CODE" = "200" ] && python3 -m json.tool "$RUNNER_TEMP/registry.json" >/dev/null 2>&1; then
-            if grep -Fq "$API_KEY_21ST" "$RUNNER_TEMP/registry.json"; then
-              echo 'source=REDACTED_TOKEN_IN_RESPONSE' >> "$DIR/status-auth.txt"
-            else
-              cp "$RUNNER_TEMP/registry.json" "$DIR/original-registry.json"
-              python3 - <<'PY'
-          import json, pathlib
-          p=pathlib.Path('research/21st-mg-hook-question/original-registry.json')
-          d=json.loads(p.read_text())
-          text=['source=EXACT_REGISTRY_JSON','top_level_keys='+','.join(d.keys())]
-          files=d.get('files',[])
-          for item in files:
-              text.append('file='+str(item.get('path') or item.get('name') or 'unnamed'))
-          for k in ('dependencies','devDependencies','registryDependencies','type','name'):
-              if k in d:text.append(k+'='+str(d[k])[:1500])
-          p.with_name('source-index.txt').write_text('\n'.join(text)+'\n')
+            python3 - <<'PY'
+          import json, os, pathlib, urllib.parse
+          directory=pathlib.Path('research/21st-mg-hook-question')
+          data=json.loads(pathlib.Path(os.environ['RUNNER_TEMP'],'registry.json').read_text())
+          token=os.environ['API_KEY_21ST']
+          forbidden={token,urllib.parse.quote(token,safe=''),urllib.parse.quote_plus(token)}
+          def redact(item):
+            if isinstance(item,str):
+              for secret in forbidden:
+                if secret:item=item.replace(secret,'[REDACTED_API_KEY]')
+              return item
+            if isinstance(item,list):return [redact(v) for v in item]
+            if isinstance(item,dict):return {redact(str(k)):redact(v) for k,v in item.items()}
+            return item
+          data=redact(data)
+          encoded=json.dumps(data,ensure_ascii=False,indent=2)
+          assert all(s not in encoded for s in forbidden if s), 'Token survived sanitization'
+          (directory/'original-registry-redacted.json').write_text(encoded)
+          index=['source=21ST_AUTHENTIC_REGISTRY_REDACTED',
+                 'top_level_type='+type(data).__name__,
+                 'response_bytes='+str(len(encoded))]
+          if isinstance(data,dict):
+            index.append('top_level_keys='+','.join(data.keys()))
+            files=data.get('files',[])
+            if isinstance(files,list):
+              for item in files:
+                if isinstance(item,dict):index.append('file='+str(item.get('path') or item.get('name') or 'unnamed'))
+            for k in ('dependencies','devDependencies','registryDependencies','type','name'):
+              if k in data:index.append(k+'='+str(data[k])[:1200])
+          (directory/'source-index.txt').write_text('\n'.join(index)+'\n')
           PY
-              echo 'source=DOWNLOADED' >> "$DIR/status-auth.txt"
-            fi
+            echo 'source=DOWNLOADED_AND_REDACTED' >> "$DIR/status-auth.txt"
           else
             echo 'source=HTTP_FAILED' >> "$DIR/status-auth.txt"
-            # Minimal error diagnosis without dumping URLs, tokens or response contents.
             echo "response_bytes=$(wc -c < "$RUNNER_TEMP/registry.json")" >> "$DIR/status-auth.txt" || true
           fi
       - name: Save safe results to research branch
@@ -63,7 +76,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add research/21st-mg-hook-question/status-auth.txt research/21st-mg-hook-question/original-registry.json research/21st-mg-hook-question/source-index.txt 2>/dev/null || git add research/21st-mg-hook-question/status-auth.txt
+          git add research/21st-mg-hook-question/status-auth.txt research/21st-mg-hook-question/original-registry-redacted.json research/21st-mg-hook-question/source-index.txt 2>/dev/null || git add research/21st-mg-hook-question/status-auth.txt
           git commit -m "research: fetch licensed registry component with authorized 21st key" || exit 0
           HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           git -c http.extraheader="AUTHORIZATION: basic $HEADER" push origin HEAD:research-original-mg-hook-question-20261011
