@@ -1,0 +1,5 @@
+exit_code=0
+./components.json
+./package.json
+./src/globals.css
+./tsconfig.json

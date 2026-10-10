@@ -1,0 +1,5 @@
+npx shadcn@latest add "https://21st.dev/r/video/21st/mg-hook-question?api_key=$API_KEY_21ST"
+Then install the @remotion/* packages it lists at your project's Remotion version (npx remotion add <pkg>).
+
+Set API_KEY_21ST (or --token), or run `21st login`, and run the command above. `21st add` does the version alignment for you once signed in.
+yes: standard output: Broken pipe
