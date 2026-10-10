@@ -7,14 +7,18 @@ on:
       - "direct-order-v2*.js"
       - "storefront-v2-live.js"
       - "index.html"
-      - "orders-system/tests/direct-order-v2-safety.test.cjs"
+      - "orders-system/tests/**"
+      - "orders-system/migrations/**"
+      - "preview/select-unified-v1/orders-admin/**"
       - ".github/workflows/temp-v2-direct-orders-safety.yml"
   pull_request:
     paths:
       - "direct-order-v2*.js"
       - "storefront-v2-live.js"
       - "index.html"
-      - "orders-system/tests/direct-order-v2-safety.test.cjs"
+      - "orders-system/tests/**"
+      - "orders-system/migrations/**"
+      - "preview/select-unified-v1/orders-admin/**"
       - ".github/workflows/temp-v2-direct-orders-safety.yml"
 permissions:
   contents: read
@@ -25,4 +29,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run Node tests without credentials or network API calls
-        run: node --test orders-system/tests/direct-order-v2-safety.test.cjs
+        run: |
+          node --test orders-system/tests/direct-order-v2-safety.test.cjs
+          node --test orders-system/tests/manual-affiliate-handoff.test.cjs
