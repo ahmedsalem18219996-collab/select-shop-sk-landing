@@ -1,3 +1,4 @@
+# Retry after owner configured API_KEY_21ST repository secret.
 name: Inspect original 21st hook-question
 on:
   push:
