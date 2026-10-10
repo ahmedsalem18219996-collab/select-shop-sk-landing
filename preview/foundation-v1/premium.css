@@ -491,3 +491,40 @@ button,input,textarea,select{font-family:inherit}
  .tickerTrack{animation:none!important;transform:none!important}
  .premiumHero:hover .heroShoeWrap img,.productCard:hover,.categoryTile:hover{transform:none!important}
 }
+
+/* Mobile second-pass: compact first screen; no lateral overflow at exact 320–390 CSS px. */
+@media(max-width:620px){
+ .premiumHero .heroText{padding:21px 18px 20px}
+ .premiumHero h1{font-size:clamp(30px,8vw,39px);margin:8px 0 10px;line-height:1.4}
+ .premiumHero .heroText>p{font-size:10.5px;line-height:1.87;margin:0 0 15px}
+ .premiumHero .heroFeatures{display:none}
+ .premiumHero .heroVisual{height:clamp(210px,62vw,280px)}
+ .premiumHero .heroShoeWrap img{max-height:calc(62vw - 38px)}
+ .premiumHero .heroFrameline{padding:6px 12px 10px}
+ .premiumHero .heroMini{bottom:37px}
+ .premiumHero .heroActions{gap:6px}
+ .premiumHero .heroActions .button{min-height:44px}
+ .headerInner{min-width:0}
+ .headerActions{min-width:0;flex-shrink:0}
+ .premiumBrand{min-width:0;max-width:calc(100% - 80px);overflow:visible}
+ .brandName{min-width:0}
+ .brandName small{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+ .brandMark{flex-shrink:0}
+ .categoryTile img{pointer-events:none}
+ .cardTitle{min-width:0}
+ .cardTitle h3{min-width:0;overflow-wrap:anywhere}
+ .cardTitle strong{flex:0 0 auto}
+ .cardContent,.cardBottom,.productCard,.toolbar,.sectionHead,.story,.hero{min-width:0}
+}
+@media(max-width:360px){
+ .brandName{font-size:15px}
+ .brandName small{font-size:5px;letter-spacing:0}
+ .brandMark{width:29px;flex-basis:29px;height:30px;font-size:20px}
+ .premiumHero h1{font-size:30px}
+ .premiumHero .heroText>p{font-size:10px}
+ .premiumHero .heroVisual{height:208px}
+ .premiumHero .heroShoeWrap img{max-height:177px}
+ .premiumHero .heroActions .button{font-size:9px;padding:8px 6px}
+ .cartAction{padding:0 7px;gap:5px}
+ .categoryTileCopy strong{font-size:13px}
+}
