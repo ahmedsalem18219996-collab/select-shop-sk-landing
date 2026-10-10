@@ -1,0 +1,212 @@
+/* SELECT SHOP • Lime Frost Tilted Grid
+ * Final visual layer for the new carousel hero. Uses original static site's
+ * existing HTML/CSS: no React, Tailwind runtime, or checkout migration.
+ * Geometry and facets are generated from approved tilted-grid React reference.
+ */
+:root{
+ --lime:#ddf77c!important;--lime-soft:#e9f9b4;
+ --paper:#141a16;--night:#111611;--ink:#eef3e7;
+ --lime-line:#52634c;--lime-panel:#202a22;--lime-studio:#eef3e7;
+ --tgh-bg:#141a16;--tgh-highlight:#ddf77c;
+}
+html{background:#121711}
+body{
+ background:#121711!important;color:#eef3e7!important;
+ background-image:radial-gradient(ellipse 62% 30% at 65% 9%,#a3c47912,transparent 72%),
+   linear-gradient(180deg,#121711 0%,#151c17 55%,#111612 100%)!important
+}
+.premiumTicker.promo{background:#ddf77c!important}
+.premiumTicker:before{background:linear-gradient(270deg,#ddf77c,transparent)!important}
+.premiumTicker:after{background:linear-gradient(90deg,#ddf77c,transparent)!important}
+.siteHeader{
+ background:#172019ed!important;border-color:#56674f!important;
+ box-shadow:0 10px 35px #0008!important
+}
+.premiumBrand .brandMark,.cartAction{background:#ddf77c!important;color:#172019!important}
+.premiumBrand .brandWordAccent{color:#ddf77c!important}
+.shoeCardsGrid .productCard,.gatewayCard{
+ background:#202a22!important;border-color:#52634c!important
+}
+.shoeCardsGrid .cardIndex{background:#ddf77c90!important}
+.shoeCardsGrid .cardBottom button,.buttonPrimary,.drawerFooter .buttonPrimary{
+ background:#ddf77c!important;color:#142015!important;border-color:#ddf77c!important
+}
+.shoeCardsGrid .cardBottom button:hover,.buttonPrimary:hover{background:#edffaf!important}
+.ssInquiryButton,.ssDetailInquiry,.ssMobileInquiry{
+ background:#26372b!important;border-color:#90b28a!important
+}
+
+/* New hero is one deliberate composition: brand statement above a kinetic
+   cylindrical image row. No old glowing grid, orbit, or duplicated photo. */
+.hero.premiumHero.limeHero.tiltedGridHero{
+ direction:rtl!important;
+ display:flex!important;flex-direction:column!important;
+ align-items:stretch!important;justify-content:space-between!important;
+ gap:0!important;width:100%;max-width:100%;
+ min-height:0!important;height:auto!important;
+ padding:0!important;overflow:hidden!important;
+ border:1px solid #52684d!important;border-radius:12px!important;
+ background:linear-gradient(155deg,#1c281f 0%,#141a16 53%,#1d2b21 100%)!important;
+ box-shadow:0 18px 55px #0005!important
+}
+.hero.premiumHero.limeHero.tiltedGridHero:before,
+.hero.premiumHero.limeHero.tiltedGridHero:after{
+ display:none!important;content:none!important
+}
+.tiltedGridHero .heroText{
+ position:relative!important;z-index:3!important;order:1!important;
+ width:100%!important;min-width:0!important;max-width:100%!important;
+ padding:30px 20px 19px!important;
+ text-align:center!important;align-items:center!important;
+ background:radial-gradient(ellipse 39% 120% at 50% 0,#a7d16811,transparent 75%)!important
+}
+.tiltedGridHero #heroTitle{
+ font-size:clamp(43px,6.4vw,91px)!important;
+ line-height:1.01!important;margin:15px 0 5px!important;
+ max-width:100%!important
+}
+.tiltedGridHero .heroEyebrow{
+ justify-content:center!important;flex-wrap:wrap!important;
+ font-size:9px!important;letter-spacing:.12em!important;
+ color:#b4cbac!important
+}
+.tiltedGridHero .heroEnglish{letter-spacing:.14em!important;margin-top:6px!important}
+.tiltedGridHero .heroLead{
+ margin:10px 0 14px!important;font-size:12px!important;max-width:570px!important
+}
+.tiltedGridHero .heroActions{
+ justify-content:center!important;gap:10px!important;
+ max-width:100%!important;flex-wrap:wrap!important
+}
+.tiltedGridHero .heroActions .button{
+ min-height:45px!important;padding:10px 17px!important;
+ border-radius:7px!important;letter-spacing:.035em!important;
+ font-size:10px!important
+}
+.tiltedGridHero .ssHeroInquiry{margin-top:9px!important}
+.tiltedGridHero .ssHeroInquiry .ssInquiryButton{
+ min-height:36px!important;padding:7px 13px!important;
+ border-radius:7px!important;font-size:10px!important
+}
+.hero.premiumHero.limeHero.tiltedGridHero>.heroVisual.tgh-stage{
+ direction:ltr!important;order:2!important;
+ display:block!important;position:relative!important;isolation:isolate!important;
+ box-sizing:border-box!important;
+ width:100%!important;max-width:100%!important;
+ height:clamp(240px,28vw,355px)!important;
+ min-height:240px!important;
+ margin:0!important;padding:0!important;
+ overflow:hidden!important;border:0!important;border-radius:0!important;
+ background:radial-gradient(ellipse 45% 65% at center,#344a32 0%,#1a271d 50%,#111914 100%)!important;
+ /* Prevent old hero ::before overlays and pseudo-elements */
+ transform:none!important;filter:none!important
+}
+.tgh-stage:before,.tgh-stage:after{display:none!important;content:none!important}
+.tgh-band{
+ position:absolute!important;inset:0;z-index:2!important;
+ display:block!important;width:100%;height:100%;
+ overflow:hidden!important;pointer-events:none!important;
+ transform:translateZ(0);
+ -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 10%,#000 90%,transparent 100%)!important;
+ mask-image:linear-gradient(90deg,transparent 0%,#000 10%,#000 90%,transparent 100%)!important
+}
+.tgh-tile{
+ position:absolute!important;display:block!important;
+ backface-visibility:visible!important;
+ transform-style:preserve-3d!important;
+ will-change:transform!important;pointer-events:none!important
+}
+.tgh-slice{
+ position:absolute!important;top:0!important;
+ box-sizing:border-box!important;overflow:hidden!important;
+ background:#e6eee1!important;
+ transform-style:preserve-3d!important;
+ backface-visibility:hidden!important;
+ border:0!important;box-shadow:none!important
+}
+.tgh-slice>img{
+ display:block!important;position:absolute!important;top:0!important;
+ max-width:none!important;max-height:none!important;
+ height:auto;object-position:center!important;
+ filter:none!important;opacity:1!important;border:0!important;
+ -webkit-mask-image:none!important;mask-image:none!important;
+ mix-blend-mode:normal!important;transform:none!important
+}
+.tgh-stage>.tgh-kicker{
+ position:absolute;z-index:3;bottom:12px;left:20px;right:20px;
+ pointer-events:none;display:flex;align-items:center;
+ justify-content:space-between;gap:10px;
+ color:#d5edb6;font:750 9px/1.5 Manrope,sans-serif;letter-spacing:.13em
+}
+.tgh-stage>.tgh-kicker>span:last-child{color:#9fba93}
+.tgh-stage>.tgh-grain{
+ position:absolute!important;z-index:1!important;inset:0!important;pointer-events:none;
+ background:repeating-linear-gradient(0deg,transparent 0 38px,#c7ed7310 39px 40px),
+   radial-gradient(circle at 50% 50%,#a2cd6414,transparent 61%)!important
+}
+.tgh-reduced .tgh-band{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ gap:12px!important;padding:10px 14px!important;
+ transform:none!important
+}
+.tgh-reduced .tgh-band>img{
+ display:block!important;min-width:0;width:32%;height:74%;
+ border-radius:9px;border:1px solid #798d6d;
+ background:#e6eee1;object-fit:cover
+}
+.tgh-unavailable .tgh-band{background:#233126}
+.tgh-stage{contain:layout style paint}
+
+/* Safari iPhone: generous clipping in band, no layout jumps or horizontal
+   overflow. 3D motion never changes the height of the document. */
+@media(max-width:620px){
+ .hero.premiumHero.limeHero.tiltedGridHero{
+  margin-top:10px!important;border-radius:9px!important
+ }
+ .tiltedGridHero .heroText{
+  width:100%!important;padding:19px 11px 12px!important
+ }
+ .tiltedGridHero #heroTitle{
+  font-size:clamp(31px,8.3vw,43px)!important;
+  line-height:1.04!important;margin:11px 0 5px!important
+ }
+ .tiltedGridHero .heroEyebrow{font-size:7px!important;letter-spacing:.04em!important}
+ .tiltedGridHero .heroLead{
+  font-size:11px!important;line-height:1.6!important;
+  margin:10px 0 10px!important
+ }
+ .tiltedGridHero .heroEnglish{font-size:8px!important;letter-spacing:.08em!important}
+ .tiltedGridHero .heroActions{
+  display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:7px!important;width:100%!important;max-width:100%!important
+ }
+ .tiltedGridHero .heroActions .button{
+  width:100%!important;min-width:0!important;
+  min-height:41px!important;padding:8px 4px!important;
+  border-radius:6px!important;font-size:clamp(8px,2.4vw,10px)!important;
+  white-space:normal!important;gap:5px!important
+ }
+ .tiltedGridHero .ssHeroInquiry{width:100%!important;margin-top:8px!important}
+ .tiltedGridHero .ssHeroInquiry .ssInquiryButton{width:100%!important;min-height:40px!important}
+ .hero.premiumHero.limeHero.tiltedGridHero>.heroVisual.tgh-stage{
+  height:clamp(215px,61vw,274px)!important;
+  min-height:215px!important;padding:0!important;max-height:274px!important
+ }
+ .tgh-stage>.tgh-kicker{
+  left:10px;right:10px;bottom:7px;
+  font-size:7px;letter-spacing:.03em
+ }
+ .tgh-band{-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 7%,#000 93%,transparent)!important;
+   mask-image:linear-gradient(90deg,transparent 0%,#000 7%,#000 93%,transparent)!important}
+}
+@media(max-width:359px){
+ .tiltedGridHero .heroActions{grid-template-columns:minmax(0,1fr)!important}
+ .hero.premiumHero.limeHero.tiltedGridHero>.heroVisual.tgh-stage{
+  height:220px!important;min-height:220px!important
+ }
+ .tgh-stage>.tgh-kicker span:last-child{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .tgh-tile{animation-play-state:paused!important;will-change:auto!important}
+ .tgh-band{transform:none!important}
+}
