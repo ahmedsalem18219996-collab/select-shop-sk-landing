@@ -371,7 +371,7 @@ function bootAnalytics() {
   }
 }
 
-const PRODUCT_VIEW_SESSION_KEY = "selectShopViewedModels:v1";
+const PRODUCT_VIEW_SESSION_KEY = "selectShopOffcanonLimePreviewViewedModels:v1";
 const viewedProductIds = new Set((() => {
   try {
     const saved = JSON.parse(sessionStorage.getItem(PRODUCT_VIEW_SESSION_KEY) || "[]");
@@ -381,7 +381,7 @@ const viewedProductIds = new Set((() => {
   }
 })());
 
-const PRODUCT_VARIANT_VIEW_SESSION_KEY = "selectShopViewedVariants:v1";
+const PRODUCT_VARIANT_VIEW_SESSION_KEY = "selectShopOffcanonLimePreviewViewedVariants:v1";
 const viewedVariantIds = new Set((() => {
   try {
     const saved = JSON.parse(sessionStorage.getItem(PRODUCT_VARIANT_VIEW_SESSION_KEY) || "[]");
@@ -473,7 +473,7 @@ function setupDockVisibility() {
   dockObserver.observe(heroActions);
 }
 
-const SELECT_SHOP_THEME_KEY = "selectShopTheme";
+const SELECT_SHOP_THEME_KEY = "selectShopOffcanonLimePreviewTheme";
 function applyTheme() {
   document.body.classList.remove("theme-night");
   document.documentElement.style.colorScheme = "light";
@@ -1696,7 +1696,7 @@ if (checkoutForm) {
     const message = checkoutMessage(data, checkoutState.items, orderPayload.orderId);
 
     // Do not block WhatsApp navigation on analytics or optional integrations.
-    try { localStorage.setItem("selectShopLastOrder", JSON.stringify({ ...orderPayload, status: "whatsapp-prepared" })); } catch {}
+    try { localStorage.setItem("selectShopOffcanonLimePreviewLastOrder", JSON.stringify({ ...orderPayload, status: "whatsapp-prepared" })); } catch {}
     if (CONFIG.PROF_BRIDGE_URL) {
       void submitOrderToProf(orderPayload).catch(error => console.warn("Prof bridge error:", error));
     }
