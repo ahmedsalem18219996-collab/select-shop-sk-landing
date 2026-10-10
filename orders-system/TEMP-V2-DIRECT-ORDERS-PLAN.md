@@ -23,6 +23,23 @@ Never change, merge into, or deploy to `SELECT-SHOP-CLEAN`.
 - [ ] Owner must test admin dashboard login with their own password; this login cannot be tested by the assistant.
 - [ ] Cloudflare Turnstile, private function secrets, E2E test and explicit go-live approval remain mandatory.
 
+## Affiliate fulfillment: Safqa / Prof — manual first (11 October 2026)
+
+**Operational reality:** A storefront order is a *lead to be reviewed*, not an order that the supplier automatically receives. SELECT SHOP receives customer info and manually enters the matching products in the affiliate platforms.
+
+- [x] The isolated `select-shop-orders` Supabase database has `public.ss_affiliate_tracking` (one record per storefront order × supplier platform).
+- [x] Authorized admins only (RLS via `private.ss_is_order_admin`, no anonymous table privileges).
+- [x] Independent statuses and supplier reference IDs; zero supplier tracking rows and zero customer orders at migration time.
+- [x] Product routing reads the private catalog: SK/ALEX/EQWAL/WK → Prof; carwash48 → Safqa. Unknown product mapping **blocks copy**.
+- [x] Admin-only order detail cards for each platform: copy the required data, enter supplier order reference, save state. Copy is user-initiated, never automatic.
+- [x] Works with split/mixed orders from both platforms; no merging supplier handoff statuses with storefront delivery statuses.
+- [x] Offline tests passed 20/20 in GitHub Actions (10 direct checkout + 10 affiliate workflow).
+- [ ] Real admin browser test of manual tracking UI, with a clearly synthetic controlled test order (no supplier submission).
+- [ ] Activate admin UI in the live temporary-store dashboard only after review.
+- [ ] No supplier API credentials; no auto-placement to suppliers.
+
+**Future automation path only if sales volume warrants it:** determine if Safqa and Prof have approved APIs, CSV imports or permitted automation interfaces; implement n8n per supplier only after verifying permissions and secure credentials, idempotency, supplier order reference receipt, and rollback/error handling. Never infer successful vendor submission from copying a message or clicking a button. Manual review for trial sizes, shipping quotes and mixed-platform orders remains required until the platforms' capabilities are verified.
+
 ## Required before ANY live enablement
 
 1. ✅ Created dedicated administrator in isolated `select-shop-orders` Supabase Authentication and verified email confirmation (one account).
