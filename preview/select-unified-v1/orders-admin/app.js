@@ -26,6 +26,7 @@ async function disconnect(logOut){
  if(channel){try{await db.removeChannel(channel)}catch{}channel=null}
  if(refreshInterval){clearInterval(refreshInterval);refreshInterval=null}
  orders=[];knownIds=null;selected=null;
+ window.SELECT_SHOP_AFFILIATE_ADMIN?.setClient(null);
  if(logOut && db)await db.auth.signOut();
  showLogin();
 }
@@ -40,6 +41,7 @@ async function afterLogin(){
  const isAdmin=await checkAdmin();
  if(!isAdmin){await disconnect(true);showLogin("الحساب ده مش مسجل ضمن مسؤولي طلبات SELECT SHOP.");return}
  showDashboard();setConnection("متصل");
+ window.SELECT_SHOP_AFFILIATE_ADMIN?.setClient(db);
  await loadOrders(true);
  if(!refreshInterval)refreshInterval=setInterval(()=>loadOrders(true),45000);
  channel=db.channel("select-shop-admin-orders")
@@ -125,6 +127,8 @@ function openDetail(id){
  select.innerHTML=Object.entries(statuses).map(([key,label])=>`<option value="${key}">${escapeText(label)}</option>`).join("");
  select.value=o.status;
  $("#detailDialog").showModal();
+ // Manual supplier handoff stays inside authenticated admin, never the customer checkout.
+ void window.SELECT_SHOP_AFFILIATE_ADMIN?.render(o,$("#detailContent"));
 }
 async function saveStatus(){
  if(!selected)return;
