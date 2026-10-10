@@ -1,0 +1,174 @@
+/* SELECT SHOP / PREVIEW V2 — Editorial refresh, 2026-10-10
+ * Scope: visual-only adjustments; no production products, checkout or analytics.
+ * Replaces the orbital hero and the illuminated RECTANGLE on product photos.
+ * Product photography stays original. Soft blending on light studio backgrounds.
+ */
+
+/* Editorial visual stage: angular, typographic, deliberately NOT circular. */
+.premiumHero.limeHero:before{display:none!important}
+.premiumHero.limeHero .heroVisual.limeHeroArt.editorialStage{
+ position:relative!important;isolation:isolate;box-sizing:border-box;
+ height:clamp(225px,23.5vw,310px)!important;min-height:225px!important;
+ padding:25px clamp(18px,3vw,55px)!important;
+ display:flex!important;align-items:center;justify-content:center;
+ background:
+  linear-gradient(112deg,transparent 0 15%,#d6f96009 15% 15.3%,transparent 15.3% 68%,#d6f9600b 68% 68.25%,transparent 68.25%),
+  linear-gradient(117deg,#161e14 0%,#192419 42%,#121b13 100%)!important;
+ overflow:hidden!important;text-align:center
+}
+.premiumHero.limeHero .editorialStage::before{
+ content:"";position:absolute;inset:0;z-index:0;
+ background-image:linear-gradient(#d8f2630d 1px,transparent 1px),linear-gradient(90deg,#d8f2630d 1px,transparent 1px);
+ background-size:49px 49px;opacity:.75;pointer-events:none;
+ -webkit-mask-image:linear-gradient(90deg,transparent,#000 13%,#000 87%,transparent);
+ mask-image:linear-gradient(90deg,transparent,#000 13%,#000 87%,transparent)
+}
+.premiumHero.limeHero .editorialStage::after{
+ content:"";position:absolute;inset:-30% 20% 0;z-index:0;
+ background:linear-gradient(112deg,transparent 36%,#d6ff4812 45%,#dcff5c24 51%,transparent 61%);
+ transform:skewX(-19deg);pointer-events:none
+}
+.editorialGrid{
+ position:absolute;inset:12% 8%;border-block:1px solid #dafa5920;
+ background:repeating-linear-gradient(90deg,transparent 0,transparent calc(25% - 1px),#dafa5915 calc(25% - 1px),#dafa5915 25%);
+ pointer-events:none;z-index:1
+}
+.editorialBeam{position:absolute;width:20%;height:190%;top:-45%;pointer-events:none;z-index:1;
+ background:linear-gradient(90deg,transparent,#dafa5918 45%,#e2ff7240 49%,transparent 56%);
+ transform:rotate(29deg);filter:blur(2px);opacity:.6;
+ animation:editorialSweep 11s ease-in-out infinite alternate
+}
+.editorialBeamFirst{right:12%}
+.editorialBeamSecond{left:11%;opacity:.32;animation-delay:-5s;animation-duration:14s}
+@keyframes editorialSweep{from{translate:-15px 0;opacity:.26}to{translate:18px 0;opacity:.63}}
+.editorialIssue{
+ position:absolute;top:19px;right:clamp(16px,3vw,45px);z-index:2;
+ font:800 9px/1.5 "Manrope",sans-serif;letter-spacing:.23em;direction:ltr;
+ color:#d8f5ac
+}
+.editorialIssue span{color:var(--lime)}
+.editorialHeadline{
+ z-index:2;position:relative;display:flex;flex-direction:column;
+ align-items:center;justify-content:center;gap:0;
+ direction:ltr;line-height:.98;white-space:nowrap;max-width:100%;
+ animation:editorialReveal .85s ease-out both
+}
+.editorialHeadline>span{
+ display:block;font:850 clamp(33px,6.2vw,91px)/1 "Manrope",sans-serif;
+ letter-spacing:-.075em;color:transparent;
+ -webkit-text-stroke:1px #ecf4d6a8
+}
+.editorialHeadline>strong{
+ display:flex;align-items:baseline;justify-content:center;gap:.06em;
+ font:900 clamp(41px,8vw,126px)/1 "Manrope",sans-serif;
+ letter-spacing:-.075em;color:#e2fc69;
+ text-shadow:0 6px 40px #c5f45818
+}
+.editorialHeadline .editorialArrow{
+ font:650 .42em/1 "Manrope",sans-serif;letter-spacing:0;
+ color:#f4f8e4;transform:translateY(-.5em)
+}
+.editorialFootline{
+ position:absolute;bottom:16px;right:clamp(16px,3vw,45px);left:clamp(16px,3vw,45px);
+ display:flex;align-items:center;justify-content:space-between;gap:10px;z-index:2;
+ color:#9fb18f;font:800 8px/1.4 "Manrope",sans-serif;
+ letter-spacing:.13em;direction:ltr
+}
+@keyframes editorialReveal{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Product image edge correction, based on actual WK screenshot.
+   JPG source photos are opaque white studio photos (not transparent cutouts).
+   A coloured/gradient parent combined with an oval mask creates a visible
+   square photo sheet. Keep the photo visually continuous with its canvas.
+   No artificial glow or masking that clips the heel/toe silhouettes. */
+.shoeCardsGrid .cardMedia,
+.shoeCardsGrid .carProductCard .cardMedia{
+ position:relative;
+ isolation:isolate!important;
+ overflow:hidden!important;
+ background:#fff!important;
+ border:0!important;
+ box-shadow:none!important;
+}
+.shoeCardsGrid .cardMedia::before,
+.shoeCardsGrid .cardMedia::after{
+ content:none!important;
+ display:none!important;
+ animation:none!important;
+ border:0!important;
+ box-shadow:none!important;
+ filter:none!important
+}
+.shoeCardsGrid .cardMediaClick{
+ position:relative;
+ z-index:1!important;
+ box-sizing:border-box;
+ width:100%!important;
+ height:100%!important;
+ overflow:hidden!important;
+ display:grid!important;
+ place-items:center!important;
+ padding:clamp(8px,1.5vw,18px)!important;
+ background:#fff!important;
+ isolation:auto!important
+}
+.shoeCardsGrid .cardMediaClick::before,
+.shoeCardsGrid .cardMediaClick::after{
+ content:none!important;display:none!important;
+ background:none!important;box-shadow:none!important
+}
+.shoeCardsGrid .cardMediaClick img,
+.shoeCardsGrid .mainCardImage,
+.shoeCardsGrid .carProductCard .cardMediaClick img{
+ display:block!important;
+ position:relative;
+ z-index:1;
+ width:100%!important;
+ height:100%!important;
+ min-width:0;
+ max-width:100%;
+ max-height:100%;
+ object-fit:contain!important;
+ object-position:center!important;
+ background:transparent!important;
+ /* The product PHOTO must stay intact, especially the toe and sole. */
+ -webkit-mask-image:none!important;
+ mask-image:none!important;
+ mix-blend-mode:normal!important;
+ opacity:1!important;
+ filter:none!important;
+ transform:none!important;
+ transition:transform .45s cubic-bezier(.2,.8,.2,1)!important;
+}
+.shoeCardsGrid .productCard:hover .cardMediaClick img,
+.shoeCardsGrid .cardMediaClick:hover img{
+ transform:scale(1.025)!important;
+ filter:none!important
+}
+/* No inner bright stroke, even when the whole product card is hovered. */
+.shoeCardsGrid .cardTag{z-index:2;box-shadow:0 3px 12px #181c1430}
+.shoeCardsGrid .cardIndex{z-index:2}
+
+/* Mobile: legible typography with no overflow and balanced media rhythm. */
+@media(max-width:620px){
+ .premiumHero.limeHero .heroVisual.limeHeroArt.editorialStage{
+  height:clamp(177px,51vw,230px)!important;min-height:177px!important;
+  padding:23px 10px!important
+ }
+ .editorialGrid{inset:16% 5%}
+ .editorialIssue{top:12px;right:14px;font-size:7px;letter-spacing:.13em}
+ .editorialHeadline>span{font-size:clamp(25px,7.2vw,37px);line-height:1.05}
+ .editorialHeadline>strong{font-size:clamp(31px,9.7vw,52px);letter-spacing:-.08em}
+ .editorialFootline{right:12px;left:12px;bottom:10px;font-size:6px;letter-spacing:.055em}
+ .editorialFootline span:last-child{max-width:51%;text-align:right}
+ .shoeCardsGrid .cardMediaClick{padding:8px 10px!important}
+}
+@media(max-width:360px){
+ .editorialHeadline>span{font-size:24px}
+ .editorialHeadline>strong{font-size:30px}
+ .editorialFootline{font-size:5px}
+}
+@media(prefers-reduced-motion:reduce){
+ .editorialBeam,.editorialHeadline{animation:none!important;translate:none!important;transform:none!important}
+ .shoeCardsGrid .cardMediaClick img{transition:none!important}
+}
