@@ -1,0 +1,52 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>SELECT SHOP V2 — Visual + Checkout Preview QA</title><style>
+*{box-sizing:border-box}body{margin:0;padding:18px;background:#111420;color:#f3ece8;font:13px/1.8 Tahoma,Arial,sans-serif}
+h1{font-size:20px;margin:0 0 8px}p{color:#c7b5c4;font-size:11px}.results{border:1px solid #494350;background:#1b2030;padding:16px;border-radius:8px;margin:18px 0}.result{border-bottom:1px solid #46434d;padding:6px 0;font-size:12px}.pass{color:#a5e8c0}.fail{color:#ffadac}.screens{display:flex;flex-wrap:wrap;gap:25px;direction:ltr;align-items:flex-start}.frame{display:flex;flex-direction:column;gap:7px}.frame strong{font:700 13px Tahoma;color:#edba9c}iframe{box-sizing:content-box;width:390px;height:844px;border:5px solid #636175;border-radius:14px;background:white;display:block}#i320{width:320px;height:720px}#i768{width:768px;height:760px}@media(max-width:860px){#i768{display:none}}
+</style></head><body><h1>SELECT SHOP — Revision V2 / QA</h1><p>فحوص معاينة مستقلة عند مقاسات 390px / 320px / 768px. لا يوجد واتساب أو إرسال أوردرات. هذه الصفحة للاختبار فقط.</p><div class="results" id="results">جاري الاختبار…</div><div class="screens"><div class="frame"><strong>390 × 844</strong><iframe id="i390" width="390" height="844" src="/preview/select-v2/?qa=390"></iframe></div><div class="frame"><strong>320 × 720</strong><iframe id="i320" width="320" height="720" src="/preview/select-v2/?qa=320"></iframe></div><div class="frame"><strong>768 × 760</strong><iframe id="i768" width="768" height="760" src="/preview/select-v2/?qa=768"></iframe></div></div>
+<script>
+const status=document.getElementById("results"),records=[];
+function test(label,ok,details=""){records.push({label,ok,details});status.innerHTML="<b>"+records.filter(x=>x.ok).length+"/"+records.length+" PASS</b>"+records.map(x=>'<div class="result '+(x.ok?"pass":"fail")+'">'+(x.ok?"✓":"✕")+" "+x.label+" — "+x.details+"</div>").join("")}
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function loaded(f){return new Promise(r=>{if(f.contentDocument?.readyState==="complete")return r();f.addEventListener("load",r,{once:true});setTimeout(r,12000)})}
+async function run(){
+const f390=document.getElementById("i390"),f320=document.getElementById("i320"),f768=document.getElementById("i768");
+await Promise.all([loaded(f390),loaded(f320),loaded(f768)]);await wait(2000);
+for(const [w,f] of [[390,f390],[320,f320],[768,f768]]){
+ const doc=f.contentDocument,win=f.contentWindow;
+ test(w+"px horizontal fit",doc.documentElement.scrollWidth<=win.innerWidth,"inner="+win.innerWidth+" / scroll="+doc.documentElement.scrollWidth);
+ test(w+"px hero images natural dimensions",[...doc.querySelectorAll(".heroProductTile img")].every(x=>x.complete&&x.naturalWidth>0),[...doc.querySelectorAll(".heroProductTile img")].map(x=>x.naturalWidth).join(","));
+ test(w+"px footer and mobile CTA",!!doc.querySelector(".siteFooter")&&(w>620||win.getComputedStyle(doc.querySelector(".mobileBar")).display!=="none"),"footer true, dock "+win.getComputedStyle(doc.querySelector(".mobileBar")).display);
+}
+const d=f390.contentDocument,w=f390.contentWindow;
+test("5 models display",d.querySelectorAll("#productGrid .shoeCardsGrid .productCard").length===4&&d.querySelectorAll("#productGrid .carSpotlight").length===1,"shoe "+d.querySelectorAll("#productGrid .shoeCardsGrid .productCard").length+" / car "+d.querySelectorAll("#productGrid .carSpotlight").length);
+test("No React/TechText dependency",[...d.scripts].every(s=>!String(s.src||"").includes("tech-text")&&s.type!=="module")&&!d.querySelector("#selectTechTextRoot"),"pure vanilla only");
+test("Shipping in preview clearly marked",!!d.body.textContent.includes("غير مفعّل")&&d.querySelector(".premiumTicker")?.textContent.includes("FREE SHIPPING"),"preview + promo");
+const old=w.localStorage.getItem("selectShopReviewV2:cart");
+try{
+const nav=d.querySelector("#navCategoryButton");nav?.click();
+test("Dropdown opens and shows current categories",d.querySelector("#navCategoryMenu")?.hidden===false&&d.querySelectorAll(".navCategoryMenu [data-nav-filter]").length===3,"open="+!d.querySelector("#navCategoryMenu")?.hidden);
+nav?.click();
+d.querySelector(".mobileCategoryRail [data-nav-filter=car]")?.click();
+test("Category filter switches to car",d.querySelectorAll("#productGrid .carSpotlight").length===1&&d.querySelectorAll("#productGrid .shoeCardsGrid .productCard").length===0,"car section only");
+d.querySelector(".mobileCategoryRail [data-nav-filter=all]")?.click();
+const sk=d.querySelector('[data-product-id="sk"] [data-show-product]');
+sk?.click();
+test("Product detail open",d.querySelector("#productDialog")?.open===true&&d.querySelectorAll("#detailSizes [data-size]").length>0,"sizes="+d.querySelectorAll("#detailSizes [data-size]").length);
+d.querySelector("#detailSizes [data-size]")?.click();d.querySelector("#addToCart")?.click();
+test("SK added preview cart",d.querySelector("#cartDialog")?.open===true&&d.querySelector("#cartMath")?.textContent.includes("٦٨٠"),"cart="+d.querySelector("#cartMath")?.textContent.slice(0,100));
+d.querySelector('[data-close="cartDialog"]')?.click();
+d.querySelector('[data-product-id="alex"] [data-show-product]')?.click();
+d.querySelector("#detailSizes [data-size]")?.click();
+d.querySelector("#addToCart")?.click();
+test("Two-shoe cart discount",d.querySelector("#cartMath")?.textContent.includes("80")||d.querySelector("#cartMath")?.textContent.includes("٨٠"),d.querySelector("#cartMath")?.textContent.slice(0,130));
+d.querySelector('[data-close="cartDialog"]')?.click();
+d.querySelector(".carSpotlight [data-show-product]")?.click();
+d.querySelector("#addToCart")?.click();
+const grand=d.querySelector("#cartMath .cartGrand")?.textContent||"";
+test("Cross-category total EGP 2,139",grand.includes("٢٬١٣٩")||grand.includes("٢,١٣٩")||grand.includes("2,139")||grand.includes("2139"),grand.slice(0,120));
+d.querySelector("#goCheckout")?.click();
+test("Checkout keeps all-governorates shipping offer as preview",d.querySelector("#checkoutDialog")?.open===true&&d.querySelector("#checkoutSummary")?.textContent.includes("معاينة")&&d.querySelector("#checkoutSummary")?.textContent.includes("الشحن مجاني"),d.querySelector("#checkoutSummary")?.textContent.slice(0,170));
+}catch(e){test("Interaction script error",false,String(e))}
+finally{if(old===null)w.localStorage.removeItem("selectShopReviewV2:cart");else w.localStorage.setItem("selectShopReviewV2:cart",old)}
+}
+run();
+</script></body></html>
