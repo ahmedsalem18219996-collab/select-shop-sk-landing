@@ -25,7 +25,7 @@ jobs:
           node --check storefront-v2-live.js
           node --check direct-order-v2.js
           node --check direct-order-v2-config.js
-      - name: Mock tests: no customer data or API requests
+      - name: "Mock tests - no customer data or API requests"
         run: node --test orders-system/tests/direct-order-v2-safety.test.cjs
-      - name: Safe remote Edge tests: preflight, invalid origin and invalid JSON
+      - name: "Safe remote Edge tests - preflight, invalid origin and invalid JSON"
         run: node --test orders-system/tests/remote-edge-readiness.test.cjs
