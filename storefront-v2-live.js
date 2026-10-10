@@ -443,7 +443,7 @@
       if(e.target.closest("[data-show-video]")){showDetailVideo();return}
       onDetailVariant(e);
     });
-    $("[data-whatsapp-inquiry]").forEach(link=>link.addEventListener("click",e=>{
+    document.querySelectorAll("[data-whatsapp-inquiry]").forEach(link=>link.addEventListener("click",e=>{
       if(testMode){e.preventDefault();showToast("وضع الاختبار: تم تعطيل فتح واتساب");return}
       ga("whatsapp_inquiry_click",{location:link.dataset.whatsappInquiry||"general",
         item_id:link.dataset.whatsappInquiry==="product"&&viewed?selectedVariant(viewed.productId,viewed.variantId).id:"general"});
