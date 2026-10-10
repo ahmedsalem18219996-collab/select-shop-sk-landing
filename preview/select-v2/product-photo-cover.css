@@ -196,6 +196,19 @@
  .detailImage{aspect-ratio:1.34/1!important}
  .mobileBar{bottom:calc(9px + env(safe-area-inset-bottom,0px))!important}
 }
+/* Compact phones: prevent category text and the product photo occupying the
+   same space in the two-column category row (notably at 375/390px). */
+@media(min-width:361px) and (max-width:620px){
+ .merchGateway{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .gatewayCard{padding:9px 7px!important}
+ .gatewayCopy{width:61%!important;max-width:61%!important;min-width:0!important}
+ .gatewayCopy strong{font-size:clamp(11px,2.85vw,16px)!important;line-height:1.45!important}
+ .gatewayCopy b{max-width:100%!important;font-size:7px!important;white-space:normal!important}
+ .gatewayCard>img{
+  width:36%!important;max-width:36%!important;height:78%!important;
+  left:1%!important;bottom:5%!important
+ }
+}
 @media(max-width:360px){
  .merchGateway{grid-template-columns:minmax(0,1fr)!important}
  .gatewayCard{min-height:114px!important}
