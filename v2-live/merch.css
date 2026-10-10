@@ -1,0 +1,303 @@
+/* SELECT SHOP — merchandising direction / preview-only.
+ * Product-first curation, separate shelves for footwear and car care.
+ * No advertising claims about sales rankings or stock.
+ */
+:root{--merch-stage:#e9e7e3;--merch-muted:#aaa6b0;--merch-line:#383b45}
+.premiumHero .heroPriceFootnote{
+  font:500 10px/1.75 "IBM Plex Sans Arabic",sans-serif;
+  color:#bdb0b6;margin:11px 0 0;letter-spacing:0
+}
+.premiumHero .heroPriceFootnote span{color:#e4c0a7;font-weight:700}
+.premiumHero .heroActions button{white-space:normal;text-align:center}
+.categoriesSection{margin-bottom:72px}
+.shopGatewayHeading{margin-bottom:22px}
+.merchGateway{display:grid;grid-template-columns:1.2fr 1fr;gap:14px}
+.gatewayCard{
+ display:flex;align-items:stretch;justify-content:space-between;
+ position:relative;min-width:0;min-height:294px;overflow:hidden;text-align:right;
+ background:#1a1d27;border:1px solid #3d404a;color:#f4eee9;
+ border-radius:7px;padding:26px 25px;isolation:isolate;
+ transition:border-color .2s,transform .2s,background .2s
+}
+.gatewayCard:hover{transform:translateY(-3px);border-color:#988490;background:#20212d}
+.gatewayCard:focus-visible{outline:2px solid #d7a183;outline-offset:3px}
+.gatewayFootwear{background:linear-gradient(135deg,#242734,#171d26)}
+.gatewayCar{background:linear-gradient(115deg,#262630,#181b24)}
+.gatewayCard::after{content:"";position:absolute;inset:15px;border:1px solid #dad5da18;pointer-events:none}
+.gatewayCopy{
+ position:relative;z-index:3;display:flex;flex-direction:column;
+ align-items:flex-start;gap:11px;width:min(63%,440px);
+ padding:2px 0;min-width:0
+}
+.gatewayCopy small{
+ color:#d6b3a4;font:800 10px/1.5 "Manrope","IBM Plex Sans Arabic",sans-serif;
+ letter-spacing:.06em
+}
+.gatewayCopy strong{font:700 clamp(23px,2.5vw,37px)/1.45 "Alexandria",sans-serif;letter-spacing:-.05em}
+.gatewayCopy>span{color:#c1b8c2;font:500 11px/2 "IBM Plex Sans Arabic",sans-serif;max-width:245px}
+.gatewayCopy b{
+ display:inline-flex;gap:14px;align-items:center;
+ padding:11px 15px;margin-top:auto;background:#e6dcd5;color:#1b1b22;
+ border-radius:4px;font-size:11px;font-weight:700
+}
+.gatewayCopy b i{font:800 18px/1 "Manrope",sans-serif;font-style:normal}
+.gatewayCard img{
+ width:47%;height:83%;max-height:265px;position:absolute;
+ left:12px;bottom:18px;object-fit:contain;z-index:1;
+ filter:drop-shadow(0 14px 18px #0003);
+ transition:transform .3s ease
+}
+.gatewayCard:hover img{transform:translateY(-6px) scale(1.025)}
+.gatewayCar img{width:42%;height:75%;left:13px;bottom:32px}
+.gatewayCount{
+ position:absolute;left:22px;top:20px;z-index:2;color:#99939f;
+ font:700 10px "Manrope",sans-serif;letter-spacing:.14em
+}
+.merchCountLabel{
+ display:flex;align-items:center;gap:7px;color:#8e8b96;
+ font:500 11px/1.6 "IBM Plex Sans Arabic",sans-serif;
+ padding:0 0 16px
+}
+.merchCountLabel strong{font:800 12px "Manrope",sans-serif;color:#dbd5d6}
+#productGrid.productGrid{display:block;min-width:0}
+.merchShelf{margin:0 0 66px;min-width:0}
+.merchShelfHeader{
+ display:flex;align-items:flex-end;justify-content:space-between;gap:17px;
+ padding:0 0 20px;margin-bottom:22px;
+ border-bottom:1px solid #3a3b47
+}
+.merchShelfHeader>div{min-width:0}
+.merchShelfEyebrow{
+ display:block;font:700 10px/1.8 "Manrope",sans-serif;
+ letter-spacing:.1em;color:#d3a68f;margin-bottom:8px
+}
+.merchShelfHeader h3{
+ margin:0;font:700 clamp(23px,2.65vw,35px)/1.5 "Alexandria",sans-serif;
+ letter-spacing:-.045em;color:#f2eae6
+}
+.merchShelfHeader>span{flex:0 0 auto;color:#a7a2ae;font-size:11px}
+.shoeCardsGrid{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+ gap:17px;min-width:0;align-items:stretch
+}
+.shoeCardsGrid .productCard{
+ background:#171b24;border:1px solid #383a47;border-radius:7px;
+ min-width:0;box-shadow:none
+}
+.shoeCardsGrid .cardMedia{aspect-ratio:1.48/1;background:linear-gradient(120deg,#efede9,#d8d7d3)}
+.shoeCardsGrid .cardMediaClick{padding:16px}
+.shoeCardsGrid .cardMediaClick img{max-width:100%;max-height:100%;object-fit:contain}
+.shoeCardsGrid .cardTag{
+ background:#1c1b23;color:#eee8e4;letter-spacing:.06em;
+ padding:8px 10px;font:700 9px/1.4 "Manrope",sans-serif;
+ border-radius:3px;white-space:nowrap
+}
+.shoeCardsGrid .cardIndex{
+ color:#484349;font:700 10px/1.4 "Manrope",sans-serif;
+ background:#e8e3dfaa;padding:5px 8px;left:13px;bottom:13px
+}
+.shoeCardsGrid .cardContent{padding:18px 19px 17px;gap:12px}
+.shoeCardsGrid .cardCategory{
+ color:#c5aaa5;font-size:10px;font-weight:600;line-height:1.6
+}
+.catalog-dot{color:#9d7680;margin-inline:5px}
+.shoeCardsGrid .cardTitle{gap:12px}
+.shoeCardsGrid .cardTitle h3{
+ font:750 clamp(19px,2vw,26px)/1.3 "Manrope","Alexandria",sans-serif;color:#fff8f3
+}
+.shoeCardsGrid .cardTitle strong{
+ font:750 clamp(16px,1.65vw,21px)/1.4 "IBM Plex Sans Arabic","Alexandria",sans-serif;
+ color:#e6b99c
+}
+.shoeCardsGrid .cardContent>p{
+ color:#aca7b3;font-size:11px;line-height:1.9;
+ display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+ min-height:40px;margin:0
+}
+.merchColorHeader{
+ display:flex;align-items:center;justify-content:space-between;gap:10px;
+ color:#e6dee1;font:600 11px/1.5 "IBM Plex Sans Arabic",sans-serif;
+ padding-top:7px;border-top:1px solid #343642
+}
+.merchColorHeader strong{font-weight:500;color:#ada6af;font-size:10px}
+.shoeCardsGrid .cardColors{gap:8px;padding-bottom:5px;scrollbar-width:thin}
+.shoeCardsGrid .colorMini{
+ flex:0 0 64px;width:64px;height:60px;min-width:64px;
+ border:2px solid #5f5a64;border-radius:5px;padding:3px;
+ background:#eae6e1;transition:border-color .15s,transform .15s
+}
+.shoeCardsGrid .colorMini:hover{transform:translateY(-2px)}
+.shoeCardsGrid .colorMini.active{border-color:#e3ab8b;box-shadow:0 0 0 2px #e2ac8a35}
+.cardVariantInfo{
+ display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;
+ color:#bcb3ba;font-size:10px;line-height:1.75;
+ background:#1e222b;padding:9px 11px;border-radius:4px
+}
+.cardVariantInfo>span:first-child{color:#efdbd0;font-weight:700}
+.shoeCardsGrid .cardBottom{margin-top:auto;border-top:1px solid #383945;padding-top:13px}
+.includedShipping{color:#b7d7c3!important;font-size:10px!important}
+.shoeCardsGrid .cardBottom button{padding:12px 15px;min-height:47px;white-space:normal}
+.carMerchShelf{margin-bottom:38px}
+.carSpotlight{
+ min-width:0;display:grid;grid-template-columns:1fr 1.05fr;
+ background:#1a1e27;color:#f6f1ed;border:1px solid #44424b;
+ border-radius:7px;overflow:hidden;min-height:400px
+}
+.carSpotlightImage{
+ position:relative;overflow:hidden;min-height:400px;
+ background:linear-gradient(140deg,#eeeae5,#d8d6d3);color:#37343c
+}
+.carSpotlightImageButton{
+ width:100%;height:100%;min-height:400px;
+ display:grid;place-items:center;padding:28px;border:0;
+ background:transparent
+}
+.carSpotlightImage img{
+ width:100%;height:100%;max-height:390px;object-fit:contain;
+ filter:drop-shadow(0 18px 24px #29242a30);transition:transform .3s
+}
+.carSpotlightImageButton:hover img{transform:scale(1.045)}
+.carSpotlightIndex{
+ position:absolute;top:20px;right:20px;color:#645b63;
+ font:700 11px "Manrope",sans-serif;letter-spacing:.1em
+}
+.carSpotlightPhotoNote{
+ position:absolute;left:17px;bottom:15px;
+ background:#ede8e3d9;color:#5a525b;padding:7px 11px;
+ font-size:10px;border:1px solid #8b81852e
+}
+.carSpotlightBody{
+ display:flex;flex-direction:column;align-items:flex-start;
+ gap:17px;padding:clamp(25px,3.5vw,49px);
+ min-width:0
+}
+.carSpotlightEyebrow{
+ font:750 10px/1.8 "Manrope","IBM Plex Sans Arabic",sans-serif;
+ color:#dba88c;letter-spacing:.07em
+}
+.carSpotlight h3{
+ font:700 clamp(24px,2.5vw,38px)/1.5 "Alexandria",sans-serif;
+ letter-spacing:-.05em;margin:0
+}
+.carSpotlightDescription{
+ font:500 12px/2 "IBM Plex Sans Arabic",sans-serif;
+ color:#c0b8c1;max-width:460px;margin:0
+}
+.carSpotlightSpecs{
+ display:flex;gap:11px;flex-wrap:wrap;align-items:center;
+ width:100%;padding-bottom:17px;
+ border-bottom:1px solid #48434b
+}
+.carSpotlightSpecs>span{
+ display:flex;align-items:center;gap:7px;font-size:10px;color:#eee3db;
+}
+.carSpotlightSpecs b{color:#dcae98;font:700 15px "Manrope",sans-serif}
+.carSpotlightPurchase{
+ width:100%;display:flex;flex-direction:column;align-items:flex-start;
+ gap:16px;margin-top:auto
+}
+.carSpotlightPurchase>div{display:flex;flex-direction:column;align-items:flex-start;gap:5px}
+.carSpotlightPurchase small{font-size:11px;color:#b7abae}
+.carSpotlightPurchase strong{
+ color:#f6d6c0;font:750 clamp(25px,3vw,35px) "IBM Plex Sans Arabic",sans-serif
+}
+.carSpotlightPurchase>div>span{font-size:10px;color:#d4aaa0}
+.carSpotlightPurchase button{
+ display:flex;align-items:center;justify-content:space-between;gap:30px;
+ min-height:52px;min-width:230px;border:1px solid #e7d9ce;
+ background:#e7d9ce;color:#211b22;border-radius:4px;padding:12px 17px;
+ font-weight:700;font-size:12px;transition:background .2s
+}
+.carSpotlightPurchase button:hover{background:#f7e9da}
+.carSpotlightPurchase button>span{font-size:18px}
+@media(max-width:1050px){
+ .shoeCardsGrid{gap:12px}
+ .shoeCardsGrid .cardContent{padding:16px}
+ .shoeCardsGrid .cardMedia{aspect-ratio:1.32/1}
+ .carSpotlight{grid-template-columns:.95fr 1.05fr}
+ .carSpotlightBody{padding:27px}
+ .gatewayCopy{width:62%}
+ .gatewayCard img{width:49%}
+}
+@media(max-width:720px){
+ .merchGateway{grid-template-columns:1fr 1fr;gap:10px}
+ .gatewayCard{min-height:250px;padding:16px}
+ .gatewayCopy{width:78%;gap:8px}
+ .gatewayCopy strong{font-size:21px}
+ .gatewayCopy>span{font-size:10px}
+ .gatewayCard img{height:46%;width:63%;bottom:30px;left:-5%}
+ .gatewayCar img{width:61%;height:42%;bottom:34px}
+ .gatewayCount{left:12px;top:13px;font-size:8px}
+ .shoeCardsGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .shoeCardsGrid .cardMedia{aspect-ratio:1.1/1}
+ .shoeCardsGrid .cardContent{gap:9px}
+ .shoeCardsGrid .cardTitle{flex-direction:column;gap:2px}
+ .shoeCardsGrid .cardTitle h3{font-size:20px}
+ .shoeCardsGrid .cardTitle strong{font-size:18px}
+ .shoeCardsGrid .colorMini{width:54px;min-width:54px;flex-basis:54px;height:54px}
+ .cardVariantInfo{display:flex;flex-direction:column;gap:3px}
+ .shoeCardsGrid .cardBottom{flex-direction:column;align-items:stretch;gap:7px}
+ .carSpotlight{grid-template-columns:1fr;min-height:0}
+ .carSpotlightImage{min-height:310px}
+ .carSpotlightImageButton{min-height:310px;height:310px}
+ .carSpotlightImage img{max-height:275px}
+ .carSpotlightBody{padding:24px}
+}
+@media(max-width:620px){
+ .premiumHero .heroPriceFootnote{font-size:9px;line-height:1.7;margin-top:7px}
+ .categoriesSection{margin-bottom:50px}
+ .merchGateway{grid-template-columns:1fr;gap:9px}
+ .gatewayCard{min-height:190px;padding:18px;border-radius:5px}
+ .gatewayCopy{width:67%;gap:7px;min-width:0}
+ .gatewayCopy small{font-size:9px}
+ .gatewayCopy strong{font-size:21px}
+ .gatewayCopy>span{font-size:10px;max-width:250px}
+ .gatewayCopy b{font-size:10px;padding:9px 11px}
+ .gatewayCard img{width:40%;height:72%;left:4px;bottom:14px}
+ .gatewayCar img{width:40%;height:67%;left:4px;bottom:19px}
+ .gatewayCount{left:10px;top:10px}
+ .merchShelf{margin-bottom:45px}
+ .merchShelfHeader{margin-bottom:14px;padding-bottom:12px;align-items:flex-start}
+ .merchShelfHeader h3{font-size:clamp(19px,5.5vw,26px)}
+ .merchShelfHeader>span{font-size:9px;max-width:100px;text-align:left;flex-shrink:1}
+ .merchShelfEyebrow{font-size:8px}
+ .shoeCardsGrid{grid-template-columns:1fr;gap:12px}
+ .shoeCardsGrid .productCard{border-radius:5px}
+ .shoeCardsGrid .cardMedia{aspect-ratio:1.4/1}
+ .shoeCardsGrid .cardContent{padding:15px;gap:9px}
+ .shoeCardsGrid .cardCategory{font-size:9px}
+ .shoeCardsGrid .cardTitle{flex-direction:row;align-items:center;gap:7px}
+ .shoeCardsGrid .cardTitle h3{font-size:20px}
+ .shoeCardsGrid .cardTitle strong{font-size:18px}
+ .shoeCardsGrid .colorMini{width:55px;min-width:55px;flex-basis:55px;height:54px}
+ .cardVariantInfo{flex-direction:row;gap:8px;font-size:9px}
+ .shoeCardsGrid .cardBottom{flex-direction:row;align-items:center}
+ .shoeCardsGrid .cardBottom button{font-size:10px;min-height:46px;padding:8px 10px}
+ .carSpotlight{border-radius:5px}
+ .carSpotlightImage{min-height:250px}
+ .carSpotlightImageButton{min-height:250px;height:250px;padding:12px}
+ .carSpotlightImage img{max-height:220px}
+ .carSpotlightBody{padding:20px;gap:13px}
+ .carSpotlight h3{font-size:26px}
+ .carSpotlightDescription{font-size:11px}
+ .carSpotlightSpecs{gap:8px 15px;padding-bottom:12px}
+ .carSpotlightPurchase strong{font-size:26px}
+ .carSpotlightPurchase button{width:100%;min-width:0}
+ .merchCountLabel{font-size:10px}
+}
+@media(max-width:360px){
+ .gatewayCopy{width:70%}
+ .gatewayCopy strong{font-size:18px}
+ .gatewayCard{min-height:184px;padding:12px}
+ .gatewayCopy>span{font-size:9px}
+ .gatewayCard img{width:36%;left:1px}
+ .gatewayCount{font-size:7px}
+ .shoeCardsGrid .cardBottom button{font-size:9px}
+ .cardVariantInfo{flex-direction:column}
+ .shoeCardsGrid .cardTitle h3{font-size:18px}
+ .shoeCardsGrid .cardTitle strong{font-size:16px}
+}
+@media(prefers-reduced-motion:reduce){
+ .gatewayCard,.gatewayCard img,.carSpotlightImage img,.shoeCardsGrid .colorMini{transition:none}
+ .gatewayCard:hover,.gatewayCard:hover img,.carSpotlightImageButton:hover img{transform:none}
+}
