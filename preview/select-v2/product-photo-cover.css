@@ -1,224 +1,208 @@
-/* SELECT SHOP / PREVIEW V2 — PRODUCT PHOTO SYSTEM V3
-   Consistent photo integration everywhere, including future products.
-   Source JPG/WEBP is repeated behind itself (via product-photo-stage.js),
-   blurred to match its own scene. Original photo remains crisp. Mobile-first.
-   Product pricing, order flow and production storefront are untouched.
-*/
-:root{--ss-photo-fade:linear-gradient(90deg,transparent 0%,#000 11%,#000 89%,transparent 100%)}
+/* SELECT SHOP V2 — single-photo display v4
+ * One real <img> per product. No duplicated photos, blurred clones or JS DOM injection.
+ * Photo treatment is automatic for every product card, detail, gallery, category and cart.
+ * Preview only: catalog, prices, orders and the production storefront remain unchanged.
+ */
 
-/* Visual-only duplicate image; always unmasked, never interactive. */
-.ss-photo-stage{position:relative!important;isolation:isolate!important;overflow:hidden!important}
-.ss-photo-stage>.ss-photo-backdrop{
- display:block!important;position:absolute!important;z-index:0!important;
- left:-12%!important;right:auto!important;top:-12%!important;bottom:auto!important;
- width:124%!important;height:124%!important;max-width:none!important;max-height:none!important;
- padding:0!important;object-fit:cover!important;object-position:center!important;
- opacity:.83!important;pointer-events:none!important;
- transform:translateZ(0) scale(1.04)!important;
- filter:blur(27px) brightness(.92) saturate(.77)!important;
- -webkit-mask-image:none!important;mask-image:none!important;
- box-shadow:none!important;border:0!important;animation:none!important
-}
-.ss-photo-stage>.ss-photo-main{
- position:relative;z-index:1;
- background:transparent!important;
- object-position:center!important;
- mix-blend-mode:normal!important;
- -webkit-mask-image:radial-gradient(ellipse 72% 73% at center,#000 64%,#000e 73%,transparent 100%)!important;
- mask-image:radial-gradient(ellipse 72% 73% at center,#000 64%,#000e 73%,transparent 100%)!important;
- -webkit-mask-repeat:no-repeat!important;mask-repeat:no-repeat!important;
- opacity:1!important
-}
-.ss-photo-stage>.ss-photo-backdrop:hover{transform:translateZ(0) scale(1.04)!important}
+/* The old photo-stage script is NOT loaded in v4. These legacy selectors
+   explicitly hide any leftover cloned image when navigating from an old tab. */
+.ss-photo-backdrop{display:none!important}
 
-/* Main product cards. Studio variants use full-bleed photography, which
-   naturally crops the printed photo labels at the bottom. Lifestyle/kit
-   photos stay fully contained with their own background colour extended. */
-.shoeCardsGrid .cardMedia{
- position:relative!important;isolation:isolate!important;
- overflow:hidden!important;border:0!important;
- aspect-ratio:1.44/1!important;
- background:#e9ece6!important;box-shadow:none!important
+/* Remove glowing rectangular frames and forced image backgrounds. */
+.shoeCardsGrid .cardMedia,
+.shoeCardsGrid .carProductCard .cardMedia{
+ position:relative!important;
+ isolation:isolate!important;
+ overflow:hidden!important;
+ aspect-ratio:1.46/1!important;
+ background:#f3f4f0!important;
+ border:0!important;
+ box-shadow:none!important
 }
-.shoeCardsGrid .cardMedia::before{display:none!important;content:none!important}
-.shoeCardsGrid .cardMedia::after{
- content:""!important;position:absolute!important;inset:0!important;
- display:block!important;z-index:2!important;
- border:0!important;box-shadow:none!important;animation:none!important;
- -webkit-mask-image:none!important;mask-image:none!important;
- background:linear-gradient(180deg,transparent 78%,#151b161c 100%)!important;
- opacity:1!important;pointer-events:none!important;filter:none!important
+.shoeCardsGrid .cardMedia::before,
+.shoeCardsGrid .cardMedia::after,
+.shoeCardsGrid .cardMediaClick::before,
+.shoeCardsGrid .cardMediaClick::after{
+ content:none!important;display:none!important;
+ box-shadow:none!important;animation:none!important
 }
 .shoeCardsGrid .cardMediaClick{
+ position:relative!important;z-index:1!important;
  display:flex!important;align-items:center!important;justify-content:center!important;
  width:100%!important;height:100%!important;
- padding:0!important;box-sizing:border-box!important;
- position:relative!important;z-index:1!important;overflow:hidden!important;
- background:#eaeee6!important
+ min-height:0!important;padding:0!important;
+ overflow:hidden!important;box-sizing:border-box!important;
+ background:transparent!important;border:0!important
 }
-.shoeCardsGrid .cardMediaClick::before,
-.shoeCardsGrid .cardMediaClick::after{display:none!important;content:none!important}
-.shoeCardsGrid .cardMediaClick>.ss-photo-main{
- flex:0 1 auto!important;display:block!important;
- height:100%!important;width:auto!important;max-width:100%!important;
- max-height:100%!important;min-width:0!important;
- padding:0!important;object-fit:contain!important;
- filter:none!important;transform:none!important;
- transition:transform .35s cubic-bezier(.2,.75,.2,1)!important;
-}
-.shoeCardsGrid .cardMediaClick.ss-photo-studio>.ss-photo-main{
+
+/* Most sneaker files are square studio photos. Filling the media area
+   crops away the printed source labels while preserving the entire shoe. */
+.shoeCardsGrid .cardMediaClick>img{
+ position:relative!important;
+ display:block!important;
+ flex:0 0 auto!important;
  width:100%!important;height:100%!important;
- max-width:none!important;max-height:none!important;
- object-fit:cover!important;object-position:center 49%!important;
- -webkit-mask-image:none!important;mask-image:none!important;
-}
-.shoeCardsGrid .cardMediaClick.ss-photo-studio>.ss-photo-backdrop{opacity:.4!important}
-.shoeCardsGrid .cardMediaClick.ss-photo-lifestyle>.ss-photo-main{
- width:auto!important;height:94%!important;max-width:95%!important;
- -webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent),
-                     linear-gradient(180deg,transparent,#000 9%,#000 91%,transparent)!important;
- mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent),
-            linear-gradient(180deg,transparent,#000 9%,#000 91%,transparent)!important;
- -webkit-mask-composite:source-in!important;mask-composite:intersect!important
-}
-.shoeCardsGrid .productCard:hover .cardMediaClick>.ss-photo-main{
- transform:scale(1.018)!important
-}
-.shoeCardsGrid .cardTag,.shoeCardsGrid .cardQuick,.shoeCardsGrid .cardIndex{
- z-index:5!important
-}
-
-/* Category tiles: their own photographic background remains localised
-   to the image side so the text and links have reliable contrast. */
-.gatewayCard.ss-photo-stage{isolation:isolate!important}
-.gatewayCard>.ss-photo-backdrop{
- width:49%!important;height:140%!important;
- top:-20%!important;left:-4%!important;
- opacity:.36!important;filter:blur(19px) saturate(.78)!important
-}
-.gatewayCard>.ss-photo-main{
- z-index:2!important;
- -webkit-mask-image:radial-gradient(ellipse 72% 73% at center,#000 64%,#000d 78%,transparent 100%)!important;
- mask-image:radial-gradient(ellipse 72% 73% at center,#000 64%,#000d 78%,transparent 100%)!important;
- object-fit:contain!important;
-}
-.gatewayCard .gatewayCopy{position:relative;z-index:3!important}
-.gatewayCard .gatewayCount{z-index:4!important}
-.gatewayCard::before{opacity:.22!important}
-
-/* Detail drawer — product stays entirely visible, scene fades into its
-   blurred copy instead of a white square separated from its canvas. */
-.detailImage.ss-photo-stage{
- display:flex!important;align-items:center!important;justify-content:center!important;
- background:#e9eee5!important;
- aspect-ratio:1.45/1!important;max-height:min(58vh,380px)
-}
-.detailImage>.ss-photo-main{
- width:auto!important;height:100%!important;max-width:100%!important;
- max-height:100%!important;object-fit:contain!important;
- padding:0!important;filter:none!important
-}
-.detailImage::after{
- content:""!important;position:absolute!important;inset:0!important;z-index:2!important;
- display:block!important;pointer-events:none!important;
- background:linear-gradient(180deg,transparent 82%,#151b161b)!important;
- border:0!important;box-shadow:none!important;animation:none!important
-}
-.detailImage #detailBadge{z-index:4!important}
-
-/* Every swatch and gallery thumbnail gets a matching neutral canvas and
-   an inset image. Do not let a photo become a bright edged square. */
-:is(.colorMini,.detailGallery button).ss-photo-stage{
- background:#e8ebe5!important;overflow:hidden!important
-}
-:is(.colorMini,.detailGallery button).ss-photo-stage>.ss-photo-backdrop{
- filter:blur(9px) saturate(.7)!important;opacity:.65!important
-}
-:is(.colorMini,.detailGallery button).ss-photo-stage>.ss-photo-main{
- display:block!important;width:100%!important;height:100%!important;
  max-width:100%!important;max-height:100%!important;
- object-fit:contain!important;padding:0!important
+ padding:0!important;
+ object-fit:cover!important;object-position:center center!important;
+ background:transparent!important;
+ mix-blend-mode:normal!important;
+ -webkit-mask-image:none!important;mask-image:none!important;
+ filter:none!important;
+ transform:none!important;
+ transition:transform .4s cubic-bezier(.2,.75,.2,1)!important
+}
+.shoeCardsGrid .cardMediaClick:hover>img{
+ transform:scale(1.02)!important
 }
 
-/* Cart: a photo wrapper preserves the original CSS grid column and sizing. */
-.cartItem>.ss-cart-photo{
- display:block!important;position:relative!important;
- width:90px!important;height:94px!important;
- max-width:100%;border-radius:5px;overflow:hidden!important;
- background:#e9ece7!important
+/* Lifestyle SK: lower placement keeps both sneakers rather than cropping
+   the shoes off the bottom of the portrait-style promotional picture. */
+.shoeCardsGrid .cardMediaClick>img[src*="sk-"]{
+ object-position:50% 79%!important
 }
-.ss-cart-photo>.ss-photo-main{
+
+/* Kit photos are PORTRAIT and show many actual pieces. NEVER turn one kit
+   into two ghosted photographs. Show one full kit on a canvas in the same
+   warm-grey family as its wall/floor, with a soft fade on its true edges. */
+.shoeCardsGrid .carProductCard .cardMedia{
+ background:linear-gradient(110deg,#adb1a8,#c4c6be 40%,#b0b5ae)!important
+}
+.shoeCardsGrid .carProductCard .cardMediaClick>img{
+ width:auto!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;
+ object-fit:contain!important;object-position:center!important;
+ -webkit-mask-image:
+   linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent),
+   linear-gradient(180deg,transparent,#000 8%,#000 91%,transparent)!important;
+ mask-image:
+   linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent),
+   linear-gradient(180deg,transparent,#000 8%,#000 91%,transparent)!important;
+ -webkit-mask-composite:source-in!important;
+ mask-composite:intersect!important
+}
+
+/* For any future tall product source, containment takes precedence over
+   cropping. Browser :has() gives the current source-specific look without
+   introducing another JS image, extra request or a hidden duplicate. */
+.shoeCardsGrid .cardMediaClick>img[data-photo-fit="contain"]{
+ width:auto!important;height:100%!important;max-width:100%!important;
+ object-fit:contain!important;
+ -webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)!important;
+ mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)!important
+}
+
+/* One-photo category cards. Neutral vignette is applied to the image
+   itself (not a second image placed over the same scene). */
+.gatewayCard>img{
+ position:absolute!important;z-index:2!important;
+ display:block!important;
+ width:39%!important;height:90%!important;max-width:45%!important;max-height:100%!important;
+ left:0!important;bottom:3%!important;
+ padding:0!important;object-fit:contain!important;object-position:center!important;
+ background:transparent!important;
+ -webkit-mask-image:radial-gradient(ellipse 74% 77% at center,#000 60%,#000e 76%,transparent 100%)!important;
+ mask-image:radial-gradient(ellipse 74% 77% at center,#000 60%,#000e 76%,transparent 100%)!important;
+ filter:none!important
+}
+.gatewayCard::before{opacity:.18!important}
+.gatewayCard .gatewayCopy{position:relative!important;z-index:3!important}
+
+/* Single image in PDP modal. Keep the complete product for inspection. */
+.detailImage{
+ isolation:isolate!important;
+ background:#f0f1ec!important;
+ overflow:hidden!important;
+ aspect-ratio:1.48/1!important
+}
+.detailImage>img{
+ position:relative!important;
+ display:block!important;
+ width:auto!important;height:100%!important;max-height:100%!important;max-width:100%!important;
+ padding:0!important;object-fit:contain!important;object-position:center!important;
+ background:transparent!important;mix-blend-mode:normal!important;
+ -webkit-mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)!important;
+ mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)!important;
+ filter:none!important
+}
+.detailImage:after{
+ content:none!important;display:none!important;animation:none!important
+}
+.detailImage:has(>img[src*="carwash48"]){
+ background:#b7bab2!important
+}
+.detailImage #detailBadge{z-index:3!important}
+
+/* Swatches and thumbnails: photo is always a SINGLE instance. */
+:is(.colorMini,.detailGallery button){
+ overflow:hidden!important;background:#f1f1ed!important
+}
+:is(.colorMini img,.detailGallery img){
  display:block!important;width:100%!important;height:100%!important;
- object-fit:contain!important;padding:0!important
+ padding:0!important;object-fit:cover!important;object-position:center!important;
+ mix-blend-mode:normal!important;
+ -webkit-mask-image:none!important;mask-image:none!important;
+ filter:none!important
 }
-.ss-cart-photo>.ss-photo-backdrop{filter:blur(12px)!important}
-
-/* Future product image: if it isn't in a named component, it is still
-   enhanced as a photo stage by product-photo-stage.js. */
-.ss-photo-stage:not(.gatewayCard):not(.cardMediaClick):not(.detailImage):not(.colorMini):not(.ss-cart-photo){
- min-width:0
+:is(.colorMini img,.detailGallery img)[src*="carwash48"]{object-fit:contain!important}
+.cartItem>img{
+ display:block!important;
+ background:#f0f1ec!important;
+ object-fit:contain!important;
+ -webkit-mask-image:radial-gradient(ellipse 77% 77%,#000 66%,transparent 100%)!important;
+ mask-image:radial-gradient(ellipse 77% 77%,#000 66%,transparent 100%)!important
 }
 
-/* MOBILE: suppress oversized/square-looking white pictures while retaining
-   one comfortable full-width product card and usable colour selections. */
+/* Fixed, predictable mobile measurements at 320, 375, 390 & 430 px. */
 @media(max-width:620px){
  html,body{max-width:100%;overflow-x:clip}
- .container{width:calc(100% - 22px)!important;max-width:100%}
+ .container{width:calc(100% - 20px)!important;max-width:100%!important}
  .shoeCardsGrid.unifiedCardsGrid{
-  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
-  gap:13px!important
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:12px!important
  }
  .shoeCardsGrid .productCard{min-width:0!important;width:100%!important}
- .shoeCardsGrid .cardMedia{
-  aspect-ratio:auto!important;
-  height:clamp(202px,61vw,286px)!important;min-height:0!important
+ .shoeCardsGrid .cardMedia,
+ .shoeCardsGrid .carProductCard .cardMedia{
+  width:100%!important;aspect-ratio:1.4/1!important;
+  height:auto!important;min-height:0!important
  }
  .shoeCardsGrid .cardMediaClick{padding:0!important}
- .shoeCardsGrid .cardContent{padding:13px 14px 15px!important;gap:8px!important}
+ .shoeCardsGrid .cardContent{padding:13px 13px 15px!important;gap:8px!important}
  .shoeCardsGrid .cardContent>p{min-height:0!important}
- .shoeCardsGrid .cardTitle{gap:8px;min-width:0;flex-wrap:wrap}
- .shoeCardsGrid .cardTitle h3{font-size:17px!important;overflow-wrap:anywhere}
+ .shoeCardsGrid .cardTitle{min-width:0;gap:8px;flex-wrap:wrap}
+ .shoeCardsGrid .cardTitle h3{overflow-wrap:anywhere;font-size:17px!important}
  .shoeCardsGrid .cardTitle strong{font-size:17px!important}
  .cardColors{max-width:100%!important;overflow-x:auto!important}
  .toolbar{display:flex;flex-wrap:wrap;min-width:0}
  .searchWrap{width:100%;min-width:0!important;flex:1 1 100%}
  .categoriesSection,.productsSection{min-width:0}
  .merchGateway{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
- .gatewayCard{
-   min-width:0!important;min-height:126px!important;
-   padding:11px 10px!important
- }
- .gatewayCopy{width:61%!important;max-width:61%!important;gap:5px!important}
- .gatewayCopy small{font-size:7px!important;letter-spacing:0!important}
+ .gatewayCard{min-width:0!important;min-height:130px!important;padding:10px 9px!important}
+ .gatewayCopy{width:68%!important;max-width:68%!important;gap:5px!important}
+ .gatewayCopy small{font-size:7px!important}
  .gatewayCopy strong{font-size:clamp(12px,3.1vw,16px)!important}
- .gatewayCopy b{font-size:8px!important;gap:3px!important}
- .gatewayCard>.ss-photo-main{
-   width:40%!important;height:85%!important;
-   bottom:2%!important;left:1%!important;max-width:40%!important;
+ .gatewayCopy b{font-size:8px!important;gap:4px!important}
+ .gatewayCard>img{
+  width:42%!important;height:81%!important;left:0!important;bottom:4%!important
  }
- .gatewayCard>.ss-photo-backdrop{width:43%!important;left:-2%!important}
  .premiumHero.limeHero #heroTitle{
-   font-size:clamp(29px,9vw,42px)!important;white-space:normal!important;
-   overflow-wrap:normal!important
+  font-size:clamp(28px,9vw,42px)!important;
+  white-space:normal!important
  }
- .premiumHero.limeHero .heroActions{min-width:0}
- .premiumHero.limeHero .heroActions .button{min-width:0!important}
  .drawer{width:100vw!important;max-width:100vw!important;overflow-x:hidden!important}
  .drawerScroll{min-width:0!important;overflow-x:hidden!important}
- .detailImage.ss-photo-stage{aspect-ratio:1.36/1!important;max-height:280px}
- .cartItem{grid-template-columns:64px minmax(0,1fr) auto!important;gap:7px!important}
- .cartItem>.ss-cart-photo{width:64px!important;height:73px!important}
+ .detailImage{aspect-ratio:1.34/1!important}
  .mobileBar{bottom:calc(9px + env(safe-area-inset-bottom,0px))!important}
 }
 @media(max-width:360px){
  .merchGateway{grid-template-columns:minmax(0,1fr)!important}
- .gatewayCard{min-height:116px!important}
+ .gatewayCard{min-height:114px!important}
  .gatewayCopy{width:67%!important;max-width:67%!important}
- .gatewayCard>.ss-photo-main{width:32%!important;max-width:32%!important}
- .gatewayCard>.ss-photo-backdrop{width:35%!important}
- .shoeCardsGrid .cardMedia{height:206px!important}
- .premiumHero.limeHero #heroTitle{font-size:clamp(27px,8.6vw,33px)!important}
+ .gatewayCard>img{width:33%!important}
+ .premiumHero.limeHero #heroTitle{font-size:clamp(26px,8.4vw,32px)!important}
 }
 @media(prefers-reduced-motion:reduce){
- .ss-photo-main,.ss-photo-backdrop{transition:none!important;animation:none!important}
+ .shoeCardsGrid .cardMediaClick>img{transition:none!important}
 }
