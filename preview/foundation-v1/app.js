@@ -283,7 +283,7 @@
       if(!b.classList.contains("tab"))$("#products").scrollIntoView({behavior:"smooth"});
     }));
     $("#searchInput").addEventListener("input",e=>{search=e.target.value.trim().toLowerCase();renderProducts()});
-    $("[data-feature-product]").forEach(button=>button.addEventListener("click",e=>{e.preventDefault();openDetail(button.dataset.featureProduct)}));
+    $$("[data-feature-product]").forEach(button=>button.addEventListener("click",e=>{e.preventDefault();openDetail(button.dataset.featureProduct)}));
     $("#openSearch").addEventListener("click",()=>{
       $("#products").scrollIntoView({behavior:"smooth"});
       $("#searchInput").focus({preventScroll:true});
@@ -349,7 +349,7 @@
     const u=new URL(location.href);u.searchParams.set("variant",viewed.variantId);
     history.replaceState(null,"",u.pathname+u.search+u.hash);
   }
-  $("[data-price-product]").forEach(el=>{const product=C[el.dataset.priceProduct];if(product)el.textContent=fmt(product.price)});
+  $$("[data-price-product]").forEach(el=>{const product=C[el.dataset.priceProduct];if(product)el.textContent=fmt(product.price)});
   persist();bind();applyFilter("all");
   const route=new URLSearchParams(location.search);
   if(C[route.get("product")])openDetail(route.get("product"),route.get("variant"));
