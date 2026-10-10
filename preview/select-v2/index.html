@@ -20,9 +20,10 @@
 <link rel="stylesheet" href="/preview/select-v2/editorial-refinement.css?v=2">
 <link rel="stylesheet" href="/preview/select-v2/product-photo-cover.css?rev=bbd668e2">
 <link rel="stylesheet" href="/preview/select-v2/mobile-layout-v1.css?rev=b0a21023">
+<link rel="stylesheet" href="/preview/select-v2/home-products.css?v=1">
 <script>window.SELECT_SHOP_PREVIEW_ONLY=true;</script>
-<script defer src="/preview/select-v2/catalog.js?v=1"></script>
-<script defer src="/preview/select-v2/app.js?v=2"></script>
+<script defer src="/preview/select-v2/catalog.js?v=2"></script>
+<script defer src="/preview/select-v2/app.js?v=3"></script>
 <script defer src="/preview/select-v2/brand-interactions.js?v=1"></script>
 <script defer src="/preview/select-v2/feedback.js?v=2"></script>
 </head>
@@ -44,13 +45,13 @@
     <nav class="desktopNav" aria-label="قائمة المتجر">
       <a href="/preview/select-v2/#top">الرئيسية <span class="navEn">HOME</span></a>
       <div class="navDropdownHost"><button id="navCategoryButton" type="button" class="navCategoryButton" aria-expanded="false" aria-controls="navCategoryMenu">الأقسام <span class="navEn">CATEGORIES</span><i aria-hidden="true">⌄</i></button>
-       <div class="navCategoryMenu" id="navCategoryMenu" hidden><a href="/preview/select-v2/#products" data-nav-filter="all">كل المنتجات <small>ALL PRODUCTS</small></a><a href="/preview/select-v2/#products" data-nav-filter="shoes">الأحذية <small>FOOTWEAR</small></a><a href="/preview/select-v2/#products" data-nav-filter="car">العناية بالسيارات <small>CAR CARE</small></a><div class="navComing">المزيد من الأقسام قريبًا <small>MORE COMING SOON</small></div></div>
+       <div class="navCategoryMenu" id="navCategoryMenu" hidden><a href="/preview/select-v2/#products" data-nav-filter="all">كل المنتجات <small>ALL PRODUCTS</small></a><a href="/preview/select-v2/#products" data-nav-filter="shoes">الأحذية <small>FOOTWEAR</small></a><a href="/preview/select-v2/#products" data-nav-filter="car">العناية بالسيارات <small>CAR CARE</small></a><a href="/preview/select-v2/#products" data-nav-filter="home">أدوات منزلية <small>HOME ESSENTIALS</small></a><div class="navComing">المزيد قريبًا <small>MORE COMING SOON</small></div></div>
       </div>
       <a href="/preview/select-v2/#products">المنتجات <span class="navEn">SHOP</span></a>
     </nav>
     <div class="headerActions"><button class="textAction" type="button" id="openSearch" aria-label="بحث في المتجر">⌕ <span>بحث</span></button><button type="button" class="cartAction" data-open-cart aria-label="عرض السلة"><span>السلة</span><strong data-cart-count>0</strong><span aria-hidden="true">↗</span></button></div>
   </div>
-  <nav class="mobileCategoryRail container" aria-label="الأقسام على الموبايل"><a href="/preview/select-v2/#products" data-nav-filter="all">كل المنتجات</a><a href="/preview/select-v2/#products" data-nav-filter="shoes">الأحذية</a><a href="/preview/select-v2/#products" data-nav-filter="car">عناية السيارات</a></nav>
+  <nav class="mobileCategoryRail container" aria-label="الأقسام على الموبايل"><a href="/preview/select-v2/#products" data-nav-filter="all">كل المنتجات</a><a href="/preview/select-v2/#products" data-nav-filter="shoes">الأحذية</a><a href="/preview/select-v2/#products" data-nav-filter="car">عناية السيارات</a><a href="/preview/select-v2/#products" data-nav-filter="home">أدوات منزلية</a></nav>
 </header>
 <main id="main">
 <section class="hero container premiumHero limeHero" aria-labelledby="heroTitle" id="hero">
@@ -85,16 +86,17 @@
   <div class="merchGateway">
     <button class="gatewayCard gatewayFootwear" data-filter="shoes" type="button"><span class="gatewayCopy"><small>01 / FOOTWEAR</small><strong>أحذية</strong><span>ستايلات مختلفة</span><b>تصفح المجموعة <i aria-hidden="true">↗</i></b></span><img src="assets/wk_1.jpg" alt="" width="520" height="520" loading="lazy"><span class="gatewayCount">04 MODELS</span></button>
     <button class="gatewayCard gatewayCar" data-filter="car" type="button"><span class="gatewayCopy"><small>02 / CAR CARE</small><strong>عناية السيارات</strong><span>منتجات للاستخدام اليومي</span><b>تصفح المجموعة <i aria-hidden="true">↗</i></b></span><img src="assets/carwash48-real-kit.webp" alt="" width="520" height="520" loading="lazy"><span class="gatewayCount">01 PRODUCT</span></button>
+    <button class="gatewayCard gatewayHome" data-filter="home" type="button"><span class="gatewayCopy"><small>03 / HOME ESSENTIALS</small><strong>أدوات منزلية</strong><span>حلول عملية ليومك</span><b>تصفح المجموعة <i aria-hidden="true">↗</i></b></span><img src="/assets/home/ssh-002.jpg" alt="" width="520" height="520" loading="lazy"><span class="gatewayCount">05 PRODUCTS</span></button>
   </div>
 </section>
 
 <section class="productsSection container" id="products">
  <div class="sectionHead"><div><span class="eyebrow">02 / THE COLLECTION</span><h2>THE <em>COLLECTION.</em></h2></div><p id="productsSubtitle">كل المنتجات، بتفاصيلها الحقيقية.</p></div>
  <div class="toolbar">
-  <div class="tabs" role="group" aria-label="فلتر المنتجات"><button type="button" class="tab active" data-filter="all" aria-pressed="true">الكل</button><button type="button" class="tab" data-filter="shoes" aria-pressed="false">أحذية</button><button type="button" class="tab" data-filter="car" aria-pressed="false">عناية السيارات</button></div>
+  <div class="tabs" role="group" aria-label="فلتر المنتجات"><button type="button" class="tab active" data-filter="all" aria-pressed="true">الكل</button><button type="button" class="tab" data-filter="shoes" aria-pressed="false">أحذية</button><button type="button" class="tab" data-filter="car" aria-pressed="false">عناية السيارات</button><button type="button" class="tab" data-filter="home" aria-pressed="false">أدوات منزلية</button></div>
   <div class="searchWrap"><label for="searchInput" class="visuallyHidden">ابحث عن منتج</label><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="ابحث عن موديل أو منتج..." autocomplete="off"></div>
  </div>
- <div class="merchCountLabel">المعروض حاليًا: <strong id="resultsCount">5</strong> منتجات</div>
+ <div class="merchCountLabel">المعروض حاليًا: <strong id="resultsCount">10</strong> منتجات</div>
  <div class="productGrid" id="productGrid" aria-live="polite"></div>
  <div class="emptyState" id="emptyState" hidden>مفيش منتجات بنفس البحث. <button type="button" id="resetFilters">عرض كل المنتجات</button></div>
 </section>

@@ -1,0 +1,24 @@
+/* SELECT SHOP / Safqa home products — scoped to approved preview only */
+.homeProductCard .cardMedia {background:#f2f1ed}
+.homeProductCard .mainCardImage {object-fit:contain; padding:1rem; background:#f4f3f0}
+.homeProductCard .cardTag {letter-spacing:.08em}
+.homeProductCard .cardCategory {color:inherit}
+.gatewayHome {background:linear-gradient(140deg,#f0e5d8,#d6d1c8); color:#252620; position:relative; overflow:hidden}
+.gatewayHome .gatewayCopy {position:relative;z-index:2}
+.gatewayHome img {object-fit:contain; object-position:center; mix-blend-mode:multiply}
+.gatewayHome .gatewayCount {color:#2d2a24}
+@media (min-width: 900px) {
+ .merchGateway {grid-template-columns:repeat(3,minmax(0,1fr))}
+ .gatewayHome {min-width:0}
+ .gatewayHome img {max-width:56%}
+}
+@media (max-width: 899px) {
+ .merchGateway {display:flex; gap:12px; overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:thin; padding-bottom:10px;overscroll-behavior-x:contain}
+ .merchGateway > .gatewayCard {min-width:min(76vw,310px);flex:0 0 min(76vw,310px);scroll-snap-align:start}
+ .gatewayHome img {max-width:54%}
+}
+@media (max-width: 430px) {
+ .homeProductCard .mainCardImage {padding:.6rem}
+ .gatewayHome .gatewayCopy strong {font-size:clamp(1.2rem,5vw,1.5rem)}
+ .tabs {flex-wrap:wrap}
+}

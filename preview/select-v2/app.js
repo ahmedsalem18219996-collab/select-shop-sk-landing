@@ -9,7 +9,7 @@
   const C = window.SELECT_FOUNDATION_CATALOG;
   const SETTINGS = window.SELECT_FOUNDATION_CONFIG;
   if (!C || !SETTINGS) throw Error("Foundation catalog failed to load");
-  const ids = ["sk","alex","eqwal","wk","carwash48"];
+  const ids = ["sk","alex","eqwal","wk","carwash48","home001","home002","home003","home004","home007"];
   const SHOES = new Set(["sk","alex","eqwal","wk"]);
   const KEY="selectShopReviewV2:cart"; // separate from all real and legacy carts
   const $ = (q,root=document)=>root.querySelector(q);
@@ -17,8 +17,8 @@
   const fmt = n => new Intl.NumberFormat("ar-EG").format(n)+" جنيه";
   const htmlEsc = x => String(x ?? "").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
   const photo = src => /^(https?:\/\/|\/)/.test(src) ? src : "/"+src;
-  const productCategory = id => id === "carwash48" ? "car" : "shoes";
-  const classLabel = id => id === "carwash48" ? "عناية السيارات" : id === "sk" || id === "wk" ? "أحذية حريمي" : "أحذية رجالي وحريمي حسب المقاس";
+  const productCategory = id => id.startsWith("home") ? "home" : id === "carwash48" ? "car" : "shoes";
+  const classLabel = id => id.startsWith("home") ? "أدوات منزلية" : id === "carwash48" ? "عناية السيارات" : id === "sk" || id === "wk" ? "أحذية حريمي" : "أحذية رجالي وحريمي حسب المقاس";
   const selectedVariant = (productId,variantId) => C[productId]?.variants.find(v=>v.id===variantId)||C[productId]?.variants[0];
   const getProduct=id=>C[id];
   const makeId=()=>Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,10);
@@ -33,7 +33,7 @@
     if(!x || !C[x.productId] || typeof x.id!=="string")return false;
     const v=selectedVariant(x.productId,x.variantId);
     if(!v || v.id!==x.variantId || !Array.isArray(x.sizes) || !["purchase","trial"].includes(x.role))return false;
-    if(x.productId==="carwash48")return x.role==="purchase" && x.sizes.length===0;
+    if(!SHOES.has(x.productId))return x.role==="purchase" && x.sizes.length===0;
     return x.sizes.length>=1 && x.sizes.length<=2 && x.sizes.every(n=>v.sizes.includes(Number(n))) && new Set(x.sizes).size===x.sizes.length;
   };
   try {
@@ -101,6 +101,17 @@
      '<div class="cardVariantInfo"><span>بدون مقاسات</span><span>شحن مجاني مقترح في المعاينة*</span></div>'+
      '<div class="cardBottom"><span class="includedShipping">*قبل اعتماد العرض تجاريًا</span><button type="button" data-show-product="carwash48">تفاصيل المنتج <span aria-hidden="true">↗</span></button></div></div></article>';
   }
+  // SELECT SHOP Safqa home-care cards — preview orders only.
+  function homeCard(id){
+    const p=C[id],v=p.variants[0];
+    return '<article class="productCard editorialCard homeProductCard" data-product-id="'+htmlEsc(id)+'">'+
+     '<div class="cardMedia"><button class="cardMediaClick" type="button" data-show-product="'+htmlEsc(id)+'" aria-label="تفاصيل '+htmlEsc(p.name)+'"><img class="mainCardImage" loading="lazy" width="700" height="700" src="'+htmlEsc(photo(v.image))+'" alt="'+htmlEsc(p.name)+'"></button><span class="cardTag">HOME / EVERYDAY</span><span class="cardIndex">'+htmlEsc(v.code)+'</span><button class="cardQuick" type="button" data-show-product="'+htmlEsc(id)+'" aria-label="فتح المنتج">↗</button></div>'+
+     '<div class="cardContent"><div class="cardCategory">أدوات منزلية <span class="catalog-dot">•</span> '+htmlEsc(v.name)+'</div>'+
+     '<div class="cardTitle"><h3>'+htmlEsc(p.name)+'</h3><strong>'+fmt(p.price)+'</strong></div>'+
+     '<p>'+htmlEsc(p.description)+'</p>'+
+     '<div class="cardVariantInfo"><span>بدون مقاسات — '+htmlEsc(v.code)+'</span><span>السعر شامل التوصيل</span></div>'+
+     '<div class="cardBottom"><span class="includedShipping">شحن مجاني</span><button type="button" data-show-product="'+htmlEsc(id)+'">تفاصيل المنتج <span aria-hidden="true">↗</span></button></div></div></article>';
+  }
   function renderProducts(){
     const list=ids.filter(id=>{
       const p=C[id];
@@ -110,13 +121,13 @@
     });
     $("#emptyState").hidden=list.length!==0;
     const shoeCount=list.filter(id=>SHOES.has(id)).length;
-    const cards=list.map(id=>SHOES.has(id)?shoeCard(id):carProductCard()).join("");
+    const cards=list.map(id=>SHOES.has(id)?shoeCard(id):id==="carwash48"?carProductCard():homeCard(id)).join("");
     $("#productGrid").innerHTML=list.length?'<section class="merchShelf unifiedShelf" aria-label="كل المنتجات"><div class="shoeCardsGrid unifiedCardsGrid">'+cards+'</div></section>':"";
     const count=$("#resultsCount");if(count)count.textContent=String(list.length);
-    const subtitle=$("#productsSubtitle");if(subtitle)subtitle.textContent=filter==="shoes"?"اختار اللون والمقاس حسب الموديل.":filter==="car"?"منتجات عناية السيارات بدون مقاسات.":"كل المنتجات في نفس تصميم الكروت؛ التفاصيل بتختلف حسب المنتج.";
+    const subtitle=$("#productsSubtitle");if(subtitle)subtitle.textContent=filter==="shoes"?"اختار اللون والمقاس حسب الموديل.":filter==="car"?"منتجات عناية السيارات بدون مقاسات.":filter==="home"?"أدوات منزلية عملية؛ الأسعار شاملة التوصيل.":"كل المنتجات في نفس تصميم الكروت؛ التفاصيل بتختلف حسب المنتج.";
   }
   function applyFilter(next){
-    filter=["all","shoes","car"].includes(next)?next:"all";
+    filter=["all","shoes","car","home"].includes(next)?next:"all";
     $$("[data-filter]").forEach(b=>{
       const active=b.dataset.filter===filter;
       b.classList.toggle("active",active);
@@ -165,7 +176,7 @@
       trialRadio.disabled=!purchasedShoes();
       if(trialRadio.disabled) $('[name="purchaseRole"][value="purchase"]').checked=true;
     }
-    $("#detailMessage").textContent=isShoe?"المقاسات دي حسب اللون المختار. تجربة مقاسين معناها زوج واحد بس لو استلمت مقاس واحد.":"شحن مجاني مقترح لكل المحافظات في المعاينة. يرجى تأكيده تجاريًا قبل إطلاق المتجر.";
+    $("#detailMessage").textContent=isShoe?"المقاسات دي حسب اللون المختار. تجربة مقاسين معناها زوج واحد بس لو استلمت مقاس واحد.":p.category==="home"?"السعر شامل التوصيل. هذه نسخة معاينة فقط؛ الطلبات لا تُرسل.":"شحن مجاني مقترح لكل المحافظات في المعاينة. يرجى تأكيده تجاريًا قبل إطلاق المتجر.";
   }
   function openDetail(id,variantId=null){
     if(!C[id])return;
@@ -200,7 +211,7 @@
     const p=C[i.productId],v=selectedVariant(p.id,i.variantId),isShoe=SHOES.has(p.id);
     const editable=isShoe&&purchasedShoes()>0;
     return '<article class="cartItem" data-cart-id="'+htmlEsc(i.id)+'"><img src="'+htmlEsc(photo(v.image))+'" alt="'+htmlEsc(p.name)+'"><div><small>'+htmlEsc(v.code+" / "+v.name)+'</small><strong>'+htmlEsc(p.name)+'</strong>'+
-      '<span>'+htmlEsc(isShoe?"مقاس "+i.sizes.join(" و ")+" "+(i.sizes.length===2?"(للتجربة)":""):"الطقم ببطاريتين")+'</span>'+
+      '<span>'+htmlEsc(isShoe?"مقاس "+i.sizes.join(" و ")+" "+(i.sizes.length===2?"(للتجربة)":""):v.name)+'</span>'+
       (isShoe?'<div class="cartRole"><label>نوع الاختيار <select data-cart-role="'+htmlEsc(i.id)+'" '+(!editable?'disabled':'')+'><option value="purchase" '+(i.role==="purchase"?"selected":"")+'>شراء / استلام</option><option value="trial" '+(i.role==="trial"?"selected":"")+'>تجربة فقط</option></select></label></div>':'')+
       '</div><div class="cartItemPrice"><b>'+(i.role==="trial"?"غير محسوب":fmt(p.price))+'</b><button type="button" data-remove="'+htmlEsc(i.id)+'" aria-label="إزالة المنتج">حذف ×</button></div></article>';
   }
@@ -236,7 +247,7 @@
     const t=totals();
     const region=$('#checkoutForm [name="region"]').value;
     const summary=$("#checkoutSummary");
-    summary.textContent="الإجمالي التجريبي: "+fmt(t.total)+" — الشحن مجاني لجميع المحافظات في مقترح المعاينة فقط. يجب اعتماد تكلفة الشحن وتحملها تجاريًا قبل التشغيل الفعلي."+(region?" المحافظة: "+region+".":"");
+    summary.textContent="الإجمالي التجريبي: "+fmt(t.total)+" — أسعار الأدوات المنزلية شاملة الشحن 90 جنيه محسوب داخليًا لكل طلب، دون إضافته مرة ثانية. عرض شحن السيارات لم يعتمد بعد."+(region?" المحافظة: "+region+".":"");
     summary.classList.remove("shipping-warning");
   }
   function previewCheckout(){
@@ -254,7 +265,7 @@
       const p=C[item.productId],v=selectedVariant(p.id,item.variantId);
       return (i+1)+") "+p.name+" — "+v.code+" ("+v.name+")"+(item.sizes.length?" — مقاس: "+item.sizes.join(" / "):"")+" — "+(item.role==="trial"?"للتجربة فقط، لا يُحسب في الإجمالي":fmt(p.price));
     }),"","إجمالي المنتجات: "+fmt(t.subtotal),"خصم الأحذية الإضافية: "+fmt(t.discount),"الإجمالي المتوقع: "+fmt(t.total)];
-    lines.push("شحن مجاني لجميع المحافظات — عرض معاينة مقترح، يحتاج اعتمادًا قبل التشغيل الفعلي.");
+    lines.push("الأدوات المنزلية: الأسعار شاملة التوصيل؛ عرض شحن السيارات لجميع المحافظات لم يعتمد تجاريًا بعد.");
     lines.push("","الاسم: "+data.name,"الموبايل: "+data.phone,"المحافظة: "+data.region,"المنطقة: "+data.area,"العنوان: "+data.address,"ملاحظات: "+(data.notes||"لا يوجد"),"","طلب للمعاينة فقط — لم يُرسل.");
     return lines.join("\n");
   }
