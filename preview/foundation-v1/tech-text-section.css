@@ -1,0 +1,83 @@
+/* TechText React Bits mount — scoped to preview wordmark section.
+   React Bits original TechText.css remains unmodified in components/.
+   Copyright (c) 2026 David Haz. License: MIT + Commons Clause.
+*/
+.techShowcase{
+ display:grid;grid-template-columns:minmax(0,.37fr) minmax(0,.63fr);
+ gap:24px;min-height:236px;align-items:stretch;
+ padding:0;margin-top:25px;margin-bottom:58px;
+ border:1px solid #383d48;border-radius:7px;
+ background:#171b24;overflow:hidden;
+}
+.techShowcaseIntro{
+ display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+ gap:12px;padding:30px 33px
+}
+.techShowcaseIntro .eyebrow{font-size:9px;color:#d5b09d;letter-spacing:.1em}
+.techShowcaseIntro h2{
+ color:#f2eee9;font:700 clamp(19px,2vw,29px)/1.55 "Alexandria",sans-serif;
+ margin:2px 0;letter-spacing:-.05em
+}
+.techShowcaseIntro h2 em{font-style:normal;color:#daa88e}
+.techShowcaseIntro p{max-width:335px;color:#afaab6;font-size:11px;line-height:1.9;margin:0}
+.techCanvasShell{
+ position:relative;display:grid;align-items:center;
+ min-width:0;min-height:235px;padding:29px 28px 34px;
+ background:
+  linear-gradient(90deg,#1d202b,#12151d),
+  radial-gradient(circle at 50% 50%,#383144,transparent 75%);
+ border-right:1px solid #373945;overflow:hidden
+}
+.techCanvasShell::before{
+ content:"";position:absolute;inset:13px;
+ border:1px solid #cbc2c521;pointer-events:none
+}
+.techAccentLine{
+ position:absolute;width:64px;height:2px;top:24px;right:24px;
+ background:linear-gradient(90deg,#dac1ae,#b48170)
+}
+.techWordmarkMount{
+ height:168px;width:100%;min-width:0;min-height:0;position:relative;
+ display:grid;place-items:center;overflow:visible;
+ font-family:"Manrope",Arial,sans-serif;
+}
+.techWordmarkMount .techTextFallback{
+ font:600 clamp(30px,5vw,88px)/1 "Manrope",sans-serif;
+ letter-spacing:-.065em;color:#f2e9e6;text-align:center;
+ white-space:nowrap;max-width:100%;overflow:hidden
+}
+.techWordmarkMount .tech-text{font-family:"Manrope",sans-serif;direction:ltr}
+.techWordmarkCaption{
+ position:absolute;bottom:20px;left:24px;color:#898792;
+ font:750 9px/1.5 "Manrope",sans-serif;letter-spacing:.14em
+}
+@media(max-width:920px){
+ .techShowcase{grid-template-columns:1fr 1fr}
+ .techShowcaseIntro{padding:24px}
+ .techCanvasShell{padding:25px 12px}
+}
+@media(max-width:620px){
+ .techShowcase{
+   margin-top:3px;margin-bottom:48px;gap:0;
+   grid-template-columns:minmax(0,1fr);min-height:0
+ }
+ .techShowcaseIntro{padding:20px 18px 8px;gap:6px}
+ .techShowcaseIntro h2{font-size:22px}
+ .techShowcaseIntro p{font-size:10px}
+ .techCanvasShell{
+   border-right:0;border-top:1px solid #323640;min-height:130px;
+   padding:15px 8px 21px
+ }
+ .techWordmarkMount{height:105px;max-width:100%}
+ .techWordmarkMount .techTextFallback{font-size:clamp(21px,8vw,37px)}
+ .techWordmarkCaption{bottom:9px;left:15px;font-size:7px}
+ .techAccentLine{top:12px;right:16px;width:34px}
+}
+@media(max-width:360px){
+ .techWordmarkMount{height:86px}
+ .techCanvasShell{min-height:112px}
+ .techShowcaseIntro h2{font-size:19px}
+}
+@media(prefers-reduced-motion:reduce){
+ .techWordmarkMount{scroll-behavior:auto}
+}
