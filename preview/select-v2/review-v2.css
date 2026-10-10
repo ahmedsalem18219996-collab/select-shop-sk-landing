@@ -549,3 +549,9 @@ body{
  .titleReveal{opacity:1!important;transform:none!important;filter:none!important}
  .premiumTicker .tickerTrack{animation:none!important;transform:none!important}
 }
+
+/* Progressive entrances use GPU-friendly opacity and transform; if JS is absent content stays visible. */
+@media(prefers-reduced-motion:no-preference){
+ html.select-v2-ready .v2-reveal{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .65s cubic-bezier(.2,.7,.2,1)}
+ html.select-v2-ready .v2-reveal.is-visible{opacity:1;transform:translateY(0)}
+}
