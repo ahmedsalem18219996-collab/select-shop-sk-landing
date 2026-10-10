@@ -70,6 +70,33 @@
   function sameCartSelection(i,pid,vid,sizes,role){
     return i.productId===pid&&i.variantId===vid&&i.role===role&&JSON.stringify(i.sizes)===JSON.stringify(sizes);
   }
+  const MERCH = Object.freeze({
+    sk:{headline:"راحة في المشي والشغل",detail:"Mesh خفيف ونعل EVA",use:"للمشاوير اليومية",tag:"DAILY COMFORT"},
+    alex:{headline:"ستايل بسيط بتفاصيل مميزة",detail:"تصميم جلدي وتبطين داخلي",use:"للخروج والكاجوال",tag:"EVERYDAY PREMIUM"},
+    eqwal:{headline:"كاجوال سهل يتلبس",detail:"ألوان هادية وتصميم Street",use:"للكاجوال اليومي",tag:"STREET ESSENTIAL"},
+    wk:{headline:"ستايل Retro بأكتر من اختيار",detail:"8 توليفات لونية",use:"للستايل الرياضي",tag:"RETRO EDIT"}
+  });
+  function shoeCard(id) {
+    const p=C[id],v=selectedVariant(id,cardVariant[id]),m=MERCH[id];
+    const thumbs=p.variants.map(x=>'<button class="colorMini '+(x.id===v.id?'active':'')+'" type="button" data-color="'+htmlEsc(id)+'|'+htmlEsc(x.id)+'" aria-label="عرض '+htmlEsc(x.code+" "+x.name)+'" aria-pressed="'+String(x.id===v.id)+'"><img loading="lazy" src="'+htmlEsc(photo(x.image))+'" alt=""></button>').join("");
+    return '<article class="productCard editorialCard" data-product-id="'+htmlEsc(id)+'">'+
+      '<div class="cardMedia"><button class="cardMediaClick" type="button" data-show-product="'+htmlEsc(id)+'" aria-label="استعراض صور وتفاصيل '+htmlEsc(p.name)+'"><img class="mainCardImage" src="'+htmlEsc(photo(v.image))+'" alt="'+htmlEsc(p.name+" "+v.name)+'" loading="lazy" width="700" height="700"></button><span class="cardTag">'+htmlEsc(m.tag)+'</span><span class="cardIndex">'+htmlEsc(v.code)+'</span><button class="cardQuick" type="button" data-show-product="'+htmlEsc(id)+'" aria-label="افتح '+htmlEsc(p.name)+'">↗</button></div>'+
+      '<div class="cardContent"><div class="cardCategory">'+htmlEsc(m.use)+' <span class="catalog-dot">•</span> '+htmlEsc(m.detail)+'</div>'+
+      '<div class="cardTitle"><h3>'+htmlEsc(p.name)+'</h3><strong>'+fmt(p.price)+'</strong></div>'+
+      '<p>'+htmlEsc(m.headline)+'. '+htmlEsc(p.description)+'</p>'+
+      '<div class="merchColorHeader"><span>اختار الشكل واللون</span><strong>'+p.variants.length+' اختيارات</strong></div>'+
+      '<div class="cardColors" role="group" aria-label="ألوان '+htmlEsc(p.name)+'">'+thumbs+'</div>'+
+      '<div class="cardVariantInfo"><span class="variantSummary">'+htmlEsc(v.code+" — "+v.name)+'</span><span>المقاسات: '+htmlEsc(v.sizes.join("، "))+'</span></div>'+
+      '<div class="cardBottom"><span class="includedShipping">السعر شامل الشحن</span><button type="button" data-show-product="'+htmlEsc(id)+'">اختار المقاس واطلب <span aria-hidden="true">↗</span></button></div></div></article>';
+  }
+  function carSpotlight(){
+    const p=C.carwash48, v=p.variants[0];
+    return '<article class="carSpotlight" data-product-id="carwash48">'+
+       '<div class="carSpotlightImage"><span class="carSpotlightIndex">SELECT / CAR CARE</span><button class="carSpotlightImageButton" data-show-product="carwash48" type="button" aria-label="اعرض تفاصيل طقم غسيل السيارات"><img loading="lazy" width="850" height="700" src="'+htmlEsc(photo(v.image))+'" alt="طقم غسيل سيارات لاسلكي ببطاريتين وملحقاته"></button><span class="carSpotlightPhotoNote">صورة الطقم الفعلي المعروض</span></div>'+
+       '<div class="carSpotlightBody"><span class="carSpotlightEyebrow">للبيت والعربية / CAR CARE</span><h3>'+htmlEsc(p.name)+'</h3><p class="carSpotlightDescription">طقم لاسلكي ببطاريتين، يسحب المياه من جردل ويخليك تغسل العربية من غير وصلة مياه ثابتة.</p>'+
+       '<div class="carSpotlightSpecs"><span><b>02</b> بطاريتين مع الطقم</span><span><b>↗</b> سحب المياه من جردل</span><span><b>✓</b> معاينة قبل الدفع</span></div>'+
+       '<div class="carSpotlightPurchase"><div><small>السعر للقاهرة والجيزة شامل الشحن</small><strong>'+fmt(p.price)+'</strong><span>باقي المحافظات: الشحن يتأكد قبل تأكيد الطلب</span></div><button type="button" data-show-product="carwash48">اعرف التفاصيل واطلب <span aria-hidden="true">↗</span></button></div></div></article>';
+  }
   function renderProducts(){
     const list=ids.filter(id=>{
       const p=C[id];
@@ -77,19 +104,13 @@
       const txt=[p.name,p.short,p.description,...p.variants.map(v=>v.name+" "+v.code)].join(" ").toLowerCase();
       return matchesFilter&&(!search||txt.includes(search));
     });
+    const shoes=list.filter(id=>SHOES.has(id)), cars=list.filter(id=>id==="carwash48");
     $("#emptyState").hidden=list.length!==0;
-    $("#productGrid").innerHTML=list.map((id,index)=>{
-      const p=C[id],v=selectedVariant(id,cardVariant[id]),isCar=id==="carwash48";
-      const thumbs=p.variants.map(x=>'<button class="colorMini '+(x.id===v.id?'active':'')+'" type="button" data-color="'+htmlEsc(id)+'|'+htmlEsc(x.id)+'" aria-label="'+htmlEsc(x.code+" "+x.name)+'" aria-pressed="'+String(x.id===v.id)+'"><img loading="lazy" src="'+htmlEsc(photo(x.image))+'" alt=""></button>').join("");
-      return '<article class="productCard" data-product-id="'+htmlEsc(id)+'">'+
-        '<div class="cardMedia"><button class="cardMediaClick" type="button" data-show-product="'+htmlEsc(id)+'" aria-label="تفاصيل '+htmlEsc(p.name)+'"><img class="mainCardImage" src="'+htmlEsc(photo(v.image))+'" alt="'+htmlEsc(p.name+" "+v.name)+'" loading="lazy"></button><span class="cardTag">'+htmlEsc(p.badge)+'</span><span class="cardIndex">0'+(ids.indexOf(id)+1)+'</span><button class="cardQuick" type="button" data-show-product="'+htmlEsc(id)+'" aria-label="تفاصيل المنتج">↗</button></div>'+
-        '<div class="cardContent"><div class="cardCategory">'+htmlEsc(classLabel(id))+'</div>'+
-        '<div class="cardTitle"><h3>'+htmlEsc(p.name)+'</h3><strong>'+fmt(p.price)+'</strong></div>'+
-        '<p>'+htmlEsc(p.description)+'</p>'+
-        (isCar?'<div class="carInfo">السعر شامل توصيل القاهرة والجيزة • باقي المحافظات بعد التأكيد</div>':
-        '<div class="colorChoice"><span class="variantSummary">'+htmlEsc(v.code+" · "+v.name)+'</span><span>'+p.variants.length+' ألوان</span></div><div class="cardColors">'+thumbs+'</div>')+
-        '<div class="cardBottom"><span>'+htmlEsc(isCar?"بدون مقاسات":p.sizeSummary+" حسب اللون")+'</span><button type="button" data-show-product="'+htmlEsc(id)+'">التفاصيل والطلب <span>↗</span></button></div></div></article>';
-    }).join("");
+    const shoeSection=shoes.length?'<section class="merchShelf" aria-label="موديلات الأحذية"><div class="merchShelfHeader"><div><span class="merchShelfEyebrow">FOOTWEAR / THE EDIT</span><h3>اختار ستايلك، وشوف الألوان.</h3></div><span>'+shoes.length+' موديلات بألوان ومقاسات مختلفة</span></div><div class="shoeCardsGrid">'+shoes.map(shoeCard).join("")+'</div></section>':"";
+    const carSection=cars.length?'<section class="merchShelf carMerchShelf" aria-label="عناية السيارات"><div class="merchShelfHeader"><div><span class="merchShelfEyebrow">BEYOND FOOTWEAR / CAR CARE</span><h3>حاجة عملية لعربيتك.</h3></div><span>منتج مستقل بشروط شحن واضحة</span></div>'+carSpotlight()+'</section>':"";
+    $("#productGrid").innerHTML=shoeSection+carSection;
+    const count=$("#resultsCount");if(count)count.textContent=String(list.length);
+    const subtitle=$("#productsSubtitle");if(subtitle)subtitle.textContent=filter==="shoes"?"شوف كل موديل، بدّل الألوان، واختار المقاس المتاح للون نفسه.":filter==="car"?"عرض كامل لطقم غسيل السيارات قبل ما تضيفه للسلة.":"الأحذية في مجموعة مستقلة وعناية السيارات في عرض خاص؛ اختار المنتج اللي تحتاجه.";
   }
   function applyFilter(next){
     filter=["all","shoes","car"].includes(next)?next:"all";
@@ -262,6 +283,7 @@
       if(!b.classList.contains("tab"))$("#products").scrollIntoView({behavior:"smooth"});
     }));
     $("#searchInput").addEventListener("input",e=>{search=e.target.value.trim().toLowerCase();renderProducts()});
+    $("[data-feature-product]").forEach(button=>button.addEventListener("click",e=>{e.preventDefault();openDetail(button.dataset.featureProduct)}));
     $("#openSearch").addEventListener("click",()=>{
       $("#products").scrollIntoView({behavior:"smooth"});
       $("#searchInput").focus({preventScroll:true});
