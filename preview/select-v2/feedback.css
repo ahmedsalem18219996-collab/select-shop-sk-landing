@@ -1,0 +1,73 @@
+/* SELECT SHOP V2 — lightweight local-only section feedback UI. */
+#v2Feedback{direction:rtl;position:relative;z-index:3000}
+#v2Feedback button,#v2Feedback select,#v2Feedback textarea{font-family:"IBM Plex Sans Arabic",Tahoma,sans-serif}
+#v2Feedback .v2FeedbackLauncher{
+ position:fixed;left:15px;bottom:15px;z-index:3001;
+ background:#2b2637;color:#fff3eb;border:1px solid #e4a783;
+ border-radius:7px;box-shadow:0 9px 34px #000b;
+ padding:11px 17px;min-height:46px;font-size:12px;font-weight:800
+}
+#v2Feedback .v2FeedbackLauncher[aria-expanded="true"]{background:#f0b58e;color:#251921}
+#v2Feedback .v2FeedbackPanel{
+ position:fixed;left:12px;top:12px;bottom:12px;z-index:3002;
+ max-height:calc(100dvh - 24px);overflow-y:auto;overscroll-behavior:contain;
+ scrollbar-color:#776d7c transparent;
+ width:min(390px,calc(100vw - 24px));max-width:calc(100vw - 24px);
+ padding:15px 17px 19px;border-radius:9px;
+ border:1px solid #666073;background:#191b2b;color:#f5eee9;
+ box-shadow:0 15px 60px #000c
+}
+#v2Feedback .v2FeedbackPanel[hidden]{display:none!important}
+.v2fbTop{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:0 0 15px;border-bottom:1px solid #444353}
+.v2fbTop small{font:750 10px "Manrope",sans-serif;letter-spacing:.1em;color:#efb89c}
+.v2fbTop h2{font:700 21px/1.6 "Alexandria",sans-serif;margin:5px 0;color:#f8f3f0}
+.v2fbTop p{font-size:11px;margin:0;color:#bdb0bd}
+#v2fbClose{flex:0 0 35px;width:35px;height:35px;border-radius:5px;border:1px solid #5a5265;background:#2e2936;color:#fff;font-size:23px}
+.v2fbPick{
+ width:100%;min-height:44px;background:#f1b38d;color:#261923;
+ border:1px solid #f1b38d;border-radius:5px;margin:13px 0 14px;
+ font-size:12px;font-weight:800;cursor:pointer
+}
+.v2FeedbackPanel>label{display:block;font-size:11px;font-weight:700;color:#f3e0d8;margin:11px 0 5px}
+.v2FeedbackPanel select,.v2FeedbackPanel textarea{
+ display:block;width:100%;min-height:41px;background:#292a3a;color:#f5ede8;
+ border:1px solid #675d70;border-radius:5px;padding:9px 11px;font-size:11px;
+}
+.v2FeedbackPanel textarea{min-height:104px;resize:vertical}
+.v2FeedbackPanel textarea::placeholder{color:#a9a0b3}
+.v2fbSelected{
+ padding:10px;background:#2e2a38;border-right:3px solid #e6b28f;
+ color:#f0d5c8;font-size:11px;margin-top:12px;border-radius:3px
+}
+.v2fbActions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:13px}
+.v2fbActions button{
+ min-height:43px;border:1px solid #71677b;background:#2c2b3b;
+ color:#eee8e6;border-radius:5px;padding:8px 11px;
+ font-size:11px;font-weight:800
+}
+.v2fbActions #v2fbSave{grid-column:1/-1;background:#edac85;color:#1d1520;border-color:#edac85}
+#v2fbStatus{font-size:10px;color:#bdb0bb;line-height:1.8;margin-top:15px}
+.v2fbHint{display:none}
+.v2fbMark{outline:2px dashed #edae89!important;outline-offset:6px!important}
+body.v2fbPicking #v2Feedback .v2FeedbackPanel{display:none!important}
+body.v2fbPicking #v2Feedback .v2FeedbackLauncher{display:none!important}
+body.v2fbPicking #v2Feedback .v2fbHint{
+ position:fixed;z-index:3005;top:calc(10px + env(safe-area-inset-top,0px));
+ left:10px;right:10px;display:flex;align-items:center;justify-content:space-between;
+ gap:8px;padding:10px 12px;background:#272435;border:1px solid #eeb490;
+ color:#fff5ef;border-radius:6px;box-shadow:0 8px 35px #0009;
+ font-size:11px;font-weight:700;pointer-events:auto
+}
+#v2fbCancel{background:#eed4c0;color:#291d2d;border:0;border-radius:4px;min-height:33px;padding:5px 12px;font-size:10px}
+body.v2fbPicking :is(.siteHeader,.premiumTicker,.premiumHero,.categoriesSection,.shoeCardsGrid,.carMerchShelf,.productDrawer,.cartDrawer,.mobileBar):hover{
+ outline:2px dashed #f5b18d!important;outline-offset:4px!important
+}
+@media(max-width:620px){
+ #v2Feedback .v2FeedbackLauncher{left:9px;bottom:calc(76px + env(safe-area-inset-bottom,0px));padding:9px 11px;min-height:39px;font-size:10px}
+ #v2Feedback .v2FeedbackPanel{
+  left:0;right:0;top:0;bottom:0;border:0;border-radius:0;
+  width:100vw;max-width:100vw;max-height:100dvh;
+  padding:16px 16px calc(18px + env(safe-area-inset-bottom,0px))
+ }
+}
+@media(prefers-reduced-motion:reduce){.v2FeedbackLauncher{transition:none}}
