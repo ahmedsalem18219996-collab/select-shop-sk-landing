@@ -348,6 +348,7 @@
     const u=new URL(location.href);u.searchParams.set("variant",viewed.variantId);
     history.replaceState(null,"",u.pathname+u.search+u.hash);
   }
+  $("[data-price-product]").forEach(el=>{const product=C[el.dataset.priceProduct];if(product)el.textContent=fmt(product.price)});
   persist();bind();applyFilter("all");
   const route=new URLSearchParams(location.search);
   if(C[route.get("product")])openDetail(route.get("product"),route.get("variant"));
