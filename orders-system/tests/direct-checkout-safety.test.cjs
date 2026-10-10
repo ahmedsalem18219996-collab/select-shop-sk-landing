@@ -15,7 +15,7 @@ const pageSource = content('preview/select-unified-v1/index.html');
 const serverSource = content('orders-system/supabase/functions/submit-order/index.ts');
 const adminConfig = content('preview/select-unified-v1/orders-admin/config.js');
 
-function sandbox(overrides = {}) {
+function sandbox(options = {}) {
   const context = {
     window: {},
     document: { querySelector: () => null },
@@ -23,9 +23,16 @@ function sandbox(overrides = {}) {
     console: { error: () => {}, warn: () => {} },
     TextEncoder,
     crypto: globalThis.crypto,
-    ...overrides,
   };
   vm.runInNewContext(configSource, context, { filename: 'orders-config.js', timeout: 2000 });
+  // The adapter captures its configuration at initialization, so override before loading it.
+  if (options.directOrdersEnabled === true) {
+    context.window.SELECT_SHOP_GUEST_ORDERS = {
+      ...context.window.SELECT_SHOP_GUEST_ORDERS,
+      enabled: true,
+      turnstileSiteKey: '',
+    };
+  }
   vm.runInNewContext(checkoutSource, context, { filename: 'orders-checkout.js', timeout: 2000 });
   return context;
 }
@@ -46,12 +53,8 @@ test('disabled direct checkout cannot send a real order', async () => {
 });
 
 test('enabling the flag without CAPTCHA fails closed, before any network request', async () => {
-  const ctx = sandbox();
-  ctx.window.SELECT_SHOP_GUEST_ORDERS = Object.freeze({
-    ...ctx.window.SELECT_SHOP_GUEST_ORDERS,
-    enabled: true,
-    turnstileSiteKey: '',
-  });
+  const ctx = sandbox({ directOrdersEnabled: true });
+  assert.equal(ctx.window.SELECT_SHOP_GUEST_CHECKOUT.isEnabled(), true);
   await assert.rejects(
     () => ctx.window.SELECT_SHOP_GUEST_CHECKOUT.submit({ name: 'Demo User' }, []),
     /orders_not_configured/,
