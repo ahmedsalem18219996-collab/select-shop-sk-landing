@@ -62,7 +62,7 @@
    if(width<140||height<100)return;
    const isMobile=width<=620;
    const curve=rad(isMobile?76:78);
-   const tileShare=isMobile?.56:.48;
+   const tileShare=isMobile ? 0.56 : 0.48;
    const tileHeight=Math.min(height*tileShare,(MAX_SHARE*width)/ASPECT);
    const radius=width*(CAMERA-1+Math.cos(curve))/(2*CAMERA*Math.sin(curve));
    if(!(tileHeight>0)||!(radius>0))return;
@@ -133,6 +133,10 @@
  document.addEventListener("visibilitychange",()=>{
    tiles.forEach(t=>t.style.animationPlayState=document.hidden?"paused":"running");
  });
- window.addEventListener("pagehide",()=>{disposed=true;resize?.disconnect()},{once:true});
+ window.addEventListener("pagehide",()=>{disposed=true;resize?.disconnect()});
+ window.addEventListener("pageshow",()=>{
+   if(!disposed)return;
+   disposed=false;lastKey="";resize?.observe(stage);layout();
+ });
  layout();
 })();
