@@ -208,12 +208,23 @@
     if(role==="trial"&&purchasedShoes()<=1&&item.role==="purchase"){showToast("لازم يكون فيه زوج أساسي مدفوع في السلة");renderCart();return}
     item.role=role;persist();renderCart();
   }
+  function updateShippingNotice(){
+    const region=$('#checkoutForm [name="region"]').value;
+    const t=totals();
+    const carOutside=t.car>0 && !SETTINGS.CAR_INCLUDED_REGIONS.includes(region);
+    const msg=carOutside
+      ? "⚠️ الشحن خارج القاهرة والجيزة لطقم غسيل السيارات غير محدد. "+fmt(t.total)+" هو مجموع المنتجات بعد الخصم فقط؛ الإجمالي النهائي يحتاج تأكيد تكلفة الشحن قبل إتمام الطلب."
+      : "الإجمالي المتوقع: "+fmt(t.total)+(t.car?" — يشمل شحن طقم السيارات داخل القاهرة والجيزة.":" — أسعار الأحذية شاملة الشحن.");
+    const summary=$("#checkoutSummary");
+    summary.textContent=region?msg:"الإجمالي المتوقع: "+fmt(t.total)+" — اختر المحافظة للتأكد من شروط توصيل المنتج.";
+    summary.classList.toggle("shipping-warning",carOutside);
+  }
   function previewCheckout(){
     if(!cart.length)return;
     closeDialog("cartDialog");
     $("#messagePreview").hidden=true;
     $("#formError").hidden=true;
-    $("#checkoutSummary").textContent="الإجمالي المتوقع: "+fmt(totals().total)+" — بدون رسوم شحن إضافية غير مؤكدة.";
+    updateShippingNotice();
     showDialog("checkoutDialog");
   }
   const normalizePhone = val=>val.replace(/[٠-٩]/g,c=>String(c.charCodeAt(0)-1632)).replace(/[۰-۹]/g,c=>String(c.charCodeAt(0)-1776)).replace(/[\s\-()]/g,"");
@@ -300,6 +311,7 @@
       const b=e.target.closest("[data-cart-role]");if(b)changeCartRole(b.dataset.cartRole,b.value);
     });
     $("#goCheckout").addEventListener("click",previewCheckout);
+    $('#checkoutForm [name="region"]').addEventListener("change",updateShippingNotice);
     $("#checkoutForm").addEventListener("submit",submitPreview);
     $("#copyOrder").addEventListener("click",async()=>{
       try{await navigator.clipboard.writeText($("#orderPreviewText").textContent);showToast("تم نسخ رسالة المعاينة")}catch{showToast("تعذر النسخ تلقائيًا؛ يمكنك تحديد النص ونسخه يدويًا")}
