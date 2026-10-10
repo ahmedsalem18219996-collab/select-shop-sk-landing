@@ -502,7 +502,7 @@ body{
  font-weight:800!important
 }
 .ssProductFooter a.ssDetailInquiry .ssIconWA{color:#082313!important}
-.ssMobileInquiryShort{display:none!important}
+.mobileBar a.ssMobileInquiry .ssMobileInquiryShort{display:none!important}
 @media(max-width:620px){
  .hero.premiumHero.limeHero.tiltedGridHero .heroActions a.ssInquiryButton{
   min-height:48px!important;
