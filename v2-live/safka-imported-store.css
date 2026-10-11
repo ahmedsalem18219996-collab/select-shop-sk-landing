@@ -237,3 +237,79 @@
 @media(prefers-reduced-motion:reduce){
   .ssSafkaGalleryArrow,.ssSafkaThumb,.ssSafkaDialog{scroll-behavior:auto;transition:none!important}
 }
+
+/* 2026-10-11 mobile chooser: replace giant native OS select menu.
+   In-page expandable department grid stays inside document flow. */
+.ssMobileDepartmentPanel[hidden]{display:none!important}
+@media(max-width:680px){
+  .productsSection .toolbar .ssMobileCategoryPicker{
+    grid-column:2!important;grid-row:1!important;
+    display:flex!important;align-items:stretch!important;
+    height:43px;min-width:0;overflow:hidden;position:relative;
+    border-radius:6px;background:#252f23;border:1px solid #566d49;
+  }
+  .ssMobileCategoryPicker:after{display:none!important}
+  .ssMobileDepartmentButton{
+    width:100%;height:100%;min-width:0;
+    display:flex;align-items:center;justify-content:space-between;gap:6px;
+    color:#f1f6df;background:transparent;border:0;
+    padding:7px 10px;font:700 11px/1.5 Alexandria,"IBM Plex Sans Arabic",sans-serif;
+    cursor:pointer;text-align:right;
+  }
+  .ssMobileDepartmentButton.is-selected{color:#dff989}
+  .ssMobileDepartmentButton .ssMobileDepartmentText{
+    flex:1 1 auto;min-width:0;display:block;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .ssMobileDepartmentChevron{
+    flex:0 0 auto;font:700 18px/1 Arial,sans-serif;
+    transition:transform .18s ease;color:#dafa78;
+  }
+  .ssMobileCategoryPicker.is-open .ssMobileDepartmentChevron{transform:rotate(180deg)}
+  .productsSection .toolbar .ssMobileDepartmentPanel{
+    grid-column:1/-1!important;grid-row:2!important;
+    display:block;width:100%;min-width:0;max-width:100%;
+    border:1px solid #5a754b;border-radius:10px;
+    background:linear-gradient(135deg,#233324,#152218);
+    padding:10px;box-shadow:0 9px 21px #0005;
+    overflow-y:auto;max-height:275px;
+  }
+  .ssMobileDepartmentHead{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:1px 3px 9px;gap:9px;
+    color:#eaf5d2;font:700 12px/1.4 Alexandria,"IBM Plex Sans Arabic",sans-serif;
+  }
+  .ssMobileDepartmentClose{
+    flex:0 0 auto;display:grid;place-items:center;
+    width:30px;height:30px;border:1px solid #5b724c;
+    border-radius:6px;background:#344936;color:#f3f8ea;
+    font-size:14px;cursor:pointer;
+  }
+  .ssMobileDepartmentChoices{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;min-width:0;
+  }
+  .ssMobileDepartmentItem{
+    display:flex;flex-direction:column;justify-content:center;align-items:flex-start;
+    gap:3px;min-height:50px;min-width:0;padding:8px 9px;
+    background:#2b3c2c;color:#f2f8e8;border:1px solid #516b49;
+    border-radius:7px;font:inherit;text-align:right;cursor:pointer;
+  }
+  .ssMobileDepartmentItem strong{
+    font-size:11px;line-height:1.4;max-width:100%;
+    font-weight:700;overflow-wrap:anywhere;
+  }
+  .ssMobileDepartmentItem small{font-size:9px;color:#bdd3ad;line-height:1.3}
+  .ssMobileDepartmentItem.is-active{border-color:#dcfc79;background:#41502c;color:#f3ffca}
+  .ssMobileDepartmentButton:focus-visible,
+  .ssMobileDepartmentItem:focus-visible,
+  .ssMobileDepartmentClose:focus-visible{
+    outline:2px solid #dbfd74;outline-offset:2px;
+  }
+  .productsSection .toolbar .searchWrap{grid-row:2!important}
+  .productsSection .toolbar.ssDepartmentsExpanded .searchWrap{grid-row:3!important}
+}
+@media(max-width:370px){
+  .ssMobileDepartmentChoices{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ssMobileDepartmentItem{min-height:54px;padding:7px}
+}
