@@ -380,7 +380,7 @@
       e.preventDefault();applyFilter(b.dataset.filter);
       if(!b.classList.contains("tab"))$("#products").scrollIntoView({behavior:"smooth"});
     });
-    $("#searchInput").addEventListener("input",e=>{search=e.target.value.trim().toLowerCase();renderProducts()});
+    $("#searchInput").addEventListener("input",e=>{search=e.target.value.trim().toLowerCase();if(search&&filter!=="all")applyFilter("all");else renderProducts()});
     $$("[data-feature-product]").forEach(button=>button.addEventListener("click",e=>{e.preventDefault();openDetail(button.dataset.featureProduct)}));
     $("#openSearch").addEventListener("click",()=>{
       $("#products").scrollIntoView({behavior:"smooth"});
