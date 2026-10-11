@@ -25,7 +25,12 @@
    navFilters.forEach(el=>{if(el.dataset.navFilter===id)el.setAttribute("aria-current","page");else el.removeAttribute("aria-current")});
    openMenu(false);
  }
- navFilters.forEach(a=>a.addEventListener("click",e=>{changeFilter(a.dataset.navFilter)}));
+ navFilters.forEach(a=>a.addEventListener("click",e=>{
+   // Prevent href="/#products" from reloading the shop and resetting selection.
+   e.preventDefault();
+   changeFilter(a.dataset.navFilter);
+   $("#products")?.scrollIntoView({behavior:"smooth",block:"start"});
+ }));
  // The shop's product data may create cards synchronously after DOMContentLoaded.
  // Entrance animations use opacity/transform only and avoid CLS.
  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
