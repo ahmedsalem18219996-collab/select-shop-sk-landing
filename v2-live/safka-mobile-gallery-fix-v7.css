@@ -1,0 +1,160 @@
+/* SELECT SHOP TEMP ONLY | Safka mobile polish v7 | one source of final overrides.
+   Scoped to Safka, the main toolbar and product gallery; no CLEAN/cart edits. */
+
+/* One category taxonomy; shoe button still exists in DOM for existing filtering
+   but is selected from the same department chooser as all other departments. */
+.productsSection .toolbar .tabs .tab[data-filter="shoes"],
+.productsSection .toolbar .tabs .tab.ssSafkaFilterTab {display:none!important;}
+.productsSection .toolbar .tabs .tab[data-filter="all"]{
+  display:inline-flex!important;align-items:center;justify-content:center;
+  min-height:43px!important;flex:1 1 100%!important;width:100%!important;
+  min-width:0!important;max-width:none!important;
+  padding:8px 12px!important;font-weight:800!important;
+}
+.siteHeader .mobileCategoryRail a[data-nav-filter="shoes"]{display:none!important;}
+.siteHeader .mobileCategoryRail{
+  justify-content:space-between!important;align-items:center!important;
+  gap:9px!important;padding-block:0 7px!important;min-height:28px!important;
+}
+.siteHeader .mobileCategoryRail a{
+  line-height:1.2!important;min-height:26px!important;
+  font-weight:650!important;font-size:11px!important;
+  padding:3px 6px!important;
+}
+.siteHeader .mobileCategoryRail .ssSafkaMobileNavLink{
+  color:#dbfa83!important;font-weight:800!important;
+}
+.productsSection .toolbar .ssMobileCategoryPicker{
+  border-radius:7px!important;overflow:hidden;
+  background:#263628!important;border-color:#637b58!important;
+}
+.ssMobileDepartmentItem[data-category="shoes"]{
+  border-color:#a7c56b!important;background:#31442e!important;
+}
+.ssMobileDepartmentItem.is-active{
+  border-color:#dafa78!important;background:#3a4b2e!important;
+}
+.ssMobileDepartmentItem strong{word-break:normal;overflow-wrap:anywhere}
+.ssMobileDepartmentItem small{font-variant-numeric:tabular-nums}
+
+/* Fully sized, even media for every supplier card. Original aspect ratios
+   are maintained in the detail viewer; near-square cards fill their media well. */
+.shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaUnifiedMedia{
+  aspect-ratio:1/1!important;width:100%!important;height:auto!important;
+  max-height:none!important;min-height:0!important;
+  overflow:hidden!important;background:#e6e9e3!important;
+}
+.shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaUnifiedOpen{
+  overflow:hidden!important;width:100%!important;height:100%!important;
+}
+.shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaImageFrame{
+  position:absolute!important;inset:0!important;padding:0!important;
+  display:grid!important;place-items:center!important;
+  background:rgba(244,246,240,.28)!important;
+}
+.shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaCardImage{
+  width:100%!important;height:100%!important;max-width:100%!important;
+  max-height:100%!important;object-fit:contain!important;
+  object-position:center!important;filter:none!important;
+}
+.shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaCardImage.ssSafkaNearSquare{
+  object-fit:cover!important;
+}
+.shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaMediaBackdrop{
+  filter:blur(24px) saturate(.85);opacity:.28;
+}
+.shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaUnifiedTitle h3{
+  line-height:1.38!important;
+}
+.shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaUnifiedBottom{
+  margin-top:auto!important;
+}
+.ssSafkaThumb{position:relative!important;overflow:hidden!important}
+.ssSafkaThumb .ssSafkaVideoThumb{
+  position:absolute!important;inset:auto 3px 3px 3px!important;
+  display:grid!important;place-items:center!important;width:auto!important;
+  height:21px!important;border-radius:4px!important;
+  background:#182b1fdf!important;color:#f5ffdf!important;
+  font-size:10px!important;pointer-events:none;
+}
+.ssSafkaStage{position:relative!important;overflow:hidden!important}
+.ssSafkaStage .ssSafkaDriveVideo{
+  position:absolute!important;inset:0!important;display:block!important;
+  width:100%!important;height:100%!important;min-height:0!important;
+  background:#111!important;border:0!important;border-radius:0!important;
+}
+.ssSafkaStage .ssSafkaVideoFallback{
+  position:absolute;z-index:2;top:8px;left:8px;right:auto;
+  font-size:10px;color:#f2f6ef;background:#1a2b21e0;
+  padding:6px 9px;border:1px solid #647754;border-radius:5px;
+  text-decoration:none;
+}
+.ssSafkaStage .ssSafkaHeroImage{
+  display:block!important;object-fit:contain!important;width:100%!important;
+  height:100%!important;max-height:100%!important;
+}
+.ssSafkaVideoBadge{white-space:nowrap}
+@media(max-width:680px){
+  .productsSection .toolbar{
+    grid-template-columns:minmax(0,1fr) minmax(0,2.2fr)!important;
+    column-gap:7px!important;row-gap:7px!important;
+    align-items:start!important;
+  }
+  .productsSection .toolbar .tabs{grid-column:1!important;grid-row:1!important;width:100%!important}
+  .productsSection .toolbar .ssMobileCategoryPicker{
+    grid-column:2!important;grid-row:1!important;
+    height:43px!important;width:100%!important;
+  }
+  .productsSection .toolbar .ssMobileDepartmentPanel{
+    grid-column:1/-1!important;grid-row:2!important;max-height:300px!important;
+    border-radius:10px!important;
+  }
+  .productsSection .toolbar .searchWrap{
+    grid-column:1/-1!important;grid-row:2!important;
+    margin:0!important;width:100%!important;
+  }
+  .productsSection .toolbar.ssDepartmentsExpanded .searchWrap{grid-row:3!important}
+  .productsSection .toolbar .ssMobileDepartmentButton{font-size:12px!important}
+  .shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaUnifiedMedia{
+    aspect-ratio:1/1!important;
+  }
+  .shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaCardImage{
+    height:100%!important;object-position:center!important;
+  }
+  .ssSafkaDialog{max-height:calc(100dvh - 10px)!important}
+  .ssSafkaDetailLayout{padding:10px!important;gap:12px!important}
+  .ssSafkaStage{
+    aspect-ratio:1/1!important;height:auto!important;
+    max-height:none!important;min-height:0!important;
+    width:100%!important;
+  }
+  .ssSafkaStageWrap{width:100%!important;max-width:100%!important}
+  .ssSafkaStage img,.ssSafkaStage video{width:100%!important;height:100%!important;object-fit:contain!important}
+  .ssSafkaThumbs{gap:6px!important;scrollbar-width:thin}
+  .ssSafkaThumb{width:53px!important;height:54px!important;flex:0 0 53px!important}
+  .ssSafkaGalleryNav{bottom:7px!important;inset-inline:7px!important}
+  .ssSafkaDetailBody h2{font-size:clamp(17px,4.8vw,23px)!important}
+  .ssSafkaDetailBody{gap:11px!important}
+  .ssSafkaStage .ssSafkaVideoFallback{font-size:9px;padding:4px 6px}
+}
+@media(min-width:681px){
+  /* Desktop: a proper compact category selector, not a long strip of tabs */
+  .productsSection .toolbar{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:10px!important}
+  .productsSection .toolbar .tabs{flex:0 0 110px!important;max-width:110px!important}
+  .productsSection .toolbar .ssMobileCategoryPicker{
+    display:flex!important;position:relative!important;
+    flex:0 0 210px!important;max-width:210px!important;height:44px!important;
+  }
+  .productsSection .toolbar .ssMobileDepartmentPanel:not([hidden]){
+    display:block!important;flex:0 0 100%!important;max-width:100%!important;
+    order:3!important;max-height:340px!important;padding:15px!important;
+  }
+  .productsSection .toolbar .ssMobileDepartmentPanel[hidden]{display:none!important}
+  .productsSection .toolbar .ssMobileDepartmentChoices{
+    display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+  .productsSection .toolbar .searchWrap{flex:1 1 240px!important;max-width:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .ssSafkaCardImage{transition:none!important}
+}
