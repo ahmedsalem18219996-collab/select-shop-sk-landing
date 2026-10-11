@@ -111,4 +111,7 @@ items.forEach(p=>{
  body.append(action);card.append(body);grid.append(card);
 });
 dialog.addEventListener("click",e=>{if(e.target===dialog)dialog.close()});
+const selected=new URLSearchParams(window.location.search).get("safka_review");
+const incoming=items.find(p=>p.id===selected);
+if(incoming)openProduct(incoming);
 })();
