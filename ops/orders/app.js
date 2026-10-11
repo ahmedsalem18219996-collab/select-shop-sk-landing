@@ -109,11 +109,11 @@ function renderSafqaTable(mode,rows){
       const active=typeof record.is_active==="boolean"
         ?(record.is_active?"نعم":"لا"):"غير محدد";
       const cityCount=Number.isInteger(record.cityCount)?String(record.cityCount):"—";
-      values=[name,safkaMoney(charge),active,cityCount,id];
+      values=[name,safqaMoney(charge),active,cityCount,id];
     }else{
       const name=safqaDisplayText(record.name)||safqaDisplayText(record.title)||"بدون اسم";
       const count=Number.isInteger(record.propertyCount)?String(record.propertyCount):"—";
-      values=[name,safkaMoney(record.sale_price),count,id];
+      values=[name,safqaMoney(record.sale_price),count,id];
     }
     const tr=el("tr");
     values.forEach((value,i)=>{
