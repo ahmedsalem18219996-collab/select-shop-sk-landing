@@ -1,0 +1,45 @@
+:root{color-scheme:dark;--bg:#101712;--surface:#1d2920;--border:#42573e;--accent:#ddf77c;--text:#f4faef;--muted:#b5c6ad}
+*{box-sizing:border-box}body{font:14px/1.7 Tahoma,Arial,sans-serif;margin:0;color:var(--text);background:radial-gradient(circle at 82% 0%,#536d4140,transparent 42%),var(--bg)}
+[hidden]{display:none!important}button,input,select{font:inherit}button{cursor:pointer;color:var(--text);border:1px solid var(--border);background:#2b3d2b;border-radius:9px;padding:10px 15px;min-height:43px}button:disabled{opacity:.45;cursor:not-allowed}
+a{color:inherit;text-decoration:none}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.siteHead{display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:1px solid var(--border);padding:18px clamp(18px,4vw,50px);background:#19251a;flex-wrap:wrap}.siteHead>a:last-child{font-size:12px;text-decoration:underline}
+.logo{font:900 24px Arial,sans-serif;white-space:nowrap}.logo em{font-style:normal;color:var(--accent)}.siteHead>span{font-size:12px;color:var(--muted)}
+main{max-width:1440px;margin:auto;padding:20px clamp(14px,3vw,42px) 75px}
+.panel{border:1px solid var(--border);border-radius:15px;background:var(--surface);padding:clamp(15px,2.5vw,26px);margin:18px 0}
+h1,h2,h3{line-height:1.4}h1{font-size:clamp(24px,3.5vw,36px);margin:6px 0}h2{font-size:20px;margin:0 0 5px}p{margin:8px 0;color:var(--muted)}.eyebrow{color:var(--accent);font:700 11px Arial,sans-serif;letter-spacing:.13em}
+.primary{background:var(--accent);color:#1b291c;border-color:var(--accent);font-weight:bold}.auth{max-width:540px;margin:9vh auto}.auth form{display:grid;gap:13px;margin-top:20px}
+label{display:grid;gap:6px;font-size:12px;font-weight:700}input,select{width:100%;min-width:0;border:1px solid var(--border);border-radius:8px;color:var(--text);background:#111d13;padding:10px 12px}
+.titleRow,.syncPanel,.filterBar{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}.syncControls{display:flex;gap:8px;flex-wrap:wrap}.syncPanel>div:first-child{max-width:700px}
+.feedback{color:#d6efad;font-size:12px}.feedback.error{color:#ffb4a7}.syncPanel progress{width:100%;height:12px;accent-color:var(--accent)}
+.overview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.stat{border:1px solid var(--border);border-radius:11px;padding:14px;background:#243425}.stat span{display:block;color:var(--muted);font-size:11px}.stat strong{font-size:30px;color:var(--accent)}
+.filterBar label{min-width:170px;flex:0 1 230px}.filterBar>div{flex:1;min-width:230px}
+.productGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin:19px 0}
+.productCard{overflow:hidden;border:1px solid var(--border);border-radius:13px;background:#142117;min-width:0;display:flex;flex-direction:column}
+.cardImage{aspect-ratio:1/1;background:radial-gradient(ellipse at 50% 20%,#485e39,#202f22 75%);position:relative;display:grid;place-items:center;overflow:hidden}
+.cardImage img{object-fit:contain;width:100%;height:100%;background:#eee}.cardImage .noImage{color:#d1deb9;text-align:center;font-size:12px;padding:12px}
+.cardBody{display:flex;flex-direction:column;gap:6px;padding:13px;flex:1}.cardBody small{color:var(--accent);font-size:10px}
+.cardBody h3{font-size:14px;line-height:1.5;margin:0;min-height:43px}
+.cardCode{font:11px/1.5 monospace;direction:ltr;text-align:left;color:#bed0b9;overflow-wrap:anywhere}
+.cardPrice{font-size:11px;color:#dbe6c6;margin-top:auto}.cardPrice strong{color:var(--accent)}
+.cardMeta{display:flex;gap:6px;flex-wrap:wrap;font-size:10px;color:var(--muted)}
+.cardBody button{width:100%;background:var(--accent);color:#1b2519;font-size:12px;font-weight:bold;border-color:var(--accent)}
+.pager{display:flex;align-items:center;justify-content:center;gap:15px;font-size:12px}
+.regionGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:16px}
+.region{display:flex;justify-content:space-between;gap:10px;background:#273728;border:1px solid var(--border);padding:10px;border-radius:8px}.region b{font-size:12px}.region span{color:var(--accent);white-space:nowrap}
+.productDialog{font:inherit;color:var(--text);background:#1a291d;border:1px solid #708764;border-radius:18px;padding:20px;width:min(1010px,calc(100vw - 22px));max-height:90dvh;overflow:auto}
+.productDialog::backdrop{background:#06100bd0}.productDialog .close{position:sticky;top:0;float:left;z-index:5;background:#2c412e}
+.detailGrid{display:grid;grid-template-columns:1fr 1fr;gap:22px;clear:both}
+.detailMedia img,.detailMedia video,.detailMedia iframe{display:block;width:100%;max-height:385px;object-fit:contain;border:0;border-radius:12px;background:#111}.detailGallery{display:flex;gap:7px;overflow-x:auto;margin:10px 0}
+.detailGallery button{flex:0 0 64px;padding:3px;min-width:64px;height:67px;overflow:hidden;font-size:10px}
+.detailGallery button img{width:100%;height:100%;object-fit:cover}.detailGallery button.active{border-color:var(--accent);outline:1px solid var(--accent)}
+.detailVariants{display:grid;gap:7px;max-height:280px;overflow:auto}.variant{display:flex;justify-content:space-between;gap:10px;border:1px solid var(--border);border-radius:8px;padding:9px 10px;font-size:12px}
+.detailNote{color:#e9daae;font-size:12px}.detailCode{direction:ltr;font:12px monospace;overflow-wrap:anywhere}
+footer{text-align:center;padding:22px;border-top:1px solid var(--border);color:#98a994;font-size:11px}
+@media(max-width:1200px){.productGrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:920px){.productGrid{grid-template-columns:repeat(3,minmax(0,1fr))}.regionGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:680px){.overview{grid-template-columns:repeat(2,minmax(0,1fr))}.productGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.cardBody{padding:10px}.cardBody h3{font-size:12px;min-height:40px}.cardCode{font-size:10px}
+.regionGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.detailGrid{grid-template-columns:1fr}.productDialog{padding:14px}
+.filterBar{align-items:stretch}.filterBar label{flex:1 1 140px}.syncControls button{flex:1}
+}
+@media(max-width:360px){.productGrid{grid-template-columns:1fr}.regionGrid{grid-template-columns:1fr}}
