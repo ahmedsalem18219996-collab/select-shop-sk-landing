@@ -749,6 +749,20 @@ async function openDetail(p){
   right.append(price);
   const pricing=node("section","priceDraftBox");
   pricing.append(node("h3","","تسعير SELECT SHOP — مسودة خاصة"));
+  try{
+    const {data:audit,error:auditError}=await db.from("ss_safka_price_review_v2")
+      .select("prior_price_egp,proposed_price_egp,projected_contribution_egp,pricing_segment,notes")
+      .eq("supplier_product_id",p.supplier_product_id).maybeSingle();
+    if(!auditError&&audit){
+      pricing.append(node("p","ssPriceHistory","السعر السابق: "+money(audit.prior_price_egp)+
+        " ← الجديد: "+money(audit.proposed_price_egp)));
+      const label=audit.pricing_segment==="paid_ad_candidate"?"مرشح لاختبار إعلان بميزانية محدودة":
+        audit.pricing_segment==="manual_price_check"?"اختيارات تحتاج مراجعة يدوية":
+        "أنسب للبيع الطبيعي أو الباقات؛ لا إعلان منفرد دون اختبار";
+      pricing.append(node("p","detailNote",label+" | باقي تقديري بعد احتياطيات الشحن والإعلان والمرتجعات: "+
+        money(audit.projected_contribution_egp)+". هذا ليس صافي ربح."));
+    }
+  }catch{}
   pricing.append(node("p","detailNote","أدخل سعر البيع النهائي شامل التوصيل بعد حساب تكلفة المورد والشحن والإعلانات والمرتجعات. الحفظ لا ينشر المنتج ولا يفتح الطلبات."));
   const form=node("form","ssDraftPriceForm");
   const label=node("label","","سعر البيع النهائي (جنيه)");
@@ -768,7 +782,7 @@ async function openDetail(p){
   const adLabel=node("label","","ميزانية الإعلان المتوقعة لكل طلب (ج)");
   const adInput=node("input");adInput.type="number";adInput.min="0";adInput.max="5000";adInput.step="5";adInput.value="80";
   const returnLabel=node("label","","مخصص مرتجعات / مخاطر للطلب (ج)");
-  const returnInput=node("input");returnInput.type="number";returnInput.min="0";returnInput.max="5000";returnInput.step="5";returnInput.value="40";
+  const returnInput=node("input");returnInput.type="number";returnInput.min="0";returnInput.max="5000";returnInput.step="5";returnInput.value="35";
   adLabel.append(adInput);returnLabel.append(returnInput);expenseRow.append(adLabel,returnLabel);
   const estimateText=node("p","detailNote");
   const variantsPrices=(Array.isArray(p.variants)?p.variants:[]).filter(x=>x.is_available&&Number(x.suggested_price)>0).map(x=>Number(x.suggested_price));
@@ -856,11 +870,23 @@ async function openDetail(p){
     }finally{saveButton.disabled=false}
   });
   const variants=node("div","detailVariants");
+  let pricesByVariant=new Map();
+  try{
+    const {data:pricedOptions,error:pricedError}=await db.from("ss_safka_variant_price_drafts")
+      .select("supplier_variant_id,reference_price_egp,draft_price_egp")
+      .eq("supplier_product_id",p.supplier_product_id).limit(100);
+    if(!pricedError)pricesByVariant=new Map((pricedOptions||[]).map(v=>[v.supplier_variant_id,v]));
+  }catch{}
   for(const v of (Array.isArray(p.variants)?p.variants:[])){
     const r=node("div","variant");
     const leftText=node("div");
     leftText.append(node("strong","",v.name||"اختيار"),node("div","detailCode","property: "+v.provider_id));
+    const variantDraft=pricesByVariant.get(v.provider_id);
     const rightText=node("span","",v.is_available?"متاح عند المورد":"غير متاح/غير مؤكد");
+    if(variantDraft){
+      rightText.append(node("small","ssVariantEstimate","سعرنا: "+money(variantDraft.draft_price_egp)));
+      rightText.append(node("small","ssVariantReference","مرجع صفقة: "+money(variantDraft.reference_price_egp)));
+    }
     r.append(leftText,rightText);variants.append(r);
   }
   if(!variants.childElementCount)variants.append(node("p","","مفيش خيارات مفصلة في الاستجابة؛ راجع تفاصيل المنتج عند صفقة."));
