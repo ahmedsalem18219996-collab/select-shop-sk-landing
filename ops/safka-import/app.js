@@ -251,6 +251,8 @@ async function loadMediaCoverage(){
     $("mediaClipsCount").textContent=fmt(metrics.video_clips);
     $("mediaPendingCount").textContent=fmt(metrics.pending);
     $("mediaNoVideoCount").textContent=fmt(metrics.no_video);
+    $("mediaFoldersCount").textContent=fmt(metrics.folder_verified);
+    $("mediaReviewCount").textContent=fmt(Number(metrics.needs_review||0)+Number(metrics.access_denied||0));
     const total=Number(metrics.total)||0,verified=Number(metrics.video_products)||0;
     const pct=total?100*verified/total:0;
     $("mediaCoverageProgress").value=pct;
