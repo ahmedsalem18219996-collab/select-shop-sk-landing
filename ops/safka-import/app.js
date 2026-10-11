@@ -89,6 +89,56 @@ async function runAll(){
   }catch(err){status(err.message||"الاستيراد اتوقف؛ يمكن إعادة المحاولة بأمان.",true);await reload()}
   finally{busy=false;button.disabled=false;$("reload").disabled=false}
 }
+
+async function runSourceCategoryMatch(){
+  if(!user||busy)return;
+  busy=true;
+  const action=$("syncCategories");
+  action.disabled=true;$("importAll").disabled=true;$("reload").disabled=true;
+  const progress=$("categoryProgress");progress.hidden=false;progress.value=0;
+  const message=(text,isError=false)=>status(text,isError,"categoryMessage");
+  let assigned=0,missing=0,failed=0;
+  try{
+    message("بنتحقق الأول هل API تفاصيل منتج صفقة بيرجع القسم الأصلي...");
+    const probe=await db.functions.invoke("safka-category-backfill",{body:{mode:"probe"}});
+    if(probe.error||!probe.data?.ok){
+      let details=probe.data;
+      if(probe.error?.context?.json)try{details=await probe.error.context.json()}catch{}
+      throw Error("تعذر اختبار أقسام صفقة ("+(details?.error||probe.error?.message||"unknown")+")");
+    }
+    if(!probe.data.supported){
+      message("API تفاصيل صفقة لا يعرض قسمًا قابلًا للتحقق. لم نغيّر أي تصنيف؛ لازم استخراج الأقسام من لوحة صفقة نفسها.",true);
+      return;
+    }
+    message("تأكد قسم منتج الاختبار: "+probe.data.category+". جاري مطابقة المنتجات على دفعات...");
+    for(let p=1;p<=100;p++){
+      const reply=await db.functions.invoke("safka-category-backfill",{body:{mode:"batch",page:p}});
+      if(reply.error||!reply.data?.ok){
+        let details=reply.data;
+        if(reply.error?.context?.json)try{details=await reply.error.context.json()}catch{}
+        throw Error("توقفت عند دفعة "+p+": "+(details?.error||reply.error?.message||"unknown"));
+      }
+      const v=reply.data;
+      assigned+=v.assigned||0;missing+=v.missing||0;failed+=v.failed||0;
+      progress.value=Math.min(100,Math.round(p*100/Math.ceil((v.total||462)/12)));
+      message("تمت مطابقة "+assigned+" منتج. بانتظار تصنيف: "+missing+"، تعذر التحقق: "+failed+". الدفعة "+p+".");
+      if(!v.hasMore)break;
+      if(failed>=12)throw Error("أخطاء اتصال متكررة؛ وقفنا لحماية API صفقة. إعادة المحاولة آمنة.");
+    }
+    progress.value=100;
+    message("انتهى الفحص. منتجات بتصنيف أصلي جديد: "+assigned+
+      " — منتجات تحتاج مراجعة إضافية: "+missing+
+      " — أخطاء: "+failed+". تصنيفات موجودة مسبقًا محفوظة كما هي.");
+    await reload();
+  }catch(err){
+    message(err.message||"تعذر مزامنة الأقسام. لم تتغير الطلبات أو الأسعار.",true);
+    await reload();
+  }finally{
+    busy=false;action.disabled=false;$("importAll").disabled=false;$("reload").disabled=false;
+  }
+}
+$("syncCategories").addEventListener("click",runSourceCategoryMatch);
+
 $("importAll").addEventListener("click",runAll);
 $("reload").addEventListener("click",async()=>{if(!busy)await reload()});
 $("search").addEventListener("input",()=>{page=0;loadProducts()});
