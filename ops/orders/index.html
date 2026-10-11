@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#141a16">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'self'; form-action 'self'; style-src 'self'; script-src 'self' https://esm.sh; connect-src 'self' https://zznqdwrohrycsjfpvkhc.supabase.co https://esm.sh; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'; object-src 'none'">
+<title>SELECT SHOP — إدارة طلبات المتجر المؤقت</title>
+<link rel="stylesheet" href="./styles.css?v=20261011">
+<script type="module" src="./app.js?v=20261011"></script>
+</head>
+<body>
+<header class="header">
+ <div class="brand"><span class="mark">S</span><div><strong>SELECT <em>SHOP</em></strong><small>لوحة طلبات الموقع المؤقت — بدون ربط تلقائي بالمورد</small></div></div>
+ <a href="/" rel="noopener" class="back">العودة للمتجر ↗</a>
+</header>
+<main>
+ <section class="login shell" id="loginPanel" aria-labelledby="loginTitle">
+  <span class="eyebrow">AUTHORIZED STAFF ONLY</span>
+  <h1 id="loginTitle">دخول لوحة الطلبات</h1>
+  <p>اللوحة للمدير المصرّح له فقط. ما تدخلش بيانات عميل أو مفاتيح مورد في الشاشة دي.</p>
+  <form id="loginForm">
+    <label>البريد الإلكتروني <input name="email" type="email" autocomplete="username" required placeholder="name@example.com"></label>
+    <label>كلمة مرور حساب إدارة الطلبات <input name="password" type="password" autocomplete="current-password" required></label>
+    <button type="submit" class="primary">تسجيل دخول آمن</button>
+  </form>
+  <p class="note" id="loginMessage" role="status" aria-live="polite"></p>
+ </section>
+ <section id="adminPanel" class="shell" hidden>
+  <div class="top"><div><span class="eyebrow">SELECT SHOP / TEMP ORDERS</span><h1>الأوردرات والمتابعة</h1><p>التحويل لصفقة وبروف يدوي في المرحلة الأولى، وبمراجعتك قبل أي إرسال.</p></div><div class="controls"><button id="refresh" type="button">تحديث</button><button id="logout" type="button" class="outline">خروج</button></div></div>
+  <div class="overview"><div class="stat"><span>إجمالي المحفوظ</span><b id="totalOrders">—</b></div><div class="stat"><span>جديدة / للمراجعة</span><b id="newOrders">—</b></div><div class="stat"><span>تحتاج تسعير شحن</span><b id="shippingOrders">—</b></div></div>
+  <div class="filters"><label>فلترة حسب الحالة <select id="statusFilter"><option value="">كل الحالات</option><option value="new">جديد</option><option value="review">مراجعة</option><option value="shipping_quote">تسعير شحن</option><option value="confirmed">مؤكد</option><option value="packing">تجهيز</option><option value="shipped">تم الشحن</option><option value="delivered">تم التسليم</option><option value="cancelled">ملغي</option></select></label><p id="orderMessage" role="status" aria-live="polite"></p></div>
+  <div class="columns">
+   <section aria-label="قائمة الطلبات"><h2>الطلبات <span id="orderCount"></span></h2><div id="ordersList" class="orders"><p class="empty">جارٍ التحميل…</p></div></section>
+   <section class="detailPanel" aria-label="تفاصيل الأوردر"><h2>تفاصيل الطلب</h2><div id="orderDetails"><p class="empty">اختار أوردر من القائمة علشان تشوف بياناته.</p></div></section>
+  </div>
+  <div class="privacy">مهم: اللي بيتسجل هنا هو المرجع اليدوي فقط. وجود رقم طلب صفقة لا يعني نجاح الشحن أو التحصيل. بيانات العملاء لا تظهر إلا بعد التأكد من صلاحية المدير.</div>
+ </section>
+</main>
+</body>
+</html>
