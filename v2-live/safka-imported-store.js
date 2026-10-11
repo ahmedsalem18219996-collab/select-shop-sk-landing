@@ -38,10 +38,14 @@ let closeMobileDepartments=()=>{};
 function categoryName(raw){
   return raw==="غير مصنف من صفقة"?"القسم قيد المطابقة":(raw||"القسم قيد المطابقة");
 }
+function hasVariantPriceRange(p){
+ const nums=(Array.isArray(p?.variants)?p.variants:[]).filter(v=>v.available!==false).map(v=>Number(v.display_price_egp)).filter(v=>Number.isFinite(v)&&v>0);
+ return nums.length>1 && Math.max(...nums)>Math.min(...nums);
+}
 function price(p){
   const amount=p.final_price_egp||p.display_price_egp;
   return amount&&Number(amount)>0?
-    Number(amount).toLocaleString("ar-EG")+" ج.م":
+    (hasVariantPriceRange(p)?"يبدأ من ":"")+Number(amount).toLocaleString("ar-EG")+" ج.م":
     "السعر قيد المراجعة";
 }
 function addCategoryTabs(){
