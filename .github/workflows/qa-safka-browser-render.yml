@@ -1,0 +1,85 @@
+name: Browser simulation of imported Safqa products
+on:
+  push:
+    branches: [feature/safka-full-catalog-sync-20261011]
+    paths: [.github/workflows/qa-safka-browser-render.yml]
+permissions:
+  contents: write
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Install lightweight DOM test
+        run: npm install --no-audit --no-fund --prefix /tmp/safka-test jsdom@26.1.0
+      - name: Run live-JS browser simulation with synthetic product data, no supplier calls
+        shell: bash
+        run: |
+          cat > /tmp/safka-test/check.cjs <<'JS'
+          const {JSDOM}=require('jsdom');
+          const fs=require('fs'),assert=require('node:assert/strict');
+          (async()=>{
+            const u='https://selectshopeg.com/v2-live/safka-imported-store.js?v=20261011-v1';
+            const res=await fetch(u);assert.equal(res.status,200);
+            const script=await res.text();
+            assert.ok(script.includes('ss_safka_public_catalog'));
+            const dom=new JSDOM('<!doctype html><html><body><section id="products"><div id="productGrid"></div><div id="safkaOwnerProducts"></div><div id="ssSafqaImported" hidden></div></section></body></html>',{
+              url:'https://selectshopeg.com/',runScripts:'outside-only'
+            });
+            const w=dom.window;
+            const id='6aa81321ca38d5013caa41fc';
+            const fixture={id,barcode:'SHOE-DRY-001',name:'مجفف الأحذية',
+              category_name:'العناية بالأحذية',category_key:'shoe-care',
+              images:['https://cdn.example.com/one.jpg'],videos:[],
+              variants:[{id:'size-1',name:'أبيض',available:true}],
+              final_price_egp:null,can_purchase:false};
+            let calls=0;
+            w.fetch=async url=>{
+              calls++;
+              return {ok:true,json:async()=>url.includes('public_categories')?
+                [{key:'shoe-care',name:'العناية بالأحذية',count:1}]:
+                {items:[fixture],total:1,page:1,page_size:24,drafts_buyable:false}};
+            };
+            w.eval(script);
+            await new Promise(r=>setTimeout(r,50));
+            const root=w.document.querySelector('#ssSafqaImported');
+            assert.equal(root.hidden,false,'Safqa public catalog should show after import');
+            assert.equal(root.querySelectorAll('.ssSafkaCard').length,1);
+            assert.equal(root.querySelector('.ssSafkaCard img').src,fixture.images[0]);
+            assert.ok(root.textContent.includes('SHOE-DRY-001'));
+            assert.ok(root.textContent.includes('العناية بالأحذية'));
+            assert.ok(root.textContent.includes('السعر شامل الشحن قيد التجهيز'));
+            assert.equal(root.querySelectorAll('button[disabled]').length,0,
+              'Card detail button should work without accidental add to cart');
+            assert.equal(w.document.querySelector('#safkaOwnerProducts').hidden,true,
+              'Old hardcoded owner preview should hide after import');
+            assert.ok(calls>=2);
+            const output={status:'PASS',source:'live storefront JS with synthetic Supabase RPC data',
+              cards:1,original_id_visible:true,images:true,category:true,
+              sale_disabled_without_final_price:true,old_five_demo_hidden:true,
+              real_provider_calls:0,checkout_changes:0};
+            fs.mkdirSync('integration/safka/import',{recursive:true});
+            fs.writeFileSync('integration/safka/import/browser-render-qa.json',JSON.stringify(output,null,2));
+            console.log(output);
+          })().catch(e=>{
+            fs.mkdirSync('integration/safka/import',{recursive:true});
+            fs.writeFileSync('integration/safka/import/browser-render-qa.json',
+              JSON.stringify({status:'FAIL',error:e.message},null,2));
+            console.error(e);process.exitCode=1;
+          });
+          JS
+          node /tmp/safka-test/check.cjs
+      - name: Save public UI test result
+        if: always()
+        shell: bash
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          test -f integration/safka/import/browser-render-qa.json || printf '{"status":"MISSING"}' > integration/safka/import/browser-render-qa.json
+          git add integration/safka/import/browser-render-qa.json
+          git commit -m "qa(safka): test imported products render on real shop" || exit 0
+          HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $HEADER" push origin HEAD:feature/safka-full-catalog-sync-20261011

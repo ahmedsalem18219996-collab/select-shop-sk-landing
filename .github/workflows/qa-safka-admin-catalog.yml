@@ -1,0 +1,57 @@
+name: Validate Safqa importer and owner catalog
+on:
+  push:
+    branches: [feature/safka-full-catalog-sync-20261011]
+    paths: [.github/workflows/qa-safka-admin-catalog.yml]
+permissions:
+  contents: write
+jobs:
+  safe-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Static and synthetic functional checks
+        shell: bash
+        run: |
+          node --test integration/safka/import/normalize.test.mjs
+          cp integration/safka/import/edge/index.ts /tmp/safka-full-import.mjs
+          cp ops/safka-import/app.js /tmp/safka-admin-browser.mjs
+          node --check /tmp/safka-full-import.mjs
+          node --check /tmp/safka-admin-browser.mjs
+          python3 - <<'PY'
+          import pathlib,json
+          edge=pathlib.Path('integration/safka/import/edge/index.ts').read_text()
+          page=pathlib.Path('ops/safka-import/index.html').read_text()
+          ui=pathlib.Path('ops/safka-import/app.js').read_text()
+          checks={
+           'jwt_verified_auth_gate':'from("ss_order_admins")' in edge and 'auth.getUser(token)' in edge,
+           'only_safka_GET':'method:"GET"' in edge and '/public/orders' not in edge,
+           'safqa_key_env_only':'Deno.env.get("SAFKA_API_KEY")' in edge and 'SAFKA_API_KEY' not in ui,
+           'service_key_server_only':'Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")' in edge and 'SERVICE_ROLE_KEY' not in ui,
+           'stage_only':'ss_safka_import_products' in edge and 'ss_order_catalog' not in edge,
+           'no_checkout':'disabled.disabled=true' in ui,
+           'real_source_codes':'Product ID: ' in ui and 'Barcode: ' in ui and 'property: ' in ui,
+           'admin_html':'id="ownerConsole" hidden' in page and 'id="loginForm"' in page,
+           'full_page_loop':'for(let p=1;p<=500;p++)' in ui,
+           'no_shop_clean':'SELECT-SHOP-CLEAN-DEV' not in ui and 'SELECT-SHOP-CLEAN-DEV' not in edge
+          }
+          print(checks)
+          if not all(checks.values()):raise RuntimeError('Admin/supplier import security checks failed')
+          pathlib.Path('integration/safka/import/qa-admin-result.json').write_text(
+            json.dumps({'status':'PASS','checks':checks,'real_supplier_orders':0,'catalog_published':0},indent=2))
+          PY
+      - name: Record QA result
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          test -f integration/safka/import/qa-admin-result.json || printf '{"status":"FAIL"}\n' > integration/safka/import/qa-admin-result.json
+          git add integration/safka/import/qa-admin-result.json
+          git commit -m "test(safka): record owner importer static QA" || exit 0
+          HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $HEADER" push origin HEAD:feature/safka-full-catalog-sync-20261011

@@ -1,0 +1,22 @@
+{
+  "page": {
+    "status": 200,
+    "passed": true,
+    "sha256": "1b6397c72d64224dabcfd6810e629edefeeb0f657af90858000ad0c731d2db29"
+  },
+  "script": {
+    "status": 200,
+    "passed": true,
+    "sha256": "31d93914c0e0b462ff424d257e5094a671014579ddeb920429d7b5d5ad155252"
+  },
+  "styles": {
+    "status": 200,
+    "passed": true,
+    "sha256": "ebe452b72d1200997b8a530ed7b3a881f375bcbd67a17b1dc6706f018c08932e"
+  },
+  "order_dashboard": {
+    "status": 200,
+    "passed": true,
+    "sha256": "9540703d1922917c7fd369ac77049e327326826d41f832d5d5dd69d95ad65347"
+  }
+}
