@@ -1,0 +1,17 @@
+{
+  "new_admin": {
+    "status": 200,
+    "verified": true,
+    "sha256": "747eb898bc44dcafbb5ca6ef7b663ec872967404eca1b0b0a16ca5b327276d42"
+  },
+  "corrected_app": {
+    "status": 200,
+    "verified": true,
+    "sha256": "e3f20bbb0f181602ba4f9128bc521ddfd596c5f0e2313112652b079b5014c21c"
+  },
+  "css": {
+    "status": 200,
+    "verified": true,
+    "sha256": "2cf0fa675986fadfb498bd1083963b1e76fcb59e44b952b8fea61088087dc662"
+  }
+}
