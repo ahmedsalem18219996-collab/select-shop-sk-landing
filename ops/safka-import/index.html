@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ar" dir="rtl"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#141a16">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';base-uri 'self';form-action 'self';object-src 'none';script-src 'self' https://esm.sh;style-src 'self';img-src 'self' https: data:;media-src https:;frame-src https://www.youtube-nocookie.com https://drive.google.com;connect-src 'self' https://zznqdwrohrycsjfpvkhc.supabase.co https://esm.sh;frame-ancestors 'none'">
+<title>استيراد صفقة | إدارة SELECT SHOP المؤقت</title>
+<link rel="stylesheet" href="./style.css?v=1"><script type="module" src="./app.js?v=1"></script>
+</head><body>
+<header class="siteHead"><a href="/" class="logo">SELECT <em>SHOP</em></a><span>إدارة استيراد صفقة · الموقع المؤقت</span><a href="/ops/orders-v2/">لوحة الأوردرات ↗</a></header>
+<main>
+<section id="signIn" class="panel auth" aria-labelledby="loginHeading">
+ <span class="eyebrow">PRIVATE SAFQA CATALOG</span><h1 id="loginHeading">دخول مدير المتجر</h1>
+ <p>هذه الشاشة خاصة بالمراجعة والاستيراد، مش معرض بيع للعملاء.</p>
+ <form id="loginForm">
+  <label>البريد الإلكتروني<input name="email" type="email" autocomplete="username" required></label>
+  <label>كلمة المرور<input name="password" type="password" autocomplete="current-password" required></label>
+  <button class="primary" type="submit">دخول</button>
+ </form><p class="feedback" id="loginMessage" role="status"></p>
+</section>
+<section id="ownerConsole" hidden>
+ <div class="titleRow"><div><span class="eyebrow">SAFQA × SELECT SHOP</span><h1>كتالوج صفقة الكامل</h1><p>بيانات المورد الأصلية بالأكواد والأقسام والاختيارات. لا نشر ولا أوردرات من الشاشة دي.</p></div><button id="logout" type="button">خروج</button></div>
+ <section class="panel syncPanel">
+  <div><h2>استيراد كل المنتجات</h2><p>هندخل المنتجات على دفعات، ونحفظ سعر المورد المقترح منفصل عن سعر البيع النهائي الشامل للشحن.</p></div>
+  <div class="syncControls"><button class="primary" id="importAll" type="button">استورد كل منتجات صفقة</button><button id="reload" type="button">تحديث القائمة</button></div>
+  <progress id="syncProgress" hidden max="100" value="0"></progress>
+  <p id="syncMessage" class="feedback" role="status" aria-live="polite">مستني بدء الاستيراد.</p>
+ </section>
+ <div class="overview" id="stats">
+  <div class="stat"><span>المنتجات المحفوظة</span><strong id="allCount">—</strong></div>
+  <div class="stat"><span>الأقسام الواردة من صفقة</span><strong id="categoryCount">—</strong></div>
+  <div class="stat"><span>المحافظات بأسعار الشحن</span><strong id="regionCount">—</strong></div>
+  <div class="stat"><span>جاهزة للبيع بعد المراجعة</span><strong id="approvedCount">—</strong></div>
+ </div>
+ <section class="panel catalog">
+   <div class="filterBar"><div><h2>المنتجات بالأكواد والصور</h2><p>كل كارت بيحتفظ بـ Product ID والباركود، والاختيارات لها أكواد المورد الأصلية.</p></div>
+   <label>بحث<input id="search" type="search" placeholder="اسم المنتج أو الباركود أو الكود"></label>
+   <label>القسم<select id="category"><option value="">كل الأقسام</option></select></label>
+   <label>عدد النتائج<select id="pageSize"><option value="24">24</option><option value="48">48</option></select></label>
+   </div>
+   <p class="feedback" id="catalogMessage" role="status"></p>
+   <div class="productGrid" id="productGrid"></div>
+   <div class="pager"><button id="prevPage" type="button">السابق</button><span id="pageLabel">—</span><button id="nextPage" type="button">التالي</button></div>
+ </section>
+ <section class="panel shipping"><h2>الشحن من صفقة</h2><p>الأرقام دي تكاليف شحن المورد، مش رسوم هتضاف للعميل بعد الطلب.</p><div id="regions" class="regionGrid"></div></section>
+</section>
+<dialog id="productDialog" class="productDialog" aria-label="تفاصيل منتج صفقة للمراجعة">
+ <button class="close" id="closeProduct" type="button">إغلاق ×</button>
+ <div id="detailContent"></div>
+</dialog>
+</main><footer>SELECT SHOP · TEMP STORE ONLY — لم يتم نشر أي منتج من صفقة للبيع أو إنشاء طلب عند المورد.</footer>
+</body></html>
