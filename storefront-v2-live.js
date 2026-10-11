@@ -164,14 +164,16 @@
       const txt=[p.name,p.short,p.description,...p.variants.map(v=>v.name+" "+v.code)].join(" ").toLowerCase();
       return matchesFilter&&(!search||txt.includes(search));
     });
-    $("#emptyState").hidden=list.length!==0;
+    $("#emptyState").hidden=true; // Unified importer owns the combined empty state.
     const cards=list.map(shoeCard).join("");
     $("#productGrid").innerHTML=list.length?'<section class="merchShelf unifiedShelf" aria-label="كل المنتجات"><div class="shoeCardsGrid unifiedCardsGrid">'+cards+'</div></section>':"";
     const count=$("#resultsCount");if(count)count.textContent=String(list.length);
-    const subtitle=$("#productsSubtitle");if(subtitle)subtitle.textContent=filter==="shoes"?"اختار اللون والمقاس حسب الموديل.":"أربع موديلات أحذية متاحة؛ اختار اللون والمقاس المناسب.";
+    const subtitle=$("#productsSubtitle");if(subtitle)subtitle.textContent=filter==="shoes"?"اختار اللون والمقاس حسب الموديل.":"تصفح المنتجات في مكان واحد، وابحث أو اختار القسم المناسب.";
+    window.SELECT_SHOP_COLLECTION_STATE={filter,search,shoeCount:list.length};
+    window.dispatchEvent(new CustomEvent("selectshop:collection-rendered",{detail:window.SELECT_SHOP_COLLECTION_STATE}));
   }
   function applyFilter(next){
-    filter=["all","shoes"].includes(next)?next:"all";
+    filter=(["all","shoes","safka-other"].includes(next)||/^safka:[a-f0-9]{24}$/i.test(next))?next:"all";
     $$("[data-filter]").forEach(b=>{
       const active=b.dataset.filter===filter;
       b.classList.toggle("active",active);
@@ -372,10 +374,12 @@
   window.addEventListener("pageshow",()=>submitting=false);
   window.addEventListener("focus",()=>submitting=false);
   function bind(){
-    $$("[data-filter]").forEach(b=>b.addEventListener("click",()=>{
-      applyFilter(b.dataset.filter);
+    document.addEventListener("click",e=>{
+      const b=e.target.closest("[data-filter]");
+      if(!b)return;
+      e.preventDefault();applyFilter(b.dataset.filter);
       if(!b.classList.contains("tab"))$("#products").scrollIntoView({behavior:"smooth"});
-    }));
+    });
     $("#searchInput").addEventListener("input",e=>{search=e.target.value.trim().toLowerCase();renderProducts()});
     $$("[data-feature-product]").forEach(button=>button.addEventListener("click",e=>{e.preventDefault();openDetail(button.dataset.featureProduct)}));
     $("#openSearch").addEventListener("click",()=>{
