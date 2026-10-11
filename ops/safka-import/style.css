@@ -67,3 +67,14 @@ footer{text-align:center;padding:22px;border-top:1px solid var(--border);color:#
 .ssDraftPriceForm button{min-height:44px;max-width:100%;white-space:normal}
 .ssDraftPriceForm .feedback{grid-column:1/-1;margin:0;line-height:1.6}
 @media(max-width:560px){.ssDraftPriceForm{grid-template-columns:1fr}.ssDraftPriceForm button{width:100%}}
+
+/* Supplier-reference pricing preview, owner only. */
+.ssPriceEstimate{margin-top:12px;padding:12px;border-radius:10px;border:1px solid #526e54;background:#162619;display:grid;gap:10px}
+.ssPriceEstimate strong{font-size:12px;color:#e7f5b5}
+.ssPriceEstimate .detailNote{margin:0;line-height:1.8}
+.ssPriceEstimate .detailNote.error{color:#ffc6ac}
+.ssEstimateRow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ssEstimateRow label{display:grid;gap:7px;font-size:11px;color:#dce7d0}
+.ssEstimateRow input{width:100%;min-width:0;min-height:38px;border:1px solid #637c60;border-radius:7px;padding:8px;color:#eef5e0;background:#203524;font:inherit;direction:ltr;text-align:right}
+.readinessPanel .syncControls button{min-height:42px}
+@media(max-width:540px){.ssEstimateRow{grid-template-columns:1fr}.readinessPanel .syncControls button{width:100%}}
