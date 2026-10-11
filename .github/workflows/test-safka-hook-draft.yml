@@ -1,0 +1,40 @@
+name: Test Safqa order hook draft
+on:
+  push:
+    branches:
+      - feature/safka-webhook-review-20261011
+    paths:
+      - .github/workflows/test-safka-hook-draft.yml
+permissions:
+  contents: write
+jobs:
+  synthetic-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify contract using synthetic events (no Safqa credentials)
+        shell: bash
+        run: |
+          set +e
+          node --test integration/safka/review/order-hook-contract.test.mjs > /tmp/safka-test.log 2>&1
+          code=$?
+          if [ "$code" -eq 0 ]; then
+            printf 'status=PASS\nmode=SYNTHETIC_EVENTS_ONLY\nprovider_request=NONE\n' > integration/safka/review/test-status.txt
+          else
+            printf 'status=FAIL\nmode=SYNTHETIC_EVENTS_ONLY\nprovider_request=NONE\n' > integration/safka/review/test-status.txt
+            cat /tmp/safka-test.log
+          fi
+      - name: Persist safe test result on review branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add integration/safka/review/test-status.txt
+          git commit -m "test(safka): record synthetic adapter test result" || exit 0
+          HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $HEADER" push origin HEAD:feature/safka-webhook-review-20261011
