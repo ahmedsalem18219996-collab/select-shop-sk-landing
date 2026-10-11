@@ -8,10 +8,9 @@
   const C = window.SELECT_FOUNDATION_CATALOG;
   const SETTINGS = window.SELECT_FOUNDATION_CONFIG;
   if (!C || !SETTINGS) throw Error("Foundation catalog failed to load");
-  const ids = ["sk","alex","eqwal","wk","carwash48"];
+  const ids = ["sk","alex","eqwal","wk"];
   const SHOES = new Set(["sk","alex","eqwal","wk"]);
   const KEY="selectShopCart:v2"; // shoe cart shared with original ad landings
-  const CAR_CART_KEY="selectShopV2CarCart:v1"; // preserve car items when legacy shoe-only pages are visited
   const PHONE="201289437444";
   const GA4_ID="G-NB8PZCX35Z";
   const testMode=window.SELECT_SHOP_TEST_MODE===true;
@@ -49,8 +48,8 @@
     player.load();
     $("#detailGallery button").forEach(b=>b.classList.toggle("active",b.matches("[data-show-video]")));
   }
-  const productCategory = id => id === "carwash48" ? "car" : "shoes";
-  const classLabel = id => id === "carwash48" ? "عناية السيارات" : id === "sk" || id === "wk" ? "أحذية حريمي" : "أحذية رجالي وحريمي حسب المقاس";
+  const productCategory = id => "shoes";
+  const classLabel = id => id === "sk" || id === "wk" ? "أحذية حريمي" : "أحذية رجالي وحريمي حسب المقاس";
   const selectedVariant = (productId,variantId) => C[productId]?.variants.find(v=>v.id===variantId)||C[productId]?.variants[0];
   const getProduct=id=>C[id];
   const makeId=()=>Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,10);
@@ -65,7 +64,6 @@
     if(!x || !C[x.productId] || typeof x.id!=="string")return false;
     const v=selectedVariant(x.productId,x.variantId);
     if(!v || v.id!==x.variantId || !Array.isArray(x.sizes) || !["purchase","trial","primary"].includes(x.role))return false;
-    if(x.productId==="carwash48")return x.role!=="trial" && x.sizes.length===0;
     return x.sizes.length>=1 && x.sizes.length<=2 && x.sizes.every(n=>v.sizes.includes(Number(n))) && new Set(x.sizes).size===x.sizes.length;
   };
   try {
@@ -77,14 +75,7 @@
         sizes:x.sizes.map(Number),role:x.role==="primary"?"purchase":x.role
       }));
     }
-    const carSaved=JSON.parse(localStorage.getItem(CAR_CART_KEY)||"null");
-    if(carSaved?.version===1 && Number.isFinite(carSaved?.savedAt) &&
-       carSaved.savedAt<=Date.now() && Date.now()-carSaved.savedAt<7*864e5 &&
-       Array.isArray(carSaved.items)) {
-      for(const i of carSaved.items.filter(validItem).filter(i=>i.productId==="carwash48")) {
-        if(!cart.some(x=>x.id===i.id))cart.push({...i,role:"purchase"});
-      }
-    }
+
   }catch{}
   const purchasedShoes=()=>cart.filter(i=>i.role==="purchase"&&SHOES.has(i.productId)).length;
   const normalizeCart=()=>{
@@ -98,8 +89,7 @@
   const persist=()=>{
     normalizeCart();
     try {
-      const shoes=cart.filter(i=>i.productId!=="carwash48");
-      const cars=cart.filter(i=>i.productId==="carwash48");
+      const shoes=cart;
       if(shoes.length){
         let foundPrimary=false;
         const compatible=shoes.map(i=>{
@@ -108,18 +98,16 @@
         });
         localStorage.setItem(KEY,JSON.stringify({version:2,savedAt:Date.now(),items:compatible}));
       } else localStorage.removeItem(KEY);
-      if(cars.length)localStorage.setItem(CAR_CART_KEY,JSON.stringify({version:1,savedAt:Date.now(),items:cars}));
-      else localStorage.removeItem(CAR_CART_KEY);
+      localStorage.removeItem("selectShopV2CarCart:v1"); // clear retired item
     }catch{}
     $$("[data-cart-count]").forEach(el=>el.textContent=cart.length);
   };
   function totals(){
     const billable=cart.filter(i=>i.role==="purchase");
     const shoes=billable.filter(i=>SHOES.has(i.productId));
-    const car=billable.filter(i=>i.productId==="carwash48");
     const subtotal=billable.reduce((s,i)=>s+C[i.productId].price,0);
     const discount=Math.max(0,shoes.length-1)*SETTINGS.SHOE_EXTRA_DISCOUNT;
-    return {subtotal,discount,total:Math.max(0,subtotal-discount),shoes:shoes.length,car:car.length,trials:cart.filter(i=>i.role==="trial").length};
+    return {subtotal,discount,total:Math.max(0,subtotal-discount),shoes:shoes.length,trials:cart.filter(i=>i.role==="trial").length};
   }
   function sameCartSelection(i,pid,vid,sizes,role){
     return i.productId===pid&&i.variantId===vid&&i.role===role&&JSON.stringify(i.sizes)===JSON.stringify(sizes);
@@ -169,18 +157,6 @@
       '<div class="cardVariantInfo"><span class="variantSummary">'+htmlEsc(v.code+" — "+v.name)+'</span><span>المقاسات: '+htmlEsc(v.sizes.join("، "))+'</span></div>'+
       '<div class="cardBottom"><span class="includedShipping">السعر شامل الشحن</span><button type="button" data-show-product="'+htmlEsc(id)+'">اختار المقاس واطلب <span aria-hidden="true"><svg class="ssIcon ssIconArrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17.5 17.5 6.5M7.5 6.5h10v10"/></svg></span></button></div></div></article>';
   }
-  function carProductCard(){
-    // Same visual card system as shoes. Cart and order rules remain untouched.
-    const p=C.carwash48,v=p.variants[0];
-    return '<article class="productCard editorialCard carProductCard" data-product-id="carwash48">'+
-     '<div class="cardMedia"><button class="cardMediaClick" type="button" data-show-product="carwash48" aria-label="صور وتفاصيل طقم غسيل السيارات"><img class="mainCardImage" loading="lazy" width="700" height="700" src="'+htmlEsc(photo(v.image))+'" alt="'+htmlEsc(p.name)+'"></button><span class="cardTag">CAR CARE / ESSENTIALS</span><span class="cardIndex">CW48</span><button class="cardQuick" type="button" data-show-product="carwash48" aria-label="فتح المنتج"><svg class="ssIcon ssIconArrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17.5 17.5 6.5M7.5 6.5h10v10"/></svg></button></div>'+
-     '<div class="cardContent"><div class="cardCategory">CAR CARE <span class="catalog-dot">•</span> طقم لاسلكي ببطاريتين</div>'+
-     '<div class="cardTitle"><h3>'+htmlEsc(p.name)+'</h3><strong>'+fmt(p.price)+'</strong></div>'+
-     '<p>طقم غسيل سيارات لاسلكي. اعرف تفاصيله وشوف كل المحتويات قبل الطلب.</p>'+
-     '<div class="merchColorHeader"><span>محتويات الطقم</span><strong>طقم ببطاريتين</strong></div>'+
-     '<div class="cardVariantInfo"><span>بدون مقاسات</span><span>شامل القاهرة والجيزة • شحن المحافظات يُؤكَّد</span></div>'+
-     '<div class="cardBottom"><span class="includedShipping">التوصيل حسب المحافظة</span><button type="button" data-show-product="carwash48">تفاصيل المنتج <span aria-hidden="true"><svg class="ssIcon ssIconArrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17.5 17.5 6.5M7.5 6.5h10v10"/></svg></span></button></div></div></article>';
-  }
   function renderProducts(){
     const list=ids.filter(id=>{
       const p=C[id];
@@ -189,14 +165,13 @@
       return matchesFilter&&(!search||txt.includes(search));
     });
     $("#emptyState").hidden=list.length!==0;
-    const shoeCount=list.filter(id=>SHOES.has(id)).length;
-    const cards=list.map(id=>SHOES.has(id)?shoeCard(id):carProductCard()).join("");
+    const cards=list.map(shoeCard).join("");
     $("#productGrid").innerHTML=list.length?'<section class="merchShelf unifiedShelf" aria-label="كل المنتجات"><div class="shoeCardsGrid unifiedCardsGrid">'+cards+'</div></section>':"";
     const count=$("#resultsCount");if(count)count.textContent=String(list.length);
-    const subtitle=$("#productsSubtitle");if(subtitle)subtitle.textContent=filter==="shoes"?"اختار اللون والمقاس حسب الموديل.":filter==="car"?"منتجات عناية السيارات بدون مقاسات.":"كل المنتجات في نفس تصميم الكروت؛ التفاصيل بتختلف حسب المنتج.";
+    const subtitle=$("#productsSubtitle");if(subtitle)subtitle.textContent=filter==="shoes"?"اختار اللون والمقاس حسب الموديل.":"أربع موديلات أحذية متاحة؛ اختار اللون والمقاس المناسب.";
   }
   function applyFilter(next){
-    filter=["all","shoes","car"].includes(next)?next:"all";
+    filter=["all","shoes"].includes(next)?next:"all";
     $$("[data-filter]").forEach(b=>{
       const active=b.dataset.filter===filter;
       b.classList.toggle("active",active);
@@ -250,7 +225,7 @@
       trialRadio.disabled=!purchasedShoes();
       if(trialRadio.disabled) $('[name="purchaseRole"][value="purchase"]').checked=true;
     }
-    $("#detailMessage").textContent=isShoe?"المقاسات حسب اللون المختار. تجربة مقاسين لنفس الموديل تُحسب زوجًا واحدًا عند الاحتفاظ بمقاس واحد.":"السعر 999 جنيه شامل توصيل القاهرة والجيزة. لباقي المحافظات يتم تأكيد تكلفة الشحن قبل الاتفاق النهائي.";
+    $("#detailMessage").textContent="المقاسات حسب اللون المختار. تجربة مقاسين لنفس الموديل تُحسب زوجًا واحدًا عند الاحتفاظ بمقاس واحد.";
   }
   function openDetail(id,variantId=null){
     if(!C[id])return;
@@ -307,7 +282,6 @@
       $("#cartPolicy").textContent=[
         t.trials?"فيه "+t.trials+" اختيار للتجربة مش داخل في الإجمالي.":"",
         t.shoes>1?"كل زوج أحذية إضافي عليه خصم ٨٠ جنيه؛ المبلغ لا يشمل أي تغيرات تؤكدها خدمة العملاء.":"",
-        t.car?"منتج غسيل السيارات: السعر شامل شحن القاهرة والجيزة؛ المحافظات الأخرى يتم تأكيد تكلفة شحنها قبل الاتفاق.":"",
         "اختيار مقاسين لنفس الموديل يُحسب كزوج واحد عند الاحتفاظ بزوج واحد."
       ].filter(Boolean).join(" ");
     }
@@ -321,14 +295,10 @@
     if(role==="trial"&&purchasedShoes()<=1&&item.role==="purchase"){showToast("لازم يكون فيه زوج أساسي مدفوع في السلة");renderCart();return}
     item.role=role;persist();renderCart();
   }
-  const quoteNeeded=region=>cart.some(i=>i.productId==="carwash48"&&i.role!=="trial") && region!=="القاهرة"&&region!=="الجيزة";
   function updateShippingNotice(){
-    const t=totals(),region=$('#checkoutForm [name="region"]').value;
-    const quote=quoteNeeded(region);
-    const summary=$("#checkoutSummary");
-    summary.textContent="الإجمالي "+(quote?"قبل إضافة شحن مسدس الغسيل: ":"شامل التوصيل: ")+fmt(t.total)+
-      (quote?" — تكلفة شحن طقم الغسيل لمحافظتك يتم تأكيدها معاك على واتساب قبل الاتفاق النهائي.":" — معاينة عند الاستلام والدفع بعد المعاينة.");
-    summary.classList.toggle("shipping-warning",quote);
+    const t=totals(), summary=$("#checkoutSummary");
+    summary.textContent="الإجمالي شامل التوصيل: "+fmt(t.total)+" — معاينة عند الاستلام والدفع بعد المعاينة.";
+    summary.classList.remove("shipping-warning");
   }
   function beginCheckout(){
     if(!cart.length)return;
@@ -344,7 +314,7 @@
   const normalizePhone=val=>val.replace(/[٠-٩]/g,c=>String(c.charCodeAt(0)-1632)).replace(/[۰-۹]/g,c=>String(c.charCodeAt(0)-1776)).replace(/[\s\-()]/g,"");
   const orderReference=()=>("SS-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,7)).toUpperCase();
   function textOrder(data,id){
-    const t=totals(),quote=quoteNeeded(data.region);
+    const t=totals();
     const lines=["طلب جديد — SELECT SHOP","رقم الطلب: "+id,"",...cart.map((item,i)=>{
       const p=C[item.productId],v=selectedVariant(p.id,item.variantId);
       return (i+1)+") "+p.name+" — "+v.code+" ("+v.name+")"+
@@ -352,9 +322,7 @@
         " — "+(item.role==="trial"?"اختيار للتجربة فقط؛ السعر يتأكد لو احتفظت بيه":fmt(p.price));
     }),"","إجمالي المنتجات: "+fmt(t.subtotal),
       "خصم الزوج الإضافي: "+fmt(t.discount),
-      (quote?"الإجمالي قبل تحديد شحن طقم الغسيل: ":"الإجمالي شامل التوصيل: ")+fmt(t.total)];
-    if(quote)lines.push("مهم: تكلفة شحن مسدس الغسيل للمحافظة المذكورة تتأكد قبل اعتماد الطلب.");
-    else if(t.car)lines.push("شحن مسدس الغسيل مشمول للقاهرة والجيزة.");
+      "الإجمالي شامل التوصيل: "+fmt(t.total)];
     lines.push("","الاسم: "+data.name.trim(),"الموبايل: "+data.phone,
       "المحافظة: "+data.region,"المنطقة: "+data.area.trim(),
       "العنوان: "+data.address.trim(),"ملاحظات: "+(data.notes?.trim()||"لا يوجد"),
