@@ -477,7 +477,7 @@ function openProduct(p,trigger){
   const body=node("div","ssSafkaDetailBody");
   const eyebrow=node("div","ssSafkaDetailEyebrow");
   eyebrow.append(node("span","ssSafkaTag",categoryName(p.category_name)),
-    node("span","ssSafkaAvailability",p.final_price_egp?"السعر معتمد — الطلب بعد المراجعة":"قيد تجهيز السعر"));
+    node("span","ssSafkaAvailability",p.final_price_egp?"السعر معتمد للعرض — الطلب غير مفعّل":"قيد تجهيز السعر"));
   body.append(eyebrow,node("h2","",p.name));
   const info=node("div","ssSafkaPriceInfo");
   info.append(node("span","","السعر النهائي"),node("strong","",price(p)));
@@ -540,7 +540,8 @@ function openProduct(p,trigger){
   const approved=Number.isSafeInteger(Number(p.final_price_egp))&&
     Number(p.final_price_egp)>0&&Array.isArray(p.variants)&&
     p.variants.some(v=>v.available===true&&validId(v.id));
-  if(approved){
+  // The server-owned catalog flag remains the authority. Price approval != checkout launch.
+  if(approved&&p.can_purchase===true){
     action.append(node("p","","تقدر تسجّل طلبك بعد التأكد من بيانات الشحن؛ الطلب هيتراجع قبل تأكيد التوريد."));
     const buy=node("button","ssSafkaPurchase","اطلب الآن — حفظ طلب للمراجعة");
     buy.type="button";
@@ -555,7 +556,7 @@ function openProduct(p,trigger){
     });
     action.append(buy);
   }else{
-    action.append(node("p","","الطلب غير متاح لحين مراجعة السعر والتوفر."));
+    action.append(node("p","",approved?"السعر معتمد للعرض؛ استقبال الطلبات المباشرة قيد التجهيز.":"الطلب غير متاح لحين مراجعة السعر والتوفر."));
     const disabled=node("button","ssSafkaDisabled","قريبًا — جارٍ تجهيز المنتج");
     disabled.type="button";disabled.disabled=true;action.append(disabled);
   }
