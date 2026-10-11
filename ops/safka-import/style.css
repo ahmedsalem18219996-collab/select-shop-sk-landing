@@ -87,3 +87,12 @@ footer{text-align:center;padding:22px;border-top:1px solid var(--border);color:#
 .ssPriceApproval button{min-height:43px;background:#e6bd83;color:#261a10;font-weight:800;white-space:normal}
 .ssPriceApproval button:disabled{opacity:.55;cursor:not-allowed}
 .ssPriceApproval .feedback{line-height:1.6}
+
+/* Private Safqa guest-order inbox only */
+.safkaOrderInbox{border-color:#6f8159}
+.ssSafqaOrderCard{min-width:0}
+.ssSafqaOrderCard p{margin:0;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
+.ssSafqaOrderCard small{overflow-wrap:anywhere}
+.ssSafqaOrderActions{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
+.ssSafqaOrderActions button{flex:1 1 150px;min-height:44px;background:#36523f;color:#f3f5dc;border:1px solid #7b9b79}
+.ssSafqaOrderActions button:last-child{background:#472e2d;border-color:#ab736c}
