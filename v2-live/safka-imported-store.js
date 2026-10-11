@@ -51,10 +51,36 @@ function addCategoryTabs(){
   for(const c of entries){
     const key=c.key==="uncategorized"?"safka-other":"safka:"+c.key;
     if(existing.has(key))continue;
-    const label=c.key==="uncategorized"?"منتجات أخرى":c.name;
+    const label=c.key==="uncategorized"?"بانتظار التصنيف":c.name;
     const b=node("button","tab ssSafkaFilterTab",label+" ("+Number(c.count).toLocaleString("ar-EG")+")");
     b.type="button";b.dataset.filter=key;b.setAttribute("aria-pressed","false");
     tabs.append(b);
+  }
+  // Category navigation reuses the SAME collection state and product cards.
+  // Keep the eight real supplier categories in the desktop dropdown and mobile rail.
+  // The pending category is a review status, not a supplier category.
+  const verified=entries.filter(c=>c.key!=="uncategorized");
+  const menu=$("#navCategoryMenu"),rail=$(".mobileCategoryRail");
+  if(menu){
+    menu.querySelectorAll(".ssSafkaNavLink,.navComing").forEach(x=>x.remove());
+    for(const c of verified){
+      const a=node("a","ssSafkaNavLink",c.name);
+      a.href="/#products";a.dataset.filter="safka:"+c.key;
+      a.append(node("small","",Number(c.count).toLocaleString("ar-EG")+" منتج"));
+      a.addEventListener("click",()=>{
+        menu.hidden=true;
+        const trigger=$("#navCategoryButton");if(trigger)trigger.setAttribute("aria-expanded","false");
+      });
+      menu.append(a);
+    }
+  }
+  if(rail){
+    rail.querySelectorAll(".ssSafkaMobileNavLink").forEach(x=>x.remove());
+    for(const c of verified){
+      const a=node("a","ssSafkaMobileNavLink",c.name);
+      a.href="/#products";a.dataset.filter="safka:"+c.key;
+      rail.append(a);
+    }
   }
 }
 function categoryFilter(f){
