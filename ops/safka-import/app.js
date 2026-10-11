@@ -183,6 +183,7 @@ async function ingestVerifiedMediaManifest(){
       " فيديوًا. الميديا محفوظة بمعرف المنتج ولا تضيع عند إعادة استيراد الكتالوج.",
       false,"mediaIngestMessage");
     await loadMediaCoverage();
+    await loadPricingAudit();
   }catch(err){
     status("تعذر الحفظ: "+(err?.message||"تحقق من ملف الوسائط").slice(0,170)+
       " — يمكنك إعادة الاستيراد بأمان؛ الدفعات السابقة تحفظ بمعرف المنتج.",true,"mediaIngestMessage");
@@ -440,6 +441,90 @@ async function exportPriceReviewCsv(){
   finally{button.disabled=false}
 }
 $("exportPriceCsv").addEventListener("click",exportPriceReviewCsv);
+
+// Owner-only pricing review. This is an audit, never a publishing action.
+async function loadPricingAudit(){
+  if(!user)return;
+  const button=$("runPriceAudit");button.disabled=true;
+  status("جاري فحص أسعار كل منتجات صفقة...",false,"priceAuditMessage");
+  try{
+    const all=[];
+    for(let start=0;start<5000;start+=500){
+      const {data,error}=await db.from("ss_safka_import_products")
+        .select("supplier_product_id,name,category_name,source_category_confirmed,suggested_sale_price_egp,final_price_egp,variants,owner_verified,review_state")
+        .order("supplier_product_id").range(start,start+499);
+      if(error)throw Error("تعذر تحميل بيانات الأسعار");
+      all.push(...(data||[]));if((data||[]).length<500)break;
+    }
+    let variantCount=0,categoryCount=0,bundleCount=0,premiumCount=0,unpriced=0;
+    const priorities=[];
+    for(const p of all){
+      const base=Number(p.suggested_sale_price_egp)||0,quote=Number(p.final_price_egp)||0;
+      const choices=Array.isArray(p.variants)?p.variants:[];
+      const realPrices=choices.filter(x=>x.is_available===true&&Number(x.suggested_price)>0)
+        .map(x=>Number(x.suggested_price));
+      const high=Math.max(base,...realPrices);
+      const differing=choices.some(x=>x.is_available===true&&Number(x.suggested_price)>0&&Number(x.suggested_price)!==base);
+      if(differing)variantCount++;
+      if(!p.source_category_confirmed)categoryCount++;
+      if(base>0&&quote>base*3)bundleCount++;
+      if(quote>=900)premiumCount++;
+      if(!quote)unpriced++;
+      const issues=[];
+      if(differing)issues.push("اختيارات مختلفة السعر");
+      if(!p.source_category_confirmed)issues.push("القسم يحتاج مراجعة");
+      if(base>0&&quote>base*3)issues.push("أنسب لعروض الباقات");
+      if(!quote)issues.push("غير مسعّر");
+      const balance=quote-high-110;
+      if(balance<90)issues.push("فرق ضيق بعد احتياطي الشحن");
+      priorities.push({p,issues,balance,base,quote,high,differing,
+        priority:(differing?100:0)+(!p.source_category_confirmed?18:0)+(balance<90?50:0)+(base>0&&quote>base*3?16:0)});
+    }
+    $("auditVariants").textContent=String(variantCount);
+    $("auditCategory").textContent=String(categoryCount);
+    $("auditBundle").textContent=String(bundleCount);
+    $("auditPremium").textContent=String(premiumCount);
+    const root=$("priorityReviews");root.replaceChildren();
+    const picked=priorities.filter(x=>x.issues.length).sort((a,b)=>b.priority-a.priority||a.p.name.localeCompare(b.p.name,"ar")).slice(0,12);
+    for(const rec of picked){
+      const item=node("div","mediaQueueItem");
+      item.append(node("strong","",rec.p.name));
+      item.append(node("small","","مرجع صفقة: "+money(rec.base)+" | سعرنا المبدئي: "+money(rec.quote)));
+      item.append(node("small","","فرق السعر بعد حجز 110 ج للشحن: "+money(rec.balance)+" (مش صافي ربح)"));
+      item.append(node("small","",rec.issues.join(" • ")));
+      const jump=node("button","","افتح المنتج وراجع سعره");
+      jump.type="button";
+      jump.addEventListener("click",async()=>{
+        $("search").value=rec.p.supplier_product_id;$("category").value="";
+        page=0;await loadProducts();
+        $(".catalog")?.scrollIntoView({block:"start",behavior:"smooth"});
+      });
+      item.append(jump);root.append(item);
+    }
+    status("راجع "+all.length+" منتج. اختلاف اختيارات: "+variantCount+
+      "؛ أقسام غير مؤكدة: "+categoryCount+"؛ مسودات ناقصة: "+unpriced+
+      ". كل الأسعار ما زالت غير منشورة، والفارق المعروض ليس صافي ربح.",
+      false,"priceAuditMessage");
+  }catch(e){
+    status("تعذر فحص التسعير: "+String(e?.message||"خطأ في الاتصال").slice(0,100),true,"priceAuditMessage");
+  }finally{button.disabled=false}
+}
+$("runPriceAudit").addEventListener("click",loadPricingAudit);
+$("checkSafkaConnection").addEventListener("click",async()=>{
+  if(!user)return;
+  const button=$("checkSafkaConnection");button.disabled=true;
+  status("جاري التأكد من صلاحية API على حساب صفقة... قراءة فقط.",false,"safkaConnectionMessage");
+  try{
+    const {data,error}=await db.functions.invoke("safka-connection-check",{body:{}});
+    if(error||!data?.ok)throw Error(error?.message||data?.error||"connection_check_failed");
+    if(data.connected)
+      status("الاتصال المباشر بحساب صفقة يعمل للقراءة. استيراد الأسعار والشحن متاح. إرسال الطلبات الحقيقية لسه غير مفعّل.",
+        false,"safkaConnectionMessage");
+    else status("اتصال صفقة غير جاهز: "+String(data.reason||"غير معروف")+
+      ". لم يتم إرسال أي طلب.",true,"safkaConnectionMessage");
+  }catch(e){status("فشل فحص الاتصال: "+String(e?.message||"خطأ").slice(0,140),true,"safkaConnectionMessage")}
+  finally{button.disabled=false}
+});
 
 function safeImageUrl(value){
   if(typeof value!=="string")return null;
