@@ -1,0 +1,57 @@
+{
+  "checked_utc": "2026-10-11T13:37:27.410002+00:00",
+  "results": [
+    {
+      "url": "https://selectshopeg.com/ops/orders/",
+      "status": 200,
+      "cache_control": "max-age=600",
+      "last_modified": "Sun, 11 Oct 2026 13:34:06 GMT",
+      "sha256": "3baf24a9434068196813b8b00f6ffc346475951b023322589aab43e6ae799b9d",
+      "app_script_refs": [
+        "app.js?v=safqa-money-fix-20261011"
+      ],
+      "obsoleteCalls": 0,
+      "correctCalls": 0
+    },
+    {
+      "url": "https://selectshopeg.com/ops/orders/app.js",
+      "status": 200,
+      "cache_control": "max-age=600",
+      "last_modified": "Sun, 11 Oct 2026 13:34:06 GMT",
+      "sha256": "e3f20bbb0f181602ba4f9128bc521ddfd596c5f0e2313112652b079b5014c21c",
+      "app_script_refs": [],
+      "obsoleteCalls": 0,
+      "correctCalls": 3
+    },
+    {
+      "url": "https://selectshopeg.com/ops/orders/app.js?v=safqa-money-fix-20261011",
+      "status": 200,
+      "cache_control": "max-age=600",
+      "last_modified": "Sun, 11 Oct 2026 13:34:06 GMT",
+      "sha256": "e3f20bbb0f181602ba4f9128bc521ddfd596c5f0e2313112652b079b5014c21c",
+      "app_script_refs": [],
+      "obsoleteCalls": 0,
+      "correctCalls": 3
+    },
+    {
+      "url": "https://selectshopeg.com/ops/orders/app.js?v=safka-table-20261011",
+      "status": 200,
+      "cache_control": "max-age=600",
+      "last_modified": "Sun, 11 Oct 2026 13:34:06 GMT",
+      "sha256": "e3f20bbb0f181602ba4f9128bc521ddfd596c5f0e2313112652b079b5014c21c",
+      "app_script_refs": [],
+      "obsoleteCalls": 0,
+      "correctCalls": 3
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ahmedsalem18219996-collab/select-shop-sk-landing/main/ops/orders/app.js",
+      "status": 200,
+      "cache_control": "max-age=300",
+      "last_modified": null,
+      "sha256": "e3f20bbb0f181602ba4f9128bc521ddfd596c5f0e2313112652b079b5014c21c",
+      "app_script_refs": [],
+      "obsoleteCalls": 0,
+      "correctCalls": 3
+    }
+  ]
+}
