@@ -79,13 +79,13 @@ const PRODUCTS = Object.freeze({
 
 
 
-/* Car shipping: only Cairo and Giza included; other governorates quote separately. */
-const CAR_CARE = Object.freeze({
- id:"carwash48",name:"مسدس غسيل سيارات لاسلكي",short:"CAR WASH 48V",price:999,
- category:"car",badge:"للعربية والبيت",description:"مسدس غسيل لاسلكي ببطاريتين، يعمل من جردل مياه. السعر شامل التوصيل للقاهرة والجيزة، والمحافظات الأخرى تتحدد تكلفة شحنها عند التأكيد.",
- hero:"assets/carwash48-real-kit.webp",sizeSummary:"بدون مقاسات",
- features:[{title:"بطاريتين",copy:"للاستخدام بدون كابل أثناء الغسيل"},{title:"مصدر مياه مرن",copy:"يعمل بسحب المياه من جردل"},{title:"التوصيل حسب المحافظة",copy:"999 جنيه شامل توصيل القاهرة والجيزة؛ المحافظات الأخرى تُحدَّد تكلفة شحنها قبل تأكيد الطلب"}],
- variants:[{id:"carwash48",code:"CW48",name:"الطقم ببطاريتين",image:"assets/carwash48-real-kit.webp",sizes:[]}]
+/* Only approved active storefront products are published.
+   Supplier imports must receive a verified final price including delivery. */
+window.SELECT_FOUNDATION_CATALOG=PRODUCTS;
+window.SELECT_FOUNDATION_CONFIG=Object.freeze({
+  SHOE_EXTRA_DISCOUNT:80,
+  DELIVERY_PROMO_ALL_EGYPT:false,
+  DELIVERY_PROMO_APPROVED_FOR_LIVE:false,
+  PREVIEW:false,
+  SOURCE:"V2 active footwear catalog"
 });
-window.SELECT_FOUNDATION_CATALOG=Object.freeze({...PRODUCTS,carwash48:CAR_CARE});
-window.SELECT_FOUNDATION_CONFIG=Object.freeze({SHOE_EXTRA_DISCOUNT:80,CAR_INCLUDED_REGIONS:["القاهرة","الجيزة"],DELIVERY_PROMO_ALL_EGYPT:false,DELIVERY_PROMO_APPROVED_FOR_LIVE:false,PREVIEW:false,SOURCE:"V20 catalog + /product/carwash48/"});
