@@ -153,7 +153,35 @@ function renderDetail(){
   copy.addEventListener("click",async()=>{
     try{await navigator.clipboard.writeText(buildCopyText(order));message("اتنسخت بيانات الطلب للمراجعة اليدوية.")}catch{message("تعذر النسخ؛ راجع صلاحيات الحافظة.",true)}
   });
-  actions.append(copy);target.append(actions);
+  const check=el("button","outline","فحص جاهزية صفقة — بدون إرسال");check.type="button";
+  const checkResult=el("p","note","");
+  check.addEventListener("click",async()=>{
+    if(!current||current.id!==order.id)return;
+    check.disabled=true;checkResult.textContent="جاري فحص الموديلات وحالة الطلب…";
+    try{
+      const {data,error}=await db.functions.invoke("safka-preflight",{body:{orderId:order.id}});
+      if(error||!data?.ok)throw Error("تعذّر فحص الجاهزية. راجع تسجيل الدخول وصلاحيات الإدارة.");
+      if(data.ready){
+        checkResult.textContent="الطلب جاهز من ناحية الربط والمراجعة، لكن الإرسال التلقائي لصفقة غير مفعل حتى الآن.";
+        checkResult.classList.add("statusGreen");
+      }else{
+        const messages={
+          order_not_confirmed:"الطلب لسه مش مؤكد",
+          shipping_quote_required:"تكلفة الشحن لسه محتاجة تأكيد",
+          trial_selection_requires_manual_resolution:"فيه اختيار للتجربة محتاج حسم",
+          already_recorded_on_safqa:"الطلب مسجل بالفعل في متابعة صفقة",
+          order_items_missing:"الطلب مفيهوش منتجات"
+        };
+        const reasons=(data.blockedReasons||[]).map(x=>messages[x]||x);
+        if(data.missingSupplierMappings?.length)
+          reasons.push("موديلات من غير ربط بصفقة: "+data.missingSupplierMappings.map(x=>x.productId+"/"+x.variantId).join("، "));
+        checkResult.textContent="غير جاهز للإرسال: "+reasons.join(" • ");
+        checkResult.classList.remove("statusGreen");
+      }
+    }catch(err){checkResult.textContent=err.message||"تعذّر الفحص";checkResult.classList.remove("statusGreen")}
+    finally{check.disabled=false;}
+  });
+  actions.append(copy,check);target.append(actions,checkResult);
   const tr=el("div","trackingForm");
   tr.append(el("h3","","متابعة المورد — تسجيل يدوي فقط"));
   const caption=el("p","empty","اختار المورد، وبعد ما تسجل الأوردر بنفسك في صفقة أو بروف، دوّن رقم الطلب اللي اتصدر هناك.");
