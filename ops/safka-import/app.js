@@ -199,6 +199,7 @@ async function ingestVerifiedMediaManifest(){
     await loadMediaCoverage();
     await loadPricingAudit();
     await loadSafqaOrderInbox();
+    await loadCheckoutReadiness();
   }catch(err){
     status("تعذر الحفظ: "+(err?.message||"تحقق من ملف الوسائط").slice(0,170)+
       " — يمكنك إعادة الاستيراد بأمان؛ الدفعات السابقة تحفظ بمعرف المنتج.",true,"mediaIngestMessage");
@@ -540,6 +541,28 @@ $("checkSafkaConnection").addEventListener("click",async()=>{
   }catch(e){status("فشل فحص الاتصال: "+String(e?.message||"خطأ").slice(0,140),true,"safkaConnectionMessage")}
   finally{button.disabled=false}
 });
+
+async function loadCheckoutReadiness(){
+  if(!user)return;
+  const id="safkaCheckoutMessage";
+  status("جاري فحص جاهزية استقبال طلبات صفقة...",false,id);
+  try{
+    const res=await fetch("https://zznqdwrohrycsjfpvkhc.supabase.co/functions/v1/safka-checkout-config",{
+      method:"GET",cache:"no-store",
+      headers:{"apikey":"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa"},
+      signal:AbortSignal.timeout(12000)
+    });
+    if(!res.ok)throw Error("التحقق غير متاح");
+    const data=await res.json();
+    if(data.checkoutConfigured){
+      status("مفاتيح الحماية وبوابة استقبال الطلبات جاهزة على الخادم. ظهور زر الشراء للعميل يظل مشروطًا بعلم can_purchase من كتالوج صفقة.",false,id);
+    }else{
+      status("الشراء المباشر مغلق بأمان. يلزم تفعيل Cloudflare Turnstile، واعتماد الأسعار، والتحقق من عمولة صفقة ثم فتح بوابة البيع بمعايير واضحة. لا تُرسل أي أوردرات تلقائيًا.",false,id);
+    }
+  }catch(e){
+    status("تعذر فحص بوابة الطلبات؛ لم يتم تفعيل الطلبات تلقائيًا.",true,id);
+  }
+}
 
 // Owner-only Safqa guest-order inbox. NEVER calls Safqa supplier order API.
 async function loadSafqaOrderInbox(){
