@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#141a16">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'self'; form-action 'self'; style-src 'self'; script-src 'self' https://esm.sh; connect-src 'self' https://zznqdwrohrycsjfpvkhc.supabase.co https://esm.sh; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'; object-src 'none'">
 <title>SELECT SHOP — إدارة طلبات المتجر المؤقت</title>
-<link rel="stylesheet" href="./styles.css?v=20261011">
-<script type="module" src="./app.js?v=20261011b"></script>
+<link rel="stylesheet" href="./styles.css?v=safka-test-20261011">
+<script type="module" src="./app.js?v=safka-test-20261011"></script>
 </head>
 <body>
 <header class="header">
@@ -31,6 +31,16 @@
  <section id="adminPanel" class="shell" hidden>
   <div class="top"><div><span class="eyebrow">SELECT SHOP / TEMP ORDERS</span><h1>الأوردرات والمتابعة</h1><p>التحويل لصفقة وبروف يدوي في المرحلة الأولى، وبمراجعتك قبل أي إرسال.</p></div><div class="controls"><button id="refresh" type="button">تحديث</button><button id="logout" type="button" class="outline">خروج</button></div></div>
   <div class="overview"><div class="stat"><span>إجمالي المحفوظ</span><b id="totalOrders">—</b></div><div class="stat"><span>جديدة / للمراجعة</span><b id="newOrders">—</b></div><div class="stat"><span>تحتاج تسعير شحن</span><b id="shippingOrders">—</b></div></div>
+  <section class="safkaProbe detailPanel" aria-label="اختبار ربط منتجات صفقة">
+   <div class="safkaProbeHead"><div><span class="eyebrow">SAFQA / READ ONLY</span><h2>اختبار ربط صفقة</h2><p class="empty">اختبار قراءة قائمة المنتجات وأسعار شحن المحافظات فقط. لا يتم استيراد منتجات أو تسجيل أي أوردر.</p></div>
+     <div class="controls">
+       <button type="button" id="testSafqaProducts" class="primary">فحص المنتجات</button>
+       <button type="button" id="testSafqaShipping">فحص أسعار الشحن</button>
+     </div>
+   </div>
+   <p id="safkaTestStatus" class="note" role="status" aria-live="polite">مستني اختبارك.</p>
+   <pre id="safkaTestResult" class="safkaResult" aria-label="نتيجة اختبار صفقة" hidden></pre>
+  </section>
   <div class="filters"><label>فلترة حسب الحالة <select id="statusFilter"><option value="">كل الحالات</option><option value="new">جديد</option><option value="review">مراجعة</option><option value="shipping_quote">تسعير شحن</option><option value="confirmed">مؤكد</option><option value="packing">تجهيز</option><option value="shipped">تم الشحن</option><option value="delivered">تم التسليم</option><option value="cancelled">ملغي</option></select></label><p id="orderMessage" role="status" aria-live="polite"></p></div>
   <div class="columns">
    <section aria-label="قائمة الطلبات"><h2>الطلبات <span id="orderCount"></span></h2><div id="ordersList" class="orders"><p class="empty">جارٍ التحميل…</p></div></section>
