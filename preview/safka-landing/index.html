@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#141a16">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';base-uri 'self';form-action 'self';object-src 'none';script-src 'self' https://esm.sh;style-src 'self';img-src 'self' https: data:;media-src https:;frame-src https://www.youtube-nocookie.com;connect-src 'self' https://esm.sh https://zznqdwrohrycsjfpvkhc.supabase.co;frame-ancestors 'none'">
+<title>SELECT SHOP — معاينة صفحة منتج صفقة</title>
+<link rel="stylesheet" href="./style.css?v=20261011media1">
+<script type="module" src="./app.js?v=20261011media1"></script>
+</head>
+<body>
+<header class="header"><a class="brand" href="/" aria-label="SELECT SHOP"><b>SELECT</b> <b>SHOP</b></a><span class="previewTag">معاينة للإدارة فقط · غير منشورة للعملاء</span><a class="home" href="/ops/orders-v2/">لوحة الإدارة ↗</a></header>
+<main>
+<section id="loginSection" class="login" aria-labelledby="loginTitle">
+  <div class="eyebrow">PREVIEW / AUTHENTICATED</div><h1 id="loginTitle">معاينة Landing Page من ميديا صفقة</h1>
+  <p>ادخل بحساب مدير SELECT SHOP لمشاهدة الصور والفيديوهات اللي رجعها المورد للمنتج. المعاينة مش صفحة بيع ومش بتسجّل طلب.</p>
+  <form id="loginForm"><label>إيميل مدير المتجر<input type="email" name="email" autocomplete="username" required></label><label>كلمة المرور<input type="password" name="password" autocomplete="current-password" required></label><button class="primary" type="submit">افتح المعاينة</button></form>
+  <p id="loginError" role="status"></p>
+</section>
+<section id="landing" hidden>
+<div class="trustline">SELECT SHOP <span>•</span> معاينة صور وفيديوهات المورد <span>•</span> الطلبات معطّلة حتى اعتماد المنتج والسعر</div>
+<section class="hero">
+  <div class="mediaColumn">
+    <div id="mediaViewer" class="mediaViewer"><p class="placeholder">جارٍ قراءة ميديا المنتج...</p></div>
+    <div id="galleryRail" class="galleryRail" role="group" aria-label="صور وفيديوهات المنتج"></div>
+    <p id="mediaNote" class="mediaNote"></p>
+  </div>
+  <div class="productColumn">
+    <span class="eyebrow">SELECT SHOP / CURATED FINDS</span>
+    <h1 id="productName">المنتج</h1>
+    <p id="productDescription" class="description"></p>
+    <div class="priceGroup"><span class="label">سعر صفقة المقترح</span><strong id="providerPrice">—</strong><p>مش سعر بيع SELECT SHOP. السعر النهائي لازم يشمل تكلفة المورد وشحن المحافظة وهامش الربح.</p></div>
+    <div class="variantPanel"><h2>الاختيارات المتاحة عند المورد</h2><div id="variants" class="variants"></div></div>
+    <div class="buyRow"><button class="primary" disabled>الطلب غير متاح في المعاينة</button><a class="outline" href="/#products">تصفح المنتجات الحالية</a></div>
+    <p class="smallprint">المقاسات والتوافر والأسعار هنا معلومات للمعاينة، وليست وعدًا بتوافر المنتج أو سعره عند الطلب.</p>
+  </div>
+</section>
+<section class="below">
+  <div class="heading"><span class="eyebrow">THE PRODUCT / REAL MEDIA</span><h2>شوف المنتج قبل ما تقرر</h2><p>المعرض بيستخدم الميديا الحقيقية المتاحة عبر API صفقة فقط. لو الفيديو مش موجود في البيانات هنحتاج رابط مباشر أو الملف الأصلي من المورد.</p></div>
+  <div id="mediaInventory" class="mediaInventory"></div>
+</section>
+<section class="ctaEnd"><span>SELECT SHOP · ONE SHOP FOR EVERYTHING YOU NEED</span><h2>كل حاجة في مكان واحد.</h2><p>التصميم ده معاينة، مش صفحة شراء. قبل نشر أي منتج هنراجع الصور والفيديوهات والمقاسات والسعر النهائي الشامل للشحن.</p></section>
+</section>
+<p id="pageError" role="status" hidden></p>
+</main><footer>SELECT SHOP — معاينة خاصة لمنتجات صفقة، لا تستقبل أوردرات</footer>
+</body></html>
