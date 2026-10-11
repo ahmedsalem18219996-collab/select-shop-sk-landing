@@ -79,11 +79,13 @@ function addCategoryTabs(){
   if(rail){
     rail.querySelectorAll(".ssSafkaMobileNavLink").forEach(x=>x.remove());
     const shortcut=node("a","ssSafkaMobileNavLink","تصفح الأقسام");
-    shortcut.href="/#products";
-    shortcut.addEventListener("click",()=>{
+    shortcut.href="#products";
+    shortcut.addEventListener("click",event=>{
+      event.preventDefault();
+      $("#products")?.scrollIntoView({block:"start",behavior:"smooth"});
       requestAnimationFrame(()=>{
         const button=$(".ssMobileDepartmentButton");
-        if(button&&!button.getAttribute("aria-expanded").includes("true"))button.click();
+        if(button&&button.getAttribute("aria-expanded")==="false")button.click();
       });
     });
     rail.append(shortcut);
