@@ -33,14 +33,31 @@ function mediaViewer(p){
  const caption=tag("p","ssDraftCaption","روابط ميديا المورد مرشحة للمراجعة فقط. التشغيل والمطابقة مش مؤكدين.");
  wrap.append(caption);
  if(p.images.length){
+   const pictures=tag("div","ssDraftImageGallery");
+   const mainImage=tag("img","ssDraftMainImage");
+   mainImage.loading="lazy";
+   mainImage.alt="صورة مرشحة من ملف المورد، لم تتم مراجعة الموديل بصريًا";
+   const explanation=tag("p","ssDraftImageFallback","لو الصورة ما ظهرتش، افتح المصدر لمراجعتها في Google Drive.");
+   mainImage.addEventListener("error",()=>{mainImage.hidden=true;explanation.hidden=false;});
+   explanation.hidden=true;
+   pictures.append(mainImage,explanation);
    const rail=tag("div","ssDraftPhotos");
-   for(const fileId of p.images.slice(0,3)){
-     const anchor=tag("a","","فتح صورة المورد ↗");
-     anchor.href="https://drive.google.com/file/d/"+fileId+"/view";
-     anchor.target="_blank";anchor.rel="noopener noreferrer";
-     rail.append(anchor);
+   for(const [index,fileId] of p.images.slice(0,3).entries()){
+     const btn=tag("button","","صورة "+(index+1));
+     btn.type="button";
+     btn.addEventListener("click",()=>{
+       mainImage.hidden=false;explanation.hidden=true;
+       mainImage.src="https://drive.google.com/thumbnail?id="+encodeURIComponent(fileId)+"&sz=w850";
+       rail.querySelectorAll("button").forEach(n=>n.classList.toggle("active",n===btn));
+     });
+     if(index===0)btn.classList.add("active");
+     rail.append(btn);
    }
-   wrap.append(rail);
+   mainImage.src="https://drive.google.com/thumbnail?id="+encodeURIComponent(p.images[0])+"&sz=w850";
+   const source=tag("a","ssDraftSourceLink","افتح المصدر على Drive ↗");
+   source.href="https://drive.google.com/file/d/"+p.images[0]+"/view";
+   source.target="_blank";source.rel="noopener noreferrer";
+   pictures.append(rail,source);wrap.append(pictures);
  }
  if(p.videos.length){
   const select=tag("div","ssDraftVideos");
