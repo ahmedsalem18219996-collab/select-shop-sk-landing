@@ -53,6 +53,58 @@ export function calculateNationwidePrice({
     note:"For review only; validate supplier cost, shipping, COD/return provisions before publication."
   };
 }
+
+function safkaSafeMediaUrl(candidate){
+  const raw=typeof candidate==="string"?candidate:
+    candidate&&typeof candidate==="object"?
+      (candidate.url||candidate.src||candidate.secure_url||candidate.image_url||candidate.video_url||candidate.link):null;
+  if(typeof raw!=="string"||raw.length>2000)return null;
+  let url;
+  try{url=new URL(raw)}catch{return null}
+  const host=url.hostname.toLowerCase();
+  if(url.protocol!=="https:"||url.username||url.password||
+    (url.port&&url.port!=="443")||!host||host==="localhost"||host.endsWith(".local")||
+    /^(127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(host)||
+    /(?:token|signature|secret|api_key|apikey|x-amz-|x-goog-|access_key|credential)/i.test(url.search))
+    return null;
+  return url.href;
+}
+function safkaClipType(raw){
+  const url=new URL(raw),pathname=url.pathname.toLowerCase();
+  if(/\.(mp4|webm)$/.test(pathname))return "video";
+  if(/^(www\.)?(youtube\.com|youtube-nocookie\.com|youtu\.be)$/.test(url.hostname)){
+    const id=url.hostname.endsWith("youtu.be")?url.pathname.slice(1):
+      url.pathname==="/watch"?url.searchParams.get("v"):
+      (url.pathname.startsWith("/embed/")||url.pathname.startsWith("/shorts/"))?url.pathname.split("/")[2]:null;
+    if(/^[A-Za-z0-9_-]{11}$/.test(id||""))return "youtube";
+  }
+  return null;
+}
+function safkaExtractMedia(product){
+  const photos=[],clips=[],fields={},seen=new Set();
+  const sources=[["images","image"],["pictures","image"],["image","image"],["thumbnail","image"],
+    ["videos","video"],["video","video"],["video_urls","video"],["videoUrl","video"],
+    ["video_url","video"],["media","mixed"]];
+  for(const [key,category] of sources){
+    const raw=product[key];if(raw==null)continue;
+    const list=Array.isArray(raw)?raw:[raw];
+    fields[key]={type:Array.isArray(raw)?"array":typeof raw,count:list.length};
+    for(const item of list.slice(0,30)){
+      const url=safkaSafeMediaUrl(item);
+      if(!url||seen.has(url))continue;
+      const clip=safkaClipType(url);
+      const explicitVideo=category==="video"||
+        (category==="mixed"&&item&&typeof item==="object"&&/video/i.test(String(item.type||item.mediaType||"")));
+      if(clip&&(explicitVideo||category==="mixed")&&clips.length<12){
+        clips.push({url,type:clip});seen.add(url);
+      }else if(!clip&&!explicitVideo&&photos.length<24){
+        photos.push({url,type:"image"});seen.add(url);
+      }
+    }
+  }
+  return {photos,clips,fields};
+}
+
 export function summarizeSafqaProductDetail(response){
   // Safqa may wrap a product in {data:{product:{...}}} or {data:{...}}.
   // Never echo unknown keys, customer data or provider authentication fields.
@@ -85,6 +137,7 @@ export function summarizeSafqaProductDetail(response){
       take(v,["_id","key","name","value","min","sale_price","is_available"])
     ),
     imageCount:Array.isArray(record.images)?record.images.length:0,
+    media:safkaExtractMedia(record),
     costFieldUnverified:true,
     note:"Do not assume properties.value is a confirmed wholesale cost without matching Safqa contract."
   };
