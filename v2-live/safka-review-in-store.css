@@ -24,3 +24,10 @@
 .ssDraftVideoButtons button.active{border-color:#ddf77c;color:#ddf77c}
 .ssDraftWarning{font-size:12px;color:#ffdea6}.ssDraftNoVideo{padding:15px}
 @media(max-width:480px){.ssDraftSection{padding:13px;margin:20px 0}.ssDraftCardBody p{min-height:0}.ssDraftCover{min-height:130px}}
+
+.ssDraftImageGallery{display:grid;gap:10px;margin:12px 0;padding:10px;border:1px solid #53684a;border-radius:10px;background:#192219}
+.ssDraftMainImage{width:100%;height:clamp(210px,42vw,350px);object-fit:contain;border-radius:8px;background:#111a12}
+.ssDraftImageFallback{margin:8px!important;color:#ffe5b6!important}
+.ssDraftPhotos button{padding:7px 11px;background:#223323;color:#ecf5e1;border:1px solid #5a7755;border-radius:8px;cursor:pointer}
+.ssDraftPhotos button.active{border-color:#ddf77c;color:#ddf77c}
+.ssDraftSourceLink{color:#dcf77c;font-size:12px;text-decoration:underline}
