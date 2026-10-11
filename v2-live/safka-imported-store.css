@@ -313,3 +313,7 @@
   .ssMobileDepartmentChoices{grid-template-columns:repeat(2,minmax(0,1fr))}
   .ssMobileDepartmentItem{min-height:54px;padding:7px}
 }
+
+@media(min-width:681px){
+  .ssMobileCategoryPicker,.ssMobileDepartmentPanel{display:none!important}
+}
