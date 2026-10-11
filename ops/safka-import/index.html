@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#141a16">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none';base-uri 'self';form-action 'self';object-src 'none';script-src 'self' https://esm.sh;style-src 'self';img-src 'self' https: data:;media-src https:;frame-src https://www.youtube-nocookie.com https://drive.google.com;connect-src 'self' https://zznqdwrohrycsjfpvkhc.supabase.co https://esm.sh;frame-ancestors 'none'">
 <title>استيراد صفقة | إدارة SELECT SHOP المؤقت</title>
-<link rel="stylesheet" href="./style.css?v=1"><script type="module" src="./app.js?v=2"></script>
+<link rel="stylesheet" href="./style.css?v=1"><script type="module" src="./app.js?v=3-media"></script>
 </head><body>
 <header class="siteHead"><a href="/" class="logo">SELECT <em>SHOP</em></a><span>إدارة استيراد صفقة · الموقع المؤقت</span><a href="/ops/orders-v2/">لوحة الأوردرات ↗</a></header>
 <main>
@@ -33,6 +33,21 @@
   <div class="stat"><span>المحافظات بأسعار الشحن</span><strong id="regionCount">—</strong></div>
   <div class="stat"><span>جاهزة للبيع بعد المراجعة</span><strong id="approvedCount">—</strong></div>
  </div>
+ <section class="panel mediaCoverage" aria-labelledby="mediaCoverageHeading">
+  <span class="eyebrow">SUPPLIER MEDIA COVERAGE</span>
+  <h2 id="mediaCoverageHeading">تغطية فيديوهات الكتالوج</h2>
+  <p>التغطية هنا بالفيديوهات الأصلية المطابقة لكود صفقة. المنتجات بلا فيديو مؤكّد تفضل في قائمة الفحص، من غير فيديوهات عشوائية.</p>
+  <div class="overview">
+   <div class="stat"><span>منتجات لها فيديو</span><strong id="mediaProductsCount">—</strong></div>
+   <div class="stat"><span>فيديوهات حقيقية</span><strong id="mediaClipsCount">—</strong></div>
+   <div class="stat"><span>بانتظار فحص الميديا</span><strong id="mediaPendingCount">—</strong></div>
+   <div class="stat"><span>مجلدات بدون فيديو</span><strong id="mediaNoVideoCount">—</strong></div>
+  </div>
+  <progress id="mediaCoverageProgress" max="100" value="0" aria-label="نسبة المنتجات بفيديو مؤكّد"></progress>
+  <p id="mediaCoverageMessage" class="feedback" role="status" aria-live="polite">جاري قراءة حالة الميديا…</p>
+  <h3>أول منتجات في قائمة فحص الوسائط</h3>
+  <div id="mediaWorkQueue" class="mediaWorkQueue"></div>
+ </section>
  <section class="panel catalog">
    <div class="filterBar"><div><h2>المنتجات بالأكواد والصور</h2><p>كل كارت بيحتفظ بـ Product ID والباركود، والاختيارات لها أكواد المورد الأصلية.</p></div>
    <label>بحث<input id="search" type="search" placeholder="اسم المنتج أو الباركود أو الكود"></label>
