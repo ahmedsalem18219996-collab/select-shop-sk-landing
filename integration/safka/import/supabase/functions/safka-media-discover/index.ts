@@ -47,7 +47,8 @@ async function sourceDetail(id,key){
      product=product.product||product.data||product.result||product;
    }else break;
  }
- if(typeof product?._id==="string"&&product._id!==id)throw Error("product_id_mismatch");
+ const returnedId=typeof product?._id==="string"?product._id:product?.id;
+ if(returnedId!==id)throw Error("product_id_mismatch");
  return foldersFrom(product);
 }
 Deno.serve(async request=>{
