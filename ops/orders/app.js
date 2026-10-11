@@ -86,7 +86,7 @@ function renderSafqaTable(mode,rows){
   const table=el("table","safkaTable");
   const headings=mode==="price-list"
     ?["المحافظة","الشحن","متاحة للشحن","عدد المدن","معرّف صفقة"]
-    :["المنتج","سعر صفقة المقترح","عدد الاختيارات","معرّف المنتج"];
+    :["المنتج","سعر صفقة المقترح","عدد الاختيارات","معرّف المنتج","Landing Page + فيديو"];
   const caption=el("caption","",mode==="price-list"
     ?"أسعار الشحن الواردة من صفقة؛ لم تُضاف لأي سعر بيع بعد"
     :"معاينة منتجات صفقة فقط؛ الأسعار المعروضة مقترحة وليست أسعار SELECT SHOP");
@@ -122,6 +122,17 @@ function renderSafqaTable(mode,rows){
       if(i===values.length-1)cell.className="safkaId";
       tr.append(cell);
     });
+    if(mode==="products"){
+      const cell=el("td");
+      if(/^[0-9a-f]{24}$/i.test(id)){
+        const link=el("a","safkaPreviewLink","معاينة الصور والفيديو ←");
+        link.href="/preview/safka-landing/?productId="+encodeURIComponent(id);
+        link.target="_blank";link.rel="noopener noreferrer";
+        link.title="معاينة خاصة للمدير؛ هتحتاج تسجيل دخول، ومفيش زر طلب نشط";
+        cell.append(link);
+      }else cell.append(el("span","","غير متاح"));
+      tr.append(cell);
+    }
     tbody.append(tr);
   }
   table.append(tbody);root.append(table);root.hidden=false;
