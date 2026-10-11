@@ -146,6 +146,53 @@ $("category").addEventListener("change",()=>{page=0;loadProducts()});
 $("pageSize").addEventListener("change",()=>{page=0;loadProducts()});
 $("prevPage").addEventListener("click",()=>{if(page>0){page--;loadProducts()}});
 $("nextPage").addEventListener("click",()=>{if((page+1)*Number($("pageSize").value)<count){page++;loadProducts()}});
+async function ingestVerifiedMediaManifest(){
+  if(!user||busy)return;
+  const input=$("mediaManifestFile"),file=input?.files?.[0];
+  if(!file){status("اختار ملف JSON للمطابقات المؤكدة.",true,"mediaIngestMessage");return}
+  if(file.size>900000){status("حجم الملف كبير؛ قسمه على دفعات أقل من 900KB.",true,"mediaIngestMessage");return}
+  busy=true;
+  const button=$("ingestMediaManifest"),progress=$("mediaIngestProgress");
+  button.disabled=true;$("reload").disabled=true;$("importAll").disabled=true;$("syncCategories").disabled=true;
+  progress.hidden=false;progress.value=0;
+  try{
+    const raw=JSON.parse(await file.text());
+    const rows=Array.isArray(raw)?raw:raw?.entries;
+    if(!Array.isArray(rows)||rows.length===0||rows.length>1000)throw Error("صيغة الملف غير صحيحة؛ مطلوب entries بين 1 و1000.");
+    const known=new Set();
+    for(const entry of rows){
+      if(typeof entry?.id!=="string"||!/^[a-f0-9]{24}$/.test(entry.id)||
+         known.has(entry.id)||typeof entry.folder!=="string"||
+         !Array.isArray(entry.videos)||!["video_found","no_video"].includes(entry.status))
+        throw Error("تأكد من Product ID ورابط المجلد وقائمة الفيديوهات، ومنع تكرار الأكواد.");
+      known.add(entry.id);
+    }
+    let saved=0,clips=0;
+    for(let i=0;i<rows.length;i+=25){
+      const {data,error}=await db.rpc("ss_safka_media_ingest_batch",{
+        p_entries:rows.slice(i,i+25)
+      });
+      if(error||!data)throw Error("دفعة "+(Math.floor(i/25)+1)+": "+(error?.message||"server_rejected").slice(0,150));
+      saved+=Number(data.saved)||0;clips+=Number(data.clips)||0;
+      progress.value=Math.round(100*Math.min(rows.length,i+25)/rows.length);
+      status("تم حفظ "+saved+" من "+rows.length+" منتجًا؛ عدد الفيديوهات الموثقة: "+clips+".",
+        false,"mediaIngestMessage");
+    }
+    input.value="";
+    status("نجح استيراد "+saved+" منتجًا مع "+clips+
+      " فيديوًا. الميديا محفوظة بمعرف المنتج ولا تضيع عند إعادة استيراد الكتالوج.",
+      false,"mediaIngestMessage");
+    await loadMediaCoverage();
+  }catch(err){
+    status("تعذر الحفظ: "+(err?.message||"تحقق من ملف الوسائط").slice(0,170)+
+      " — يمكنك إعادة الاستيراد بأمان؛ الدفعات السابقة تحفظ بمعرف المنتج.",true,"mediaIngestMessage");
+  }finally{
+    busy=false;button.disabled=false;$("reload").disabled=false;
+    $("importAll").disabled=false;$("syncCategories").disabled=false;
+  }
+}
+$("ingestMediaManifest").addEventListener("click",ingestVerifiedMediaManifest);
+
 async function loadMediaCoverage(){
   if(!user)return;
   try{
