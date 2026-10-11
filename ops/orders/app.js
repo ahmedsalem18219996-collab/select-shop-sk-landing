@@ -33,6 +33,8 @@ function showLogin(){
   $("ordersList").replaceChildren();$("orderDetails").replaceChildren();
   $("safkaTestStatus").textContent="مستني اختبارك.";
   $("safkaTestResult").textContent="";$("safkaTestResult").hidden=true;
+  $("safkaTestTable").replaceChildren();$("safkaTestTable").hidden=true;
+  $("safkaRawDetails").hidden=true;$("safkaRawDetails").open=false;
 }
 async function verifyAdmin(){
   const {data:{user},error}=await db.auth.getUser();
@@ -70,12 +72,67 @@ const providerErrorMessage={
   not_store_admin:"الحساب مش مصرح له بإدارة طلبات SELECT SHOP.",
   not_authenticated:"جلسة الدخول انتهت. سجّل خروج وادخل تاني."
 };
+function safqaDisplayText(value){
+  return typeof value==="string"&&value.trim()?value.trim().slice(0,180):"";
+}
+function safqaMoney(value){
+  if(typeof value!=="number"&&!(typeof value==="string"&&/^\\d+(?:\\.\\d+)?$/.test(value.trim())))return "غير متاح";
+  const num=Number(value);
+  return Number.isFinite(num)&&num>=0?num.toLocaleString("ar-EG")+" جنيه":"غير متاح";
+}
+function renderSafqaTable(mode,rows){
+  const root=$("safkaTestTable");root.replaceChildren();root.hidden=true;
+  if(!Array.isArray(rows)||!rows.length)return;
+  const table=el("table","safkaTable");
+  const headings=mode==="price-list"
+    ?["المحافظة","الشحن","متاحة للشحن","عدد المدن","معرّف صفقة"]
+    :["المنتج","سعر صفقة المقترح","عدد الاختيارات","معرّف المنتج"];
+  const caption=el("caption","",mode==="price-list"
+    ?"أسعار الشحن الواردة من صفقة؛ لم تُضاف لأي سعر بيع بعد"
+    :"معاينة منتجات صفقة فقط؛ الأسعار المعروضة مقترحة وليست أسعار SELECT SHOP");
+  table.append(caption);
+  const thead=el("thead"),top=el("tr");
+  for(const title of headings){const th=el("th","",title);th.scope="col";top.append(th)}
+  thead.append(top);table.append(thead);
+  const tbody=el("tbody");
+  for(const item of rows){
+    const record=item&&typeof item==="object"?item:{};
+    const id=safqaDisplayText(record._id)||safqaDisplayText(record.id)||"—";
+    let values;
+    if(mode==="price-list"){
+      const name=safqaDisplayText(record.governorateNameAr)
+        ||safqaDisplayText(record.governorateName)
+        ||safqaDisplayText(record.governorate)
+        ||safqaDisplayText(record.name)||"غير محددة";
+      const charge=record.price??record.shipping_price??record.shippingPrice
+        ??record.delivery_price??record.deliveryPrice;
+      const active=typeof record.is_active==="boolean"
+        ?(record.is_active?"نعم":"لا"):"غير محدد";
+      const cityCount=Number.isInteger(record.cityCount)?String(record.cityCount):"—";
+      values=[name,safkaMoney(charge),active,cityCount,id];
+    }else{
+      const name=safqaDisplayText(record.name)||safqaDisplayText(record.title)||"بدون اسم";
+      const count=Number.isInteger(record.propertyCount)?String(record.propertyCount):"—";
+      values=[name,safkaMoney(record.sale_price),count,id];
+    }
+    const tr=el("tr");
+    values.forEach((value,i)=>{
+      const cell=el(i===0?"th":"td","",value);
+      if(i===0)cell.scope="row";
+      if(i===values.length-1)cell.className="safkaId";
+      tr.append(cell);
+    });
+    tbody.append(tr);
+  }
+  table.append(tbody);root.append(table);root.hidden=false;
+}
 async function runSafqaTest(mode){
   if(!adminUser)return;
   const buttons=[$("testSafqaProducts"),$("testSafqaShipping")];
   buttons.forEach(b=>b.disabled=true);
-  const output=$("safkaTestResult"),status=$("safkaTestStatus");
-  output.hidden=true;output.textContent="";
+  const output=$("safkaTestResult"),status=$("safkaTestStatus"),details=$("safkaRawDetails");
+  output.hidden=true;output.textContent="";details.hidden=true;details.open=false;
+  $("safkaTestTable").replaceChildren();$("safkaTestTable").hidden=true;
   status.textContent=mode==="products"?"جاري قراءة المنتجات من صفقة…":"جاري قراءة أسعار شحن المحافظات من صفقة…";
   status.classList.remove("inlineError","statusGreen");
   try{
@@ -107,10 +164,11 @@ async function runSafqaTest(mode){
       recordShape:data.recordShape||null,
       examples:entries.slice(0,mode==="products"?5:10)
     };
+    renderSafqaTable(mode,entries);
     output.textContent=JSON.stringify(summary,null,2);
-    output.hidden=false;
+    output.hidden=false;details.hidden=false;
     status.textContent=recognized
-      ?"الاتصال بصفقة نجح. دي معاينة بيانات فقط؛ مفيش منتجات اتنشرت أو أوردرات اتبعتت."
+      ?("الاتصال نجح. "+(mode==="products"?"ظهرت "+entries.length+" منتجات للمعاينة.":"ظهرت "+entries.length+" محافظة بأسعار شحن صفقة.")+" مفيش طلبات اتبعتت أو أسعار اتغيرت.")
       :"صفقة ردت، لكن محتاجين نراجع شكل بيانات الاستجابة قبل استيراد المنتجات.";
     status.classList.toggle("statusGreen",recognized);
   }catch(e){
