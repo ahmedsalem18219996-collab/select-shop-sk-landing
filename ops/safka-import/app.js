@@ -62,6 +62,20 @@ async function importCall(mode,number){
   }
   return data;
 }
+async function refreshSafkaCitiesOnly(){
+  if(!user||busy)return;
+  busy=true;
+  const button=$("refreshSafkaCities");button.disabled=true;
+  status("جاري جلب المحافظات والمدن بأسمائها وأكوادها الأصلية من API صفقة...");
+  try{
+    const result=await importCall("shipping");
+    if(!result?.ok||result.saved<1)throw Error("لم يرجع المورد محافظات قابلة للحفظ.");
+    await reload();
+    status("تم تحديث بيانات الشحن من صفقة لعدد "+result.saved+" محافظة. تمت المحافظة على أكواد المدن الأصلية.");
+  }catch(err){status("تعذر تحديث المدن: "+String(err?.message||err).slice(0,150),true)}
+  finally{busy=false;button.disabled=false}
+}
+$("refreshSafkaCities").addEventListener("click",refreshSafkaCitiesOnly);
 async function runAll(){
   if(!user||busy)return;
   busy=true;const button=$("importAll");button.disabled=true;$("reload").disabled=true;
