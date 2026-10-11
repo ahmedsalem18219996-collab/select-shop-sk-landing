@@ -1,0 +1,90 @@
+name: QA Safqa preflight and main storefront
+on:
+  push:
+    branches: [feature/safka-full-catalog-sync-20261011]
+    paths: [.github/workflows/qa-safka-cors-public.yml]
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Test live OPTIONS CORS, public RPC and main storefront assets without credentials
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request,urllib.error,hashlib,pathlib,subprocess,tempfile
+          origin='https://selectshopeg.com'
+          base='https://zznqdwrohrycsjfpvkhc.supabase.co'
+          function=base+'/functions/v1/safka-stage-import'
+          pkey='sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa'
+          cases={}
+          def fetch(name,url,method='GET',headers=None,payload=None):
+            req=urllib.request.Request(url,headers=headers or {},method=method,data=payload)
+            try:
+              with urllib.request.urlopen(req,timeout=15) as res:
+                return res.status,dict(res.headers),res.read(300000).decode('utf8','replace')
+            except urllib.error.HTTPError as ex:
+              return ex.code,dict(ex.headers),ex.read(300000).decode('utf8','replace')
+          status,headers,body=fetch('preflight',function,'OPTIONS',{
+            'Origin':origin,
+            'Access-Control-Request-Method':'POST',
+            'Access-Control-Request-Headers':'authorization,apikey,content-type,x-client-info'
+          })
+          cases['cors_preflight']={'status':status,
+            'allows_origin':headers.get('Access-Control-Allow-Origin',headers.get('access-control-allow-origin'))==origin,
+            'no_response_body':not body,
+            'passed':status==204 and not body and
+              headers.get('Access-Control-Allow-Origin',headers.get('access-control-allow-origin'))==origin}
+          status,h,b=fetch('public_catalog',base+'/rest/v1/rpc/ss_safka_public_catalog','POST',
+            {'apikey':pkey,'Content-Type':'application/json','Origin':origin},
+            json.dumps({'p_page':1,'p_limit':24}).encode())
+          try: parsed=json.loads(b)
+          except:parsed={}
+          cases['public_catalog_rpc']={'status':status,'passed':status==200 and isinstance(parsed,dict)
+            and isinstance(parsed.get('items'),list) and isinstance(parsed.get('total'),int) and parsed.get('drafts_buyable') is False,
+            'total':parsed.get('total'),'exposed_supplier_cost_key':'supplier_value' in b}
+          status,h,b=fetch('public_categories',base+'/rest/v1/rpc/ss_safka_public_categories','POST',
+            {'apikey':pkey,'Content-Type':'application/json'},b'{}')
+          try: categories=json.loads(b)
+          except:categories=None
+          cases['categories_rpc']={'status':status,'passed':status==200 and isinstance(categories,list),'count':len(categories) if isinstance(categories,list) else -1}
+          targets={
+            'homepage':('https://selectshopeg.com/',[
+               'id="ssSafqaImported" hidden','safka-imported-store.js?v=20261011-v1',
+               'id="checkoutForm"','id="productGrid"']),
+            'catalog_js':('https://selectshopeg.com/v2-live/safka-imported-store.js?v=20261011-v1',
+              ['ss_safka_public_catalog','ss_safka_public_categories','can_purchase',
+               'ssSafqaImported','details.showModal']),
+            'catalog_css':('https://selectshopeg.com/v2-live/safka-imported-store.css?v=20261011-v1',
+               ['.ssSafkaGrid{','@media(max-width:680px)']),
+            'import_page':('https://selectshopeg.com/ops/safka-import/',
+               ['id="loginForm"','id="ownerConsole" hidden'])
+          }
+          for key,(url,patterns) in targets.items():
+            s,h,b=fetch(key,url)
+            cases[key]={'status':s,'passed':s==200 and all(p in b for p in patterns),
+              'sha256':hashlib.sha256(b.encode()).hexdigest()}
+            if key=='catalog_js':
+              with tempfile.NamedTemporaryFile(mode='w',suffix='.js',encoding='utf8') as tf:
+                tf.write(b);tf.flush()
+                code=subprocess.run(['node','--check',tf.name],capture_output=True,text=True)
+                cases[key]['js_syntax_pass']=code.returncode==0
+          p=pathlib.Path('integration/safka/import/cors-and-public-qa.json')
+          p.parent.mkdir(parents=True,exist_ok=True)
+          p.write_text(json.dumps(cases,indent=2,ensure_ascii=False),encoding='utf8')
+          print(p.read_text())
+          PY
+      - name: Persist public checks only (no supplier tokens)
+        shell: bash
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add integration/safka/import/cors-and-public-qa.json
+          git commit -m "qa(safka): verify browser CORS and public store catalog RPC" || exit 0
+          HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $HEADER" push origin HEAD:feature/safka-full-catalog-sync-20261011
