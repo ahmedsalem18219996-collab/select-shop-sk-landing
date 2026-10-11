@@ -200,7 +200,7 @@ function renderLanding(detail){
   const entries=[...photos.slice(0,1).map(m=>({type:"image",url:allowMedia(m.url)})),
     ...uniqueVideos,...photos.slice(1).map(m=>({type:"image",url:allowMedia(m.url)}))];
   const viewer=$("mediaViewer"),rail=$("galleryRail");
-  rail.replaceChildren();
+  viewer.replaceChildren();rail.replaceChildren();$("mediaInventory").replaceChildren();
   function show(entry,selected){
     viewer.replaceChildren();
     rail.querySelectorAll("button").forEach(b=>b.classList.toggle("active",b===selected));
