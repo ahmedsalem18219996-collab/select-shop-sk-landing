@@ -389,6 +389,58 @@ async function reload(){
     await loadMediaCoverage();
   }catch(err){status(err.message,true,"catalogMessage")}
 }
+// Export only after owner auth. Contains supplier prices and private pricing drafts.
+async function exportPriceReviewCsv(){
+  const button=$("exportPriceCsv");
+  if(!user||button.disabled)return;
+  button.disabled=true;
+  status("جاري تجهيز قائمة الأسعار الكاملة...",false,"priceExportMessage");
+  try{
+    const all=[];
+    for(let offset=0;offset<5000;offset+=100){
+      const {data,error}=await db.from("ss_safka_import_products").select(
+        "supplier_product_id,barcode,name,category_name,source_category_confirmed,suggested_sale_price_egp,final_price_egp,variants,review_state,owner_verified"
+      ).order("supplier_product_id",{ascending:true}).range(offset,offset+99);
+      if(error)throw Error("تعذر قراءة الأسعار من قاعدة البيانات");
+      all.push(...(data||[]));
+      if((data||[]).length<100)break;
+    }
+    if(!all.length)throw Error("قائمة الأسعار فارغة");
+    const headers=["كود صفقة","باركود","اسم المنتج","القسم","القسم مؤكد من المورد","سعر صفقة المرجعي","أعلى سعر اختيار متاح","سعر بيع SELECT SHOP المقترح شامل الشحن","فرق السعر عن المرجع","احتياطي الشحن الأقصى","حالة النشر","ملاحظات"];
+    const csvValue=x=>{
+      let val=String(x??"");
+      // Defuse spreadsheet formula injection when exporting supplier-provided strings.
+      if(/^[=+@\-\t\r]/.test(val))val="'"+val;
+      return '"'+val.replace(/"/g,'""')+'"';
+    };
+    const records=all.map(p=>{
+      const original=Number(p.suggested_sale_price_egp)||0;
+      const variants=Array.isArray(p.variants)?p.variants:[];
+      const valid=variants.filter(v=>v.is_available&&Number(v.suggested_price)>0);
+      const expensive=valid.length?Math.max(...valid.map(v=>Number(v.suggested_price))):0;
+      const reference=Math.max(original,expensive);
+      const price=Number(p.final_price_egp)||0;
+      const notes=[];
+      if(!p.source_category_confirmed)notes.push("القسم يحتاج مراجعة");
+      if(variants.some(v=>Number(v.suggested_price)>0&&Number(v.suggested_price)!==original))notes.push("اختيارات بأسعار مختلفة");
+      if(original>0&&price>original*3)notes.push("مناسب لعرض متعدد أكثر من إعلان قطعة");
+      if(!price)notes.push("لم يُسعَّر");
+      return [p.supplier_product_id,p.barcode,p.name,p.category_name,p.source_category_confirmed?"نعم":"لا",
+        original,reference,price,price-original,110,p.review_state==="approved"&&p.owner_verified?"معتمد":"مسودة غير منشورة",notes.join("؛ ")].map(csvValue).join(",");
+    });
+    const content="\uFEFF"+[headers.map(csvValue).join(","),...records].join("\r\n");
+    const file=new Blob([content],{type:"text/csv;charset=utf-8"});
+    const href=URL.createObjectURL(file);
+    const anchor=document.createElement("a");anchor.href=href;
+    anchor.download="SELECT-SHOP-SAFKA-PRICES-"+new Date().toISOString().slice(0,10)+".csv";
+    document.body.append(anchor);anchor.click();anchor.remove();
+    setTimeout(()=>URL.revokeObjectURL(href),5000);
+    status("تم تجهيز "+all.length+" صف سعر، شاملة الأكواد والاختيارات والفروق. ملف خاص بالمراجعة.",false,"priceExportMessage");
+  }catch(err){status(String(err?.message||err).slice(0,190),true,"priceExportMessage")}
+  finally{button.disabled=false}
+}
+$("exportPriceCsv").addEventListener("click",exportPriceReviewCsv);
+
 function safeImageUrl(value){
   if(typeof value!=="string")return null;
   try{
