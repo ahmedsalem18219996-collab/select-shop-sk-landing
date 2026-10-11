@@ -8,8 +8,8 @@
 <meta name="theme-color" content="#141a16">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; base-uri 'self'; form-action 'self'; style-src 'self'; script-src 'self' https://esm.sh; connect-src 'self' https://zznqdwrohrycsjfpvkhc.supabase.co https://esm.sh; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'; object-src 'none'">
 <title>SELECT SHOP — إدارة طلبات المتجر المؤقت</title>
-<link rel="stylesheet" href="./styles.css?v=safka-test-20261011">
-<script type="module" src="./app.js?v=safka-test-20261011"></script>
+<link rel="stylesheet" href="./styles.css?v=safka-table-20261011">
+<script type="module" src="./app.js?v=safka-table-20261011"></script>
 </head>
 <body>
 <header class="header">
@@ -39,7 +39,8 @@
      </div>
    </div>
    <p id="safkaTestStatus" class="note" role="status" aria-live="polite">مستني اختبارك.</p>
-   <pre id="safkaTestResult" class="safkaResult" aria-label="نتيجة اختبار صفقة" hidden></pre>
+   <div id="safkaTestTable" class="safkaTableWrap" role="region" aria-label="جدول بيانات صفقة" tabindex="0" hidden></div>
+   <details id="safkaRawDetails" class="safkaRawDetails" hidden><summary>عرض التفاصيل التقنية (JSON)</summary><pre id="safkaTestResult" class="safkaResult" aria-label="البيانات التقنية" hidden></pre></details>
   </section>
   <div class="filters"><label>فلترة حسب الحالة <select id="statusFilter"><option value="">كل الحالات</option><option value="new">جديد</option><option value="review">مراجعة</option><option value="shipping_quote">تسعير شحن</option><option value="confirmed">مؤكد</option><option value="packing">تجهيز</option><option value="shipped">تم الشحن</option><option value="delivered">تم التسليم</option><option value="cancelled">ملغي</option></select></label><p id="orderMessage" role="status" aria-live="polite"></p></div>
   <div class="columns">
