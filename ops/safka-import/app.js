@@ -100,14 +100,15 @@ async function reload(){
   if(!user)return;
   try{
     const [
-      products,categories,regions,approved
+      products,categories,regions,approved,pending
     ]=await Promise.all([
       db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}),
       db.from("ss_safka_import_categories").select("category_key,category_name").order("category_name").limit(1000),
       db.from("ss_safka_import_shipping").select("governorate_id,name_ar,shipping_egp,is_active").order("name_ar").limit(100),
-      db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("review_state","approved").eq("owner_verified",true)
+      db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("review_state","approved").eq("owner_verified",true),
+      db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("category_key","uncategorized")
     ]);
-    if(products.error||categories.error||regions.error||approved.error)throw Error("تعذّر تحميل ملخص البيانات من Supabase.");
+    if(products.error||categories.error||regions.error||approved.error||pending.error)throw Error("تعذّر تحميل ملخص البيانات من Supabase.");
     $("allCount").textContent=(products.count??0).toLocaleString("ar-EG");
     $("categoryCount").textContent=(categories.data||[]).length.toLocaleString("ar-EG");
     $("regionCount").textContent=(regions.data||[]).length.toLocaleString("ar-EG");
@@ -116,6 +117,10 @@ async function reload(){
     const all=node("option","","كل الأقسام");all.value="";category.append(all);
     for(const c of categories.data||[]){
       const op=node("option","",c.category_name);op.value=c.category_key;category.append(op);
+    }
+    if((pending.count||0)>0){
+      const option=node("option","","بانتظار مطابقة القسم ("+pending.count+")");
+      option.value="uncategorized";category.append(option);
     }
     if([...category.options].some(x=>x.value===prior))category.value=prior;
     const regionRoot=$("regions");regionRoot.replaceChildren();
