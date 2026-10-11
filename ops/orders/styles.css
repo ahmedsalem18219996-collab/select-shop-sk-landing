@@ -10,3 +10,18 @@
 .safkaResult{display:block;margin:10px 0 0;max-width:100%;max-height:370px;overflow:auto;padding:14px;border:1px solid var(--line);border-radius:9px;background:#111911;color:#e5f7d0;direction:ltr;text-align:left;unicode-bidi:plaintext;font-size:11px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:2}
 .safkaProbe .note{margin:12px 0 2px}
 @media(max-width:600px){.safkaProbeHead .controls{width:100%;display:grid;grid-template-columns:1fr 1fr}.safkaProbeHead .controls button{padding:10px 6px}}
+
+/* Safqa read-only result tables */
+.safkaTableWrap{max-width:100%;overflow-x:auto;border:1px solid var(--line);border-radius:11px;margin-top:12px}
+.safkaTable{width:100%;border-collapse:collapse;min-width:620px;background:#141e15;line-height:1.6}
+.safkaTable caption{text-align:right;padding:10px 12px;color:var(--muted);font-size:11px}
+.safkaTable th,.safkaTable td{padding:10px 12px;text-align:right;border-bottom:1px solid #52634c55;vertical-align:top;font-size:12px}
+.safkaTable thead th{color:var(--lime);background:#233225;white-space:nowrap}
+.safkaTable tbody th{font-weight:700}
+.safkaTable tr:last-child>*{border-bottom:none}
+.safkaTable tbody tr:nth-child(even){background:#ffffff04}
+.safkaTable .safkaId{direction:ltr;text-align:left;unicode-bidi:plaintext;font:11px/1.8 monospace;overflow-wrap:anywhere;max-width:210px}
+.safkaRawDetails{margin:10px 0}
+.safkaRawDetails summary{font-size:12px;color:var(--muted);cursor:pointer;padding:8px}
+.safkaRawDetails .safkaResult{margin:7px 0}
+@media(max-width:600px){.safkaTable th,.safkaTable td{padding:10px}.safkaTableWrap{margin-inline:-5px}}
