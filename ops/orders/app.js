@@ -126,9 +126,9 @@ function renderSafqaTable(mode,rows){
       const cell=el("td");
       if(/^[0-9a-f]{24}$/i.test(id)){
         const link=el("a","safkaPreviewLink","معاينة الصور والفيديو ←");
-        link.href="/preview/safka-landing/?productId="+encodeURIComponent(id);
+        link.href="/?shop_test=1&safka_review="+encodeURIComponent(id)+"#products";
         link.target="_blank";link.rel="noopener noreferrer";
-        link.title="معاينة خاصة للمدير؛ هتحتاج تسجيل دخول، ومفيش زر طلب نشط";
+        link.title="معاينة المنتج داخل متجر selectshopeg.com في وضع الاختبار؛ مفيش أوردر أو تتبع";
         cell.append(link);
       }else cell.append(el("span","","غير متاح"));
       tr.append(cell);
