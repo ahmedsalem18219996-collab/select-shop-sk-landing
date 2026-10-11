@@ -1,0 +1,57 @@
+name: QA deployed Safqa full catalog importer
+on:
+  push:
+    branches: [feature/safka-full-catalog-sync-20261011]
+    paths: [.github/workflows/qa-safka-live-importer.yml]
+permissions:
+  contents: write
+jobs:
+  public-assets-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false}
+      - name: Validate live .com admin link and JS without credentials
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,time,hashlib,json,pathlib
+          targets={
+            'page':'https://selectshopeg.com/ops/safka-import/',
+            'script':'https://selectshopeg.com/ops/safka-import/app.js?v=1',
+            'styles':'https://selectshopeg.com/ops/safka-import/style.css?v=1',
+            'order_dashboard':'https://selectshopeg.com/ops/orders-v2/'
+          }
+          output={}
+          for kind,url in targets.items():
+            for attempt in range(9):
+              try:
+                with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'SELECT-SHOP-deploy-qa','Cache-Control':'no-cache'}),timeout=12) as r:
+                  body=r.read(220000).decode('utf-8','replace')
+                  ok={
+                    'page':'id="ownerConsole" hidden' in body and 'id="importAll"' in body,
+                    'script':'safka-stage-import' in body and 'runAll()' in body and 'ss_safka_import_products' in body,
+                    'styles':'.productGrid{' in body and '@media(max-width:680px)' in body,
+                    'order_dashboard':'href="/ops/safka-import/"' in body
+                  }[kind]
+                  output[kind]={'status':r.status,'passed':ok,'sha256':hashlib.sha256(body.encode()).hexdigest()}
+                if ok:break
+              except Exception as exc:output[kind]={'error':type(exc).__name__+': '+str(exc)[:140]}
+              time.sleep(6)
+          pathlib.Path('integration/safka/import/live-qa-result.json').write_text(
+            json.dumps(output,indent=2,ensure_ascii=False),encoding='utf-8')
+          print(json.dumps(output,indent=2))
+          PY
+      - name: Save non-sensitive asset QA
+        if: always()
+        shell: bash
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: |
+          test -f integration/safka/import/live-qa-result.json || printf '{"error":"qa_not_run"}' > integration/safka/import/live-qa-result.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add integration/safka/import/live-qa-result.json
+          git commit -m "test(safka): capture live admin asset QA" || exit 0
+          HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $HEADER" push origin HEAD:feature/safka-full-catalog-sync-20261011
