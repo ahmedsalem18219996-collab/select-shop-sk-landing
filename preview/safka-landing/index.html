@@ -6,10 +6,10 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#141a16">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none';base-uri 'self';form-action 'self';object-src 'none';script-src 'self' https://esm.sh;style-src 'self';img-src 'self' https: data:;media-src https:;frame-src https://www.youtube-nocookie.com;connect-src 'self' https://esm.sh https://zznqdwrohrycsjfpvkhc.supabase.co;frame-ancestors 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none';base-uri 'self';form-action 'self';object-src 'none';script-src 'self' https://esm.sh;style-src 'self';img-src 'self' https: data:;media-src https:;frame-src https://www.youtube-nocookie.com https://drive.google.com;connect-src 'self' https://esm.sh https://zznqdwrohrycsjfpvkhc.supabase.co;frame-ancestors 'none'">
 <title>SELECT SHOP — معاينة صفحة منتج صفقة</title>
-<link rel="stylesheet" href="./style.css?v=20261011media1">
-<script type="module" src="./app.js?v=20261011media1"></script>
+<link rel="stylesheet" href="./style.css?v=20261011media2">
+<script type="module" src="./app.js?v=20261011media2"></script>
 </head>
 <body>
 <header class="header"><a class="brand" href="/" aria-label="SELECT SHOP"><b>SELECT</b> <b>SHOP</b></a><span class="previewTag">معاينة للإدارة فقط · غير منشورة للعملاء</span><a class="home" href="/ops/orders-v2/">لوحة الإدارة ↗</a></header>
@@ -41,6 +41,26 @@
 <section class="below">
   <div class="heading"><span class="eyebrow">THE PRODUCT / REAL MEDIA</span><h2>شوف المنتج قبل ما تقرر</h2><p>المعرض بيستخدم الميديا الحقيقية المتاحة عبر API صفقة فقط. لو الفيديو مش موجود في البيانات هنحتاج رابط مباشر أو الملف الأصلي من المورد.</p></div>
   <div id="mediaInventory" class="mediaInventory"></div>
+</section>
+<section id="mediaManager" class="mediaManager" hidden aria-labelledby="mediaManagerTitle">
+ <span class="eyebrow">OWNER MEDIA LIBRARY / TEMPORARY SITE ONLY</span>
+ <h2 id="mediaManagerTitle">أضف فيديوهات المنتج للـLanding Page</h2>
+ <p>مفيش فيديوهات في رد صفقة؟ ارفع الفيديو الأصلي من جهازك (MP4/WebM بحد أقصى 25 ميجابايت) أو حط رابط YouTube أو Google Drive أو رابط فيديو مباشر. الفيديو هيتربط بمعرّف المنتج ده فقط، وهيظهر في المعاينة فورًا. <strong>مش هيتنشر للزوار تلقائيًا.</strong></p>
+ <form id="mediaUrlForm" class="mediaUrlForm">
+   <label for="ownerMediaUrl">رابط الفيديو
+     <input id="ownerMediaUrl" type="url" name="media_url" inputmode="url" placeholder="https://...mp4 أو YouTube أو Google Drive" autocomplete="off" maxlength="2000">
+   </label>
+   <button type="submit" class="primary">أضف رابط الفيديو</button>
+ </form>
+ <form id="mediaFileForm" class="mediaFileForm">
+   <label for="ownerMediaFile">أو ارفع ملف الفيديو من جهازك
+     <input id="ownerMediaFile" type="file" name="media_file" accept="video/mp4,video/webm,.mp4,.webm">
+   </label>
+   <button type="submit" class="outline">ارفع الفيديو (25MB)</button>
+ </form>
+ <p id="mediaAdminStatus" class="mediaAdminStatus" role="status" aria-live="polite"></p>
+ <div id="ownerMediaList" class="ownerMediaList" aria-label="فيديوهات أضافها المدير"></div>
+ <p class="ownerNote">لينك Google Drive لازم يكون الفيديو فيه متاح للمشاهدة بالرابط. الروابط الخاصة واللي بتنتهي صلاحيتها مش مناسبة للإعلانات. استخدم فيديوهات يحق لك استخدامها وتكون لنفس المنتج.</p>
 </section>
 <section class="ctaEnd"><span>SELECT SHOP · ONE SHOP FOR EVERYTHING YOU NEED</span><h2>كل حاجة في مكان واحد.</h2><p>التصميم ده معاينة، مش صفحة شراء. قبل نشر أي منتج هنراجع الصور والفيديوهات والمقاسات والسعر النهائي الشامل للشحن.</p></section>
 </section>
