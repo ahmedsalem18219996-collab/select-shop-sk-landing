@@ -24,10 +24,21 @@ Updated 2026-10-12 (Africa/Cairo). Scope: `selectshopeg.com` temporary site only
 - `safka-stage-import` (JWT + admin): owner-initiated read/import, v3 fixes `city_name_ar`.
 - `safka-preflight` checks mapped confirmed `ss_orders` read-only; it never sends Safqa orders.
 
-## Future Safqa direct checkout (NOT IMPLEMENTED)
+## Safqa staged checkout (IMPLEMENTED BUT DISABLED BY DEFAULT)
+- New private order table `ss_safka_checkout_requests`, RLS enabled and only owner-readable; this is SEPARATE from the established shoes `ss_orders` table.
+- Guest `safka-capture-order` Edge Function: recomputes prices on the server from **approved** Safqa entries, validates supplier property IDs, governorate ID, optional city ID, quantity (1–3), phone/address, Turnstile, signed-IP rate limit, and idempotency. It records a request for review and explicitly does **not** transmit to Safqa.
+- `safka-checkout-config`: returns only safe public configuration and Turnstile site key **when** both security secrets are configured and `SAFKA_ORDER_CAPTURE_ENABLED=true`. Otherwise checkout is blocked.
+- Site product detail and checkout code `v2-live/safka-imported-store.js`, `v2-live/safka-checkout.js`, `v2-live/safka-checkout.css`. The supplier-owned `can_purchase` flag remains authoritative; the current public catalog deliberately returns false for all Safqa products, so no public purchase button is activated merely by approving prices.
+- Private admin Safqa order inbox inside `ops/safka-import/`, with `safka-review-order` to confirm/cancel **internally only**. Does not submit to Safqa.
+- `ss_safka_checkout_regions()` exposes public name+ID list of active governorates, not supplier shipping costs or credentials.
+- Edge Functions deployed under temporary Supabase project `zznqdwrohrycsjfpvkhc` only.
+- **Launch blockers**: owner price review/approval, complete shipping-city names import, Cloudflare Turnstile site key and secret, independent check of supplier commissions, server-owned catalog `can_purchase` activation, and explicit `SAFKA_ORDER_CAPTURE_ENABLED=true`. Secrets must never be committed in GitHub or entered into frontend code.
+- No confirmed end-to-end authenticated browser test; TinyFish browser wallet was insufficient. Static JavaScript syntax and deployment checks passed.
+
+## Future Safqa supplier handoff (NOT IMPLEMENTED)
 1. Refresh and validate city IDs/names and the real product/variant IDs.
 2. Validate the economic meanings of Safqa's sale_price, required commission, and shipping policy, including ads/returns/fees; margin preview is not net profit.
-3. Implement customer guest checkout with server-side verified prices, Turnstile and rate limits, order idempotency, and encrypted/private customer PII.
+3. Complete supervised end-to-end verification of staged guest checkout. Its PII is in a restricted database table, not encrypted at the application-field level; follow the database backup, access and retention policy before any production PII is collected.
 4. Map each selected supplier variant code to Safqa's `items[].property`, not the visible color/size text. Map each governorate to `shipping_governorate` (pricing document ID), city to its provider code.
 5. Backend POST `/api/v1/public/orders` using `api-safka-key` from server secret ONLY. Save receipt with supplier order ID and serial number. Do NOT expose secrets in frontend.
 6. Reconcile failures/ambiguous timeouts without blind retries (avoid duplicate real supplier orders), and secure the `orderHook` receiver against forged webhooks.
