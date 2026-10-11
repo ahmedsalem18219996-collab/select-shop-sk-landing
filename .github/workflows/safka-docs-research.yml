@@ -1,0 +1,31 @@
+name: Inspect Safka public docs
+on:
+  push:
+    branches:
+      - feature/safka-safe-integration-20261011
+    paths:
+      - .github/workflows/safka-docs-research.yml
+permissions:
+  contents: write
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Fetch public API docs (no auth)
+        shell: bash
+        run: python3 integration/safka/inspect_docs.py
+      - name: Save retrieved public documentation to research branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add integration/safka/research-contract.md
+          git commit -m "research(safka): capture official public API contract" || exit 0
+          HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $HEADER" push origin HEAD:feature/safka-safe-integration-20261011
