@@ -1,0 +1,23 @@
+{
+  "html": {
+    "status": 200,
+    "verified": true,
+    "sha256": "64479d2d7c432bd0dee78a53585e22463ae2e8fedea4383db6543d01670f77e1"
+  },
+  "js": {
+    "status": 200,
+    "verified": true,
+    "sha256": "bfce971b5ea506f8950cf438e28e7742af77ce03e3ca8bd71a9399e4f7a5e2f3",
+    "syntax_ok": true
+  },
+  "css": {
+    "status": 200,
+    "verified": true,
+    "sha256": "d0d39dbcc52f48a6f8b954601241bf6967a38a71c98b5814d65e754f1402fa1b"
+  },
+  "scope": {
+    "project": "zznqdwrohrycsjfpvkhc",
+    "select_shop_clean_unchanged": true,
+    "live_order_api_calls": 0
+  }
+}
