@@ -78,3 +78,12 @@ footer{text-align:center;padding:22px;border-top:1px solid var(--border);color:#
 .ssEstimateRow input{width:100%;min-width:0;min-height:38px;border:1px solid #637c60;border-radius:7px;padding:8px;color:#eef5e0;background:#203524;font:inherit;direction:ltr;text-align:right}
 .readinessPanel .syncControls button{min-height:42px}
 @media(max-width:540px){.ssEstimateRow{grid-template-columns:1fr}.readinessPanel .syncControls button{width:100%}}
+
+/* Price publication is explicitly distinct from supplier fulfillment. */
+.ssPriceApproval{display:grid;gap:10px;padding:14px;margin-top:12px;border-radius:10px;border:1px solid #9d8257;background:#32291e}
+.ssPriceApproval h3{color:#ffe5b1;margin:0;font-size:14px}
+.ssPriceApproval label{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.7}
+.ssPriceApproval input[type=checkbox]{flex:0 0 18px;width:18px;height:18px;margin-top:2px;accent-color:#edc782}
+.ssPriceApproval button{min-height:43px;background:#e6bd83;color:#261a10;font-weight:800;white-space:normal}
+.ssPriceApproval button:disabled{opacity:.55;cursor:not-allowed}
+.ssPriceApproval .feedback{line-height:1.6}
