@@ -96,3 +96,8 @@ footer{text-align:center;padding:22px;border-top:1px solid var(--border);color:#
 .ssSafqaOrderActions{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}
 .ssSafqaOrderActions button{flex:1 1 150px;min-height:44px;background:#36523f;color:#f3f5dc;border:1px solid #7b9b79}
 .ssSafqaOrderActions button:last-child{background:#472e2d;border-color:#ab736c}
+
+/* Per-option private supplier pricing and saved prior pricing snapshots */
+.ssPriceHistory{font-weight:750;color:#f5deb1;line-height:1.6;margin:5px 0}
+.variant .ssVariantEstimate{display:block;font-weight:800;font-size:12px;color:#e5f4bb;margin-block-start:4px}
+.variant .ssVariantReference{display:block;font-size:10px;color:#becdbb;margin-block-start:3px}
