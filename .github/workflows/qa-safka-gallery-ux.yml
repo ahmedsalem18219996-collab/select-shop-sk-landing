@@ -1,0 +1,102 @@
+name: QA live Safqa gallery and mobile layout
+on:
+  push:
+    branches: [qa-safka-gallery-ux-20261011]
+    paths: [.github/workflows/qa-safka-gallery-ux.yml]
+permissions:
+  contents: write
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install DOM test dependency for synthetic owner session only
+        run: npm install --no-audit --no-fund --prefix /tmp/safka-qa jsdom@26.1.0
+      - name: Fetch live .com scripts and test full photo/video gallery interaction
+        shell: bash
+        run: |
+          cat > /tmp/safka-qa/check.cjs <<'JS'
+          const {JSDOM}=require("jsdom"),fs=require("fs"),cp=require("child_process");
+          const assert=require("node:assert/strict");
+          async function read(url){
+            const res=await fetch(url,{headers:{"Cache-Control":"no-cache"},redirect:"error"});
+            assert.equal(res.status,200,url);
+            return res.text();
+          }
+          async function test(){
+            const site="https://selectshopeg.com";
+            const [home,script,css]=await Promise.all([
+              read(site+"/?shop_test=1"),
+              read(site+"/v2-live/safka-review-in-store.js?v=20261011-ux1"),
+              read(site+"/v2-live/safka-review-in-store.css?v=20261011-ux1")
+            ]);
+            assert.ok(home.includes("id=\"safkaOwnerProducts\" hidden"),"real home missing staged section");
+            assert.ok(home.includes("safka-review-in-store.js?v=20261011-ux1"),"old js cache version");
+            assert.ok(home.includes("id=\"checkoutForm\""),"real checkout unexpectedly altered");
+            assert.ok(css.includes(".ssDetailLayout")&&css.includes("@media(max-width:780px)"),"compact mobile CSS missing");
+            const dom=new JSDOM('<!doctype html><div id="safkaOwnerProducts" hidden></div>',{
+              url:site+"/?shop_test=1&safka_review=6aa81321ca38d5013caa41fc#products",
+              runScripts:"outside-only"
+            });
+            const {window}=dom;
+            window.SELECT_SHOP_TEST_MODE=true;
+            window.HTMLDialogElement.prototype.showModal=function(){this.open=true;};
+            window.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new window.Event("close"));};
+            window.eval(script);
+            const $=s=>window.document.querySelector(s),$$=s=>[...window.document.querySelectorAll(s)];
+            assert.equal($$(".ssDraftCard").length,5,"five catalog cards");
+            assert.ok($$(".ssDraftCoverImage").length===1,"real supplier card photo expected only for dryer");
+            assert.ok($(".ssDraftCoverImage").src.startsWith("https://drive.google.com/thumbnail?id="));
+            assert.equal($$(".ssMediaThumb").length,14,"8 real image links and 6 provider videos");
+            assert.ok($(".ssMediaImage"),"first image must show on opening");
+            assert.ok($(".ssMediaNav"),"gallery next/prev buttons exist");
+            assert.ok($(".ssDraftDisabled").disabled,"checkout disabled");
+            $$(".ssMediaThumb")[8].click();
+            assert.ok($(".ssMediaVideo"),"video selected");
+            assert.ok($(".ssMediaNav"),"navigation survives video selection");
+            $$(".ssMediaThumb")[0].click();
+            assert.ok($(".ssMediaImage"),"image returns from video");
+            assert.ok($(".ssMediaNav"),"navigation survives image selection");
+            assert.equal($$(".ssMediaCount").length,1,"no duplicate counter");
+            assert.ok($(".ssDetailInfo h2").textContent.includes("مجفف"),"correct product title");
+            assert.equal($$("a[href*='wa.me']").length,0,"no sales links added");
+            const noPreview=new JSDOM('<!doctype html><div id="safkaOwnerProducts" hidden></div>',{
+              url:site+"/",runScripts:"outside-only"
+            });
+            noPreview.window.SELECT_SHOP_TEST_MODE=false;
+            noPreview.window.eval(script);
+            assert.equal(noPreview.window.document.querySelectorAll(".ssDraftCard").length,0,"public homepage must stay unchanged");
+            const result={
+              status:"PASS",source:"live selectshopeg.com",products:5,
+              provider_photos_dryer:8,provider_videos_dryer:6,
+              owner_only:true,original_cart_unchanged:true,
+              media_switch_image_video:true,controls_persist:true,mobile_css_present:true,
+              media_playback_with_drive_not_verified:true
+            };
+            fs.mkdirSync("integration/safka",{recursive:true});
+            fs.writeFileSync("integration/safka/live-gallery-qa.json",JSON.stringify(result,null,2));
+            console.log(result);
+          }
+          test().catch(e=>{
+            fs.mkdirSync("integration/safka",{recursive:true});
+            fs.writeFileSync("integration/safka/live-gallery-qa.json",JSON.stringify({status:"FAIL",error:e.message},null,2));
+            console.error(e);process.exitCode=1;
+          });
+          JS
+          node /tmp/safka-qa/check.cjs
+      - name: Save QA outcome on isolated branch
+        if: always()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test -f integration/safka/live-gallery-qa.json || echo '{"status":"MISSING"}' > integration/safka/live-gallery-qa.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add integration/safka/live-gallery-qa.json
+          git commit -m "qa(temp): record live gallery DOM regression test" || exit 0
+          HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $HEADER" push origin HEAD:qa-safka-gallery-ux-20261011
