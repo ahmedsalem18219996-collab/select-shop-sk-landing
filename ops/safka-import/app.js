@@ -353,19 +353,21 @@ async function reload(){
   if(!user)return;
   try{
     const [
-      products,categories,regions,approved,pending
+      products,categories,regions,approved,pending,priced
     ]=await Promise.all([
       db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}),
       db.from("ss_safka_import_categories").select("category_key,category_name").order("category_name").limit(1000),
       db.from("ss_safka_import_shipping").select("governorate_id,name_ar,shipping_egp,is_active").order("name_ar").limit(100),
       db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("review_state","approved").eq("owner_verified",true),
-      db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("category_key","uncategorized")
+      db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("category_key","uncategorized"),
+      db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).not("final_price_egp","is",null)
     ]);
-    if(products.error||categories.error||regions.error||approved.error||pending.error)throw Error("تعذّر تحميل ملخص البيانات من Supabase.");
+    if(products.error||categories.error||regions.error||approved.error||pending.error||priced.error)throw Error("تعذّر تحميل ملخص البيانات من Supabase.");
     $("allCount").textContent=(products.count??0).toLocaleString("ar-EG");
     $("categoryCount").textContent=(categories.data||[]).length.toLocaleString("ar-EG");
     $("regionCount").textContent=(regions.data||[]).length.toLocaleString("ar-EG");
     $("approvedCount").textContent=(approved.count??0).toLocaleString("ar-EG");
+    $("pricedCount").textContent=(priced.count??0).toLocaleString("ar-EG");
     const category=$("category"),prior=category.value;category.replaceChildren();
     const all=node("option","","كل الأقسام");all.value="";category.append(all);
     for(const c of categories.data||[]){
