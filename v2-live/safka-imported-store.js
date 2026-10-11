@@ -383,6 +383,14 @@ function openProduct(p,trigger){
   if(all.length>1)stageWrap.append(nav);
   media.append(stageWrap);
   if(all.length>1)media.append(thumbs);
+  // Exact supplier-backed media resource verified for this specific Product ID.
+  // This is a Drive media folder (with a فيديو subfolder), NOT a direct playable video.
+  if(p.id==="6661c38f6bb2679227b82a14"){
+    const folder=node("a","ssSafkaExternalMedia","شاهد مجلد صور وفيديوهات المورد ↗");
+    folder.href="https://drive.google.com/drive/folders/15Aq-BPK-NlG5UEv7-RkOb6u3YZr4Yve6";
+    folder.target="_blank";folder.rel="noopener noreferrer";
+    media.append(folder);
+  }
 
   const body=node("div","ssSafkaDetailBody");
   const eyebrow=node("div","ssSafkaDetailEyebrow");
