@@ -236,6 +236,82 @@ async function discoverSupplierMedia(){
 }
 $("discoverSupplierMedia").addEventListener("click",discoverSupplierMedia);
 
+// Export is owner-only; backend RPC enforces owner role and strips pricing/PII.
+// JSON contract is versioned so future SELECT-SHOP-CLEAN can consume it
+// via an importer with idempotency on (supplier,external_product_id).
+async function exportPortableCatalog(){
+  if(!user||busy)return;
+  const button=$("exportPortableCatalog"),progress=$("portableExportProgress");
+  busy=true;button.disabled=true;progress.hidden=false;progress.value=0;
+  try{
+    const seen=new Set(),items=[];
+    let expected=null,categories=null;
+    const chunk=40;
+    for(let offset=0;expected===null||offset<expected;offset+=chunk){
+      const {data,error}=await db.rpc("ss_safka_portable_export_v1",{
+        p_offset:offset,p_limit:chunk
+      });
+      if(error||!data||data.schema_version!==1||
+         data.format!=="select-shop.supplier-catalog"||!Array.isArray(data.items))
+        throw Error("رفض السيرفر صفحة التصدير "+(Math.floor(offset/chunk)+1)+": "+
+          String(error?.message||"صيغة غير متوقعة").slice(0,120));
+      if(expected===null){
+        expected=Number(data.total);
+        categories=data.categories;
+        if(!Number.isInteger(expected)||expected<0||expected>50000||!Array.isArray(categories))
+          throw Error("عدد المنتجات أو الأقسام غير صحيح");
+      }else if(expected!==Number(data.total))
+        throw Error("عدد المنتجات اتغير أثناء التصدير. جرّب مرة تانية للحصول على نسخة متسقة.");
+      for(const product of data.items){
+        if(product?.supplier!=="safka"||
+           !/^[a-f0-9]{24}$/.test(product.external_product_id||"")||
+           seen.has(product.external_product_id)||
+           !Array.isArray(product.images)||!Array.isArray(product.source_videos)||
+           !Array.isArray(product.variants))
+          throw Error("تكرار أو نقص في كود المنتج أو الميديا؛ أوقفنا التصدير لحماية النسخة.");
+        seen.add(product.external_product_id);
+        items.push(product);
+      }
+      if(!data.items.length&&items.length<expected)throw Error("دفعة المنتجات ناقصة");
+      progress.value=expected?Math.round(100*items.length/expected):100;
+      status("جاري تجهيز نسخة النقل: "+items.length+" من "+expected+" منتج…",
+        false,"portableExportMessage");
+    }
+    if(items.length!==expected)throw Error("عدد المنتجات النهائية لا يطابق قاعدة البيانات");
+    const payload={
+      format:"select-shop.supplier-catalog",
+      schema_version:1,
+      exported_at:new Date().toISOString(),
+      origin:{source:"safka",environment:"select-shop-temporary",
+        website:"https://selectshopeg.com"},
+      requires_import_review:true,
+      excludes:["prices","supplier_costs","orders","customers","credentials","checkout"],
+      categories,products:items,
+      summary:{
+        product_count:items.length,
+        verified_category_products:items.filter(p=>p.category_verified).length,
+        supplier_video_products:items.filter(p=>p.source_videos.length>0).length,
+        supplier_video_urls:items.reduce((n,p)=>n+p.source_videos.length,0),
+        products_requiring_category_review:items.filter(p=>!p.category_verified).length
+      }
+    };
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json;charset=utf-8"});
+    const link=document.createElement("a"),url=URL.createObjectURL(blob);
+    const stamp=new Date().toISOString().replace(/[:.]/g,"-");
+    link.href=url;link.download="select-shop-safka-portable-v1-"+stamp+".json";
+    document.body.append(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),10000);
+    status("نسخة التصدير جاهزة: "+items.length+" منتج، "+
+      payload.summary.supplier_video_urls+" رابط فيديو، "+
+      payload.summary.verified_category_products+" منتج بقسم مؤكد. حمّلها واحفظها؛ مش هتغيّر أي طلب أو سعر.",
+      false,"portableExportMessage");
+  }catch(error){
+    status("تعذر تصدير نسخة آمنة: "+String(error?.message||"export_failed").slice(0,190),
+      true,"portableExportMessage");
+  }finally{busy=false;button.disabled=false}
+}
+$("exportPortableCatalog").addEventListener("click",exportPortableCatalog);
+
 async function loadMediaCoverage(){
   if(!user)return;
   try{
