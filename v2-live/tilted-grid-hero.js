@@ -13,13 +13,13 @@
  const catalog=window.SELECT_FOUNDATION_CATALOG||{};
  const paths=[
   ["wk",0],["alex",1],["eqwal",0],["sk",0],["wk",4],
-  ["carwash48",0],["alex",3],["wk",6],["sk",1],["eqwal",2],["wk",1]
+  ["alex",3],["wk",6],["sk",1],["eqwal",2],["wk",1]
  ];
  const images=paths.map(([id,index])=>{
   const p=catalog[id],v=p?.variants?.[index]||p?.variants?.[0];
   if(!v?.image)return null;
   return {src: v.image.startsWith("/")?v.image:"/"+v.image,
-    name:p.name+" "+v.name,contain:id==="carwash48"};
+    name:p.name+" "+v.name,contain:false};
  }).filter(Boolean);
  if(!images.length){stage.classList.add("tgh-unavailable");return}
  const SLICES=16, CAMERA=1.6, MAX_SHARE=.55, SPEED=4.2, ASPECT=1.62, GAP=.065;
