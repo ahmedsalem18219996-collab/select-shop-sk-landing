@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#141a16">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none';base-uri 'self';form-action 'self';object-src 'none';script-src 'self' https://esm.sh;style-src 'self';img-src 'self' https: data:;media-src https:;frame-src https://www.youtube-nocookie.com https://drive.google.com;connect-src 'self' https://zznqdwrohrycsjfpvkhc.supabase.co https://esm.sh;frame-ancestors 'none'">
 <title>استيراد صفقة | إدارة SELECT SHOP المؤقت</title>
-<link rel="stylesheet" href="./style.css?v=1"><script type="module" src="./app.js?v=3-media"></script>
+<link rel="stylesheet" href="./style.css?v=2-media"><script type="module" src="./app.js?v=4-media"></script>
 </head><body>
 <header class="siteHead"><a href="/" class="logo">SELECT <em>SHOP</em></a><span>إدارة استيراد صفقة · الموقع المؤقت</span><a href="/ops/orders-v2/">لوحة الأوردرات ↗</a></header>
 <main>
@@ -45,6 +45,14 @@
   </div>
   <progress id="mediaCoverageProgress" max="100" value="0" aria-label="نسبة المنتجات بفيديو مؤكّد"></progress>
   <p id="mediaCoverageMessage" class="feedback" role="status" aria-live="polite">جاري قراءة حالة الميديا…</p>
+  <div class="mediaBatchControls">
+   <label>ملف مطابقة الوسائط الأصلي (JSON)
+     <input id="mediaManifestFile" type="file" accept=".json,application/json" />
+   </label>
+   <button id="ingestMediaManifest" type="button">استيراد بيانات الفيديوهات المؤكدة</button>
+   <progress id="mediaIngestProgress" hidden max="100" value="0"></progress>
+   <p id="mediaIngestMessage" class="feedback" role="status" aria-live="polite">الملف لازم يربط كود منتج صفقة برابط مجلد الوسائط وملفات الفيديو الحقيقية، أو يثبت إن المجلد مفيهوش فيديو.</p>
+  </div>
   <h3>أول منتجات في قائمة فحص الوسائط</h3>
   <div id="mediaWorkQueue" class="mediaWorkQueue"></div>
  </section>
