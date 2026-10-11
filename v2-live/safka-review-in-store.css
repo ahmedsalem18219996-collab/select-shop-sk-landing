@@ -1,33 +1,90 @@
-/* SELECT SHOP temporary Safqa draft review — matches real shop design, only shop_test=1 */
-.ssDraftSection{margin:32px 0 15px;border:1px solid #53684a;border-radius:18px;padding:clamp(16px,3vw,28px);background:linear-gradient(120deg,#243225 0%,#151e16 80%);color:#f3f7eb}
-.ssDraftIntro{margin-bottom:16px}.ssDraftEyebrow{display:block;letter-spacing:.13em;font:700 10px/1.7 Arial,sans-serif;color:#def97d}
-.ssDraftIntro h3{font-size:clamp(21px,3vw,30px);line-height:1.4;margin:8px 0}.ssDraftIntro p{color:#c9d7bc;margin:7px 0;font-size:13px}
-.ssDraftGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,215px),1fr));gap:13px}
-.ssDraftCard{min-width:0;border:1px solid #475d42;background:#1b281d;border-radius:15px;overflow:hidden}
-.ssDraftCover{min-height:150px;display:grid;place-items:center;position:relative;background:radial-gradient(ellipse at 35% 25%,#637d4a60,transparent 65%),#233123}
-.ssDraftSymbol{font-size:62px;color:#dcf77a;line-height:1}.ssDraftMediaTag{position:absolute;inset-inline-end:11px;bottom:10px;font-size:10px;color:#def1c3;background:#132116ed;border:1px solid #576d4e;padding:3px 7px;border-radius:99px}
-.ssDraftCardBody{padding:16px}.ssDraftCardBody small{color:#d9f582;font-size:10px}.ssDraftCardBody h4{font-size:17px;line-height:1.5;margin:8px 0}.ssDraftCardBody p{font-size:12px;color:#c6d0be;line-height:1.75;min-height:64px}.ssDraftNoPrice{display:block;color:#e9eec8;font-size:11px;margin:10px 0}
-.ssDraftExplore,.ssDraftDisabled{font-family:inherit;border-radius:8px;padding:10px 13px;min-height:42px;cursor:pointer}
-.ssDraftExplore{background:#ddf77c;color:#172218;border:1px solid #ddf77c;font-weight:800;width:100%}.ssDraftDisabled{background:#344234;border:1px solid #5b6955;color:#a9b6a4;cursor:not-allowed}
-.ssDraftDialog{background:#1b261c;color:#f7fbee;border:1px solid #637855;border-radius:17px;max-width:min(680px,94vw);max-height:90dvh;width:100%;padding:clamp(17px,3vw,31px);overflow-y:auto;font-family:inherit}
-.ssDraftDialog::backdrop{background:#070b0799;backdrop-filter:blur(4px)}
-.ssDraftDialog h2{font-size:clamp(22px,3.4vw,33px);line-height:1.4;margin:12px 0}
-.ssDraftClose{float:left;border:1px solid #8aa17d;border-radius:8px;background:#243527;color:#efffdb;padding:7px 12px;cursor:pointer}
-.ssDraftDesc{color:#ebf6d6;font-size:15px}.ssDraftDetail{color:#c5d1b9;font-size:13px}
-.ssDraftMediaBox{margin:20px 0;background:#111a12;border:1px solid #4e6149;border-radius:11px;padding:13px}
-.ssDraftMediaBox p{color:#c2cdb8;font-size:12px}
-.ssDraftPhotos{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
-.ssDraftPhotos a{padding:6px 10px;border:1px solid #90a784;border-radius:6px;color:#dcf77c;font-size:12px}
-.ssDraftVideos{margin-top:10px}.ssDraftVideos iframe{border:0;border-radius:10px;background:#070b08;width:100%;height:clamp(220px,52vw,365px)}
-.ssDraftVideoButtons{display:flex;gap:6px;overflow-x:auto;margin:8px 0;padding:3px 0}
-.ssDraftVideoButtons button{min-width:65px;border-radius:7px;background:#263826;border:1px solid #51664d;color:#edf4e6;padding:8px;cursor:pointer}
-.ssDraftVideoButtons button.active{border-color:#ddf77c;color:#ddf77c}
-.ssDraftWarning{font-size:12px;color:#ffdea6}.ssDraftNoVideo{padding:15px}
-@media(max-width:480px){.ssDraftSection{padding:13px;margin:20px 0}.ssDraftCardBody p{min-height:0}.ssDraftCover{min-height:130px}}
-
-.ssDraftImageGallery{display:grid;gap:10px;margin:12px 0;padding:10px;border:1px solid #53684a;border-radius:10px;background:#192219}
-.ssDraftMainImage{width:100%;height:clamp(210px,42vw,350px);object-fit:contain;border-radius:8px;background:#111a12}
-.ssDraftImageFallback{margin:8px!important;color:#ffe5b6!important}
-.ssDraftPhotos button{padding:7px 11px;background:#223323;color:#ecf5e1;border:1px solid #5a7755;border-radius:8px;cursor:pointer}
-.ssDraftPhotos button.active{border-color:#ddf77c;color:#ddf77c}
-.ssDraftSourceLink{color:#dcf77c;font-size:12px;text-decoration:underline}
+/* SELECT SHOP TEMP storefront only: Safqa draft cards & compact modal.
+   Visibly available only in owner's shop_test=1 session. */
+#safkaOwnerProducts.ssDraftSection{margin:24px 0 16px;padding:clamp(16px,2.4vw,28px);background:#1a251c;border:1px solid #465e41;border-radius:20px;color:#f4f8ef;min-width:0}
+.ssDraftEyebrow{display:block;color:#ddf77c;font:700 10px/1.6 Arial,sans-serif;letter-spacing:.12em}
+.ssDraftIntro{margin:0 0 20px}
+.ssDraftIntro h3{font-size:clamp(22px,2.6vw,32px);line-height:1.3;margin:8px 0 4px;font-weight:800}
+.ssDraftIntro p{font-size:12px;color:#becfb8;margin:0;max-width:780px}
+.ssDraftGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.ssDraftCard{background:#19221a;border:1px solid #40553e;border-radius:15px;min-width:0;overflow:hidden;transition:border-color .2s,transform .2s}
+.ssDraftCard:hover{border-color:#b3e36b;transform:translateY(-3px)}
+.ssDraftOpen{font:inherit;display:block;width:100%;height:100%;margin:0;padding:0;color:inherit;background:transparent;border:0;cursor:pointer;text-align:right}
+.ssDraftOpen:focus-visible{outline:3px solid #ddf77c;outline-offset:-4px}
+.ssDraftCover{position:relative;display:grid;place-items:center;aspect-ratio:1/1;background:radial-gradient(circle at 35% 22%,#405b37,#1f2c21 77%);overflow:hidden}
+.ssDraftCoverImage{width:100%;height:100%;object-fit:contain;display:block;background:#e1e5db}
+.ssDraftCoverPending{background:linear-gradient(130deg,#33472f,#1b281e)}
+.ssDraftNoMedia{display:block;max-width:150px;text-align:center;color:#dfebd6;font-size:12px;line-height:1.7;padding:15px;font-weight:600}
+.ssDraftMediaTag{position:absolute;right:10px;bottom:9px;padding:4px 8px;color:#dcf97b;background:#102019e8;border-radius:40px;border:1px solid #798d65;font-size:10px;white-space:nowrap}
+.ssDraftCardBody{display:flex;flex-direction:column;gap:7px;padding:14px;min-height:205px}
+.ssDraftCardBody small{font-size:10px;color:#bfd991}
+.ssDraftCardBody h4{font-size:clamp(14px,1.3vw,17px);font-weight:800;line-height:1.55;margin:0}
+.ssDraftCardBody p{font-size:11px;line-height:1.6;color:#c7d3c2;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:34px}
+.ssDraftNoPrice{font-size:11px;color:#dff58f;line-height:1.4;margin-top:auto}
+.ssDraftExplore{display:block;text-align:center;background:#ddf77c;color:#1c291c;border-radius:9px;padding:10px 8px;font-size:11px;font-weight:800;line-height:1.5;margin-top:3px}
+.ssDraftDialog{box-sizing:border-box;width:min(1020px,calc(100vw - 30px));max-width:calc(100vw - 20px);max-height:min(90dvh,820px);margin:auto;padding:clamp(16px,2.2vw,25px);overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;background:#1b271c;color:#f3f9ed;border:1px solid #6a805d;border-radius:20px;box-shadow:0 35px 95px #000a;font-family:inherit;line-height:1.65}
+.ssDraftDialog[open]{display:block}
+.ssDraftDialog::backdrop{background:#050907b0;backdrop-filter:blur(2px)}
+.ssDraftDialog [hidden]{display:none!important}
+.ssDetailTop{display:flex;align-items:start;justify-content:space-between;gap:18px;position:sticky;top:-25px;margin:-25px -25px 15px;padding:19px 25px 14px;background:#1b271cf7;border-bottom:1px solid #40543d;z-index:3}
+.ssDetailReview{display:block;color:#c5d6b5;font-size:11px;margin-top:4px}
+.ssDraftClose{font-family:inherit;border:1px solid #677e59;background:#28372a;color:#f3f8ee;border-radius:10px;padding:7px 13px;cursor:pointer;font-size:12px;min-height:40px;white-space:nowrap}
+.ssDraftClose:hover{border-color:#ddf77c}
+.ssDetailLayout{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:24px;align-items:start;min-width:0}
+.ssMediaShell{min-width:0}
+.ssMediaStage{position:relative;display:grid;place-items:center;overflow:hidden;width:100%;aspect-ratio:1/0.84;max-height:390px;border:1px solid #465944;background:#101811;border-radius:14px}
+.ssMediaImage,.ssMediaVideo{display:block;width:100%;height:100%;object-fit:contain;border:0;background:#111913}
+.ssMediaVideo{aspect-ratio:16/11}
+.ssMediaCount{position:absolute;top:10px;right:10px;border-radius:30px;font-size:10px;background:#0d1713d9;color:#e6f6d6;padding:5px 8px;pointer-events:none}
+.ssMediaControls{display:flex;position:absolute;inset-inline:10px;top:50%;transform:translateY(-50%);align-items:center;justify-content:space-between;pointer-events:none}
+.ssMediaNav{width:35px;height:38px;border:1px solid #bcd29979;border-radius:10px;background:#0e1d14b5;color:#eeffdc;font-size:27px;line-height:1;cursor:pointer;pointer-events:auto}
+.ssMediaNav:hover{background:#324c30}
+.ssMediaError{color:#ffe9ba;padding:25px;text-align:center;font-size:12px}
+.ssMediaThumbs{display:flex;overflow-x:auto;gap:7px;margin:10px 0 6px;padding:3px 1px;scrollbar-width:thin}
+.ssMediaThumb{position:relative;display:grid;place-items:center;flex:0 0 64px;width:64px;height:67px;padding:0;border:1px solid #5c7356;border-radius:9px;background:#27382a;color:#eefbdc;cursor:pointer;font:700 10px/1.4 Arial,sans-serif;overflow:hidden;text-align:center}
+.ssMediaThumb img{width:100%;height:100%;object-fit:cover}
+.ssMediaThumbVideo{padding:6px;background:#324331;color:#ddf77c}
+.ssMediaThumb.active{outline:2px solid #ddf77c;outline-offset:1px}
+.ssMediaFoot{display:flex;justify-content:space-between;gap:9px;flex-wrap:wrap;color:#aebfa5;font-size:10px;margin-top:8px}
+.ssMediaSource{color:#d7f78f;text-decoration:underline}
+.ssMediaAwaiting{color:#dbe9d3;text-align:center;display:flex;flex-direction:column;gap:10px;padding:20px}
+.ssMediaAwaiting strong{font-size:17px}.ssMediaAwaiting p{font-size:12px;margin:0;max-width:250px}
+.ssDetailInfo{min-width:0;padding:3px 0}
+.ssDetailCategory{display:inline-block;padding:3px 9px;background:#2c402a;border-radius:30px;color:#ddf77c;font-size:11px}
+.ssDetailInfo h2{font-size:clamp(22px,2.4vw,31px);line-height:1.4;margin:12px 0 8px;font-weight:850}
+.ssDetailLead{color:#e6f1de;font-size:14px;line-height:1.8;margin:0 0 14px}
+.ssDetailSpec{padding:12px 14px;border:1px solid #43583f;border-radius:11px;background:#243327}
+.ssDetailSpec strong{font-size:12px;color:#e5f8c3}
+.ssDetailSpec p{font-size:12px;color:#bdcbb7;line-height:1.8;margin:5px 0 0}
+.ssDetailPricing{margin:17px 0 8px;padding:13px 0;border-block:1px solid #42583d}
+.ssDetailPricing span{display:block;font-size:12px;color:#bdd0b7}
+.ssDetailPricing strong{display:block;font-size:20px;color:#ddf77c;margin-top:5px}
+.ssDetailNote{font-size:11px;line-height:1.7;color:#bfc9b7;margin:8px 0 14px}
+.ssDraftDisabled{width:100%;min-height:47px;padding:10px;background:#374639;color:#c0cabc;border:1px solid #586954;border-radius:10px;font:700 12px/1.6 inherit;cursor:not-allowed;opacity:.75}
+@media(max-width:1150px){.ssDraftGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:780px){
+.ssDraftGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.ssDraftDialog{width:calc(100vw - 20px);max-height:92dvh;padding:16px;border-radius:14px}
+.ssDetailTop{top:-16px;margin:-16px -16px 13px;padding:12px 16px}
+.ssDetailLayout{grid-template-columns:1fr;gap:13px}
+.ssMediaStage{aspect-ratio:1/0.72;max-height:350px}
+.ssDetailInfo h2{font-size:23px;margin-top:9px}
+.ssDraftCover{aspect-ratio:1/0.86}
+}
+@media(max-width:480px){
+#safkaOwnerProducts.ssDraftSection{padding:12px;margin:18px 0}
+.ssDraftGrid{gap:9px}
+.ssDraftCardBody{padding:11px;min-height:193px}
+.ssDraftCardBody h4{font-size:13px}
+.ssDraftCardBody p{font-size:10px}
+.ssDraftCardBody small{font-size:9px}
+.ssDraftNoPrice{font-size:10px}
+.ssDraftExplore{font-size:10px;padding:9px 4px}
+.ssDraftMediaTag{font-size:9px;right:5px;bottom:5px;padding:4px 6px}
+.ssDraftDialog{max-width:calc(100vw - 12px);width:calc(100vw - 12px);padding:12px}
+.ssDetailTop{top:-12px;margin:-12px -12px 12px;padding:11px 12px}
+.ssMediaStage{aspect-ratio:1/.77;max-height:300px}
+.ssMediaThumb{flex-basis:57px;width:57px;height:59px}
+.ssDraftClose{min-height:36px}
+}
+@media(max-width:340px){.ssDraftGrid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.ssDraftCard{transition:none}.ssDraftCard:hover{transform:none}}
