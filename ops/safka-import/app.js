@@ -193,6 +193,49 @@ async function ingestVerifiedMediaManifest(){
 }
 $("ingestMediaManifest").addEventListener("click",ingestVerifiedMediaManifest);
 
+async function discoverSupplierMedia(){
+  if(!user||busy)return;
+  const button=$("discoverSupplierMedia");
+  busy=true;button.disabled=true;
+  $("reload").disabled=true;$("importAll").disabled=true;$("syncCategories").disabled=true;
+  const msg=(message,isError=false)=>status(message,isError,"mediaDiscoveryMessage");
+  let folders=0,review=0,processed=0,errors=0;
+  try{
+    msg("بنفحص هل API صفقة فيه روابط وسائط للمنتجات أصلًا...");
+    const test=await db.functions.invoke("safka-media-discover",{body:{mode:"probe"}});
+    if(test.error||!test.data?.ok)throw Error(test.data?.error||test.error?.message||"API probe failed");
+    if(!test.data.supported){
+      msg("API صفقة مش بيعرض روابط الميديا المؤكدة في تفاصيل المنتجات. مفيش بيانات اتغيّرت. هنحتاج استخراجها من صفحات صفقة الأصلية.",true);
+      return;
+    }
+    msg("API صفقة بيوفر روابط الميديا. بنجمع المجلدات في دفعات صغيرة...");
+    for(let batch=1;batch<=90;batch++){
+      const response=await db.functions.invoke("safka-media-discover",{body:{mode:"batch"}});
+      if(response.error||!response.data?.ok){
+        throw Error(response.data?.error||response.error?.message||"stopped_at_batch_"+batch);
+      }
+      const v=response.data;
+      processed+=Number(v.processed)||0;folders+=Number(v.discovered)||0;
+      review+=Number(v.review)||0;errors+=Number(v.failed)||0;
+      msg("فحصنا "+processed+" منتج. لاقينا "+folders+" مجلدًا أصليًا، "+
+        review+" محتاج مراجعة من لوحة صفقة. دفعة "+batch+".");
+      if(!v.processed||processed>=500||errors>=6)break;
+      await new Promise(resolve=>setTimeout(resolve,1100));
+    }
+    msg("انتهى فحص API لهذه الجلسة: "+processed+" منتج؛ مجلدات مؤكدة "+folders+
+      "؛ للمراجعة "+review+". لازم بعد كده نقرأ ملفات الفيديو من Drive لكل مجلد مؤكد.");
+    await loadMediaCoverage();
+  }catch(error){
+    msg("توقف اكتشاف الميديا: "+String(error?.message||"error").slice(0,160)+
+      " — التقدم محفوظ ويمكن إعادة المحاولة.",true);
+    await loadMediaCoverage();
+  }finally{
+    busy=false;button.disabled=false;$("reload").disabled=false;
+    $("importAll").disabled=false;$("syncCategories").disabled=false;
+  }
+}
+$("discoverSupplierMedia").addEventListener("click",discoverSupplierMedia);
+
 async function loadMediaCoverage(){
   if(!user)return;
   try{
