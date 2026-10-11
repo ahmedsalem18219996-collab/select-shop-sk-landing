@@ -63,3 +63,19 @@ test("does not return unrecognized region columns",()=>{
  const r=summarizeRegion({_id:"X",shipping_price:70,customer_name:"Hidden",access_token:"token"});
  assert.deepEqual(Object.keys(r).sort(),["_id","shipping_price"].sort());
 });
+
+
+test("matches Safqa actual price-list governorate fields in owner's screenshot",()=>{
+ const result=summarizeProviderResponse("price-list",{
+   pages:1,totalActiveGovernorates:1,
+   data:[{_id:"abc",governorate:"cairo",governorateName:"Cairo",
+     governorateNameAr:"القاهرة",price:85,is_active:true,
+     cities:[{_id:"new-cairo",name:"التجمع الخامس"}],
+     secret:"MUST_NOT_APPEAR"}]
+ });
+ assert.equal(result.samples[0].governorateNameAr,"القاهرة");
+ assert.equal(result.samples[0].price,85);
+ assert.equal(result.samples[0].is_active,true);
+ assert.equal(result.samples[0].cityCount,1);
+ assert.equal(JSON.stringify(result).includes("MUST_NOT_APPEAR"),false);
+});
