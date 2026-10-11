@@ -31,6 +31,8 @@ function showLogin(){
   adminUser=null;current=null;orders=[];affiliate=[];
   $("loginPanel").hidden=false;$("adminPanel").hidden=true;
   $("ordersList").replaceChildren();$("orderDetails").replaceChildren();
+  $("safkaTestStatus").textContent="مستني اختبارك.";
+  $("safkaTestResult").textContent="";$("safkaTestResult").hidden=true;
 }
 async function verifyAdmin(){
   const {data:{user},error}=await db.auth.getUser();
@@ -58,6 +60,67 @@ $("loginForm").addEventListener("submit",async e=>{
 });
 $("logout").addEventListener("click",async()=>{await db.auth.signOut();showLogin()});
 $("refresh").addEventListener("click",refresh);
+
+const providerErrorMessage={
+  safka_api_key_not_configured:"مفتاح صفقة مش محفوظ في Supabase باسم SAFKA_API_KEY. راجع مشروع select-shop-orders.",
+  safka_provider_error:"صفقة رفضت الطلب أو رجعت خطأ. راجع حالة الخطأ ورمز مفتاح API.",
+  safka_connection_unavailable:"تعذر الاتصال بخادم صفقة. جرّب تاني بعد شوية.",
+  unexpected_provider_content_type:"صفقة رجعت استجابة غير JSON.",
+  invalid_or_oversized_provider_response:"صفقة رجعت بيانات بحجم كبير أو بصيغة غير متوقعة.",
+  not_store_admin:"الحساب مش مصرح له بإدارة طلبات SELECT SHOP.",
+  not_authenticated:"جلسة الدخول انتهت. سجّل خروج وادخل تاني."
+};
+async function runSafqaTest(mode){
+  if(!adminUser)return;
+  const buttons=[$("testSafqaProducts"),$("testSafqaShipping")];
+  buttons.forEach(b=>b.disabled=true);
+  const output=$("safkaTestResult"),status=$("safkaTestStatus");
+  output.hidden=true;output.textContent="";
+  status.textContent=mode==="products"?"جاري قراءة المنتجات من صفقة…":"جاري قراءة أسعار شحن المحافظات من صفقة…";
+  status.classList.remove("inlineError","statusGreen");
+  try{
+    const body=mode==="products"?{mode:"products",page:1,size:5}:{mode:"price-list"};
+    const {data,error}=await db.functions.invoke("safka-catalog-readonly",{body});
+    if(error||!data?.ok){
+      let code=data?.error||"connection_failed", providerStatus=data?.providerStatus;
+      if(error?.context?.json){
+        try{
+          const details=await error.context.json();
+          if(typeof details?.error==="string")code=details.error;
+          if(Number.isInteger(details?.providerStatus))providerStatus=details.providerStatus;
+        }catch{}
+      }
+      const description=providerErrorMessage[code]||"فشل الاختبار. حاول تاني من حساب المدير.";
+      throw Error(description+(providerStatus?" (رمز صفقة: "+providerStatus+")":""));
+    }
+    if(data.mode!=="read_only"||data.createdOrders!==false||data.syncedToShop!==false){
+      throw Error("الاستجابة غير مطابقة لوضع القراءة الآمنة، أوقف الاختبار.");
+    }
+    const entries=Array.isArray(data.samples)?data.samples:[];
+    const recognized=entries.length>0;
+    const summary={
+      operation:mode==="products"?"Safqa GET products":"Safqa GET price-list",
+      result:recognized?"provider_connected_data_received":"provider_connected_schema_needs_review",
+      readOnly:true,
+      returnedRecords:Number(data.collectionLength)||0,
+      responseShape:data.outer||null,
+      recordShape:data.recordShape||null,
+      examples:entries.slice(0,mode==="products"?5:10)
+    };
+    output.textContent=JSON.stringify(summary,null,2);
+    output.hidden=false;
+    status.textContent=recognized
+      ?"الاتصال بصفقة نجح. دي معاينة بيانات فقط؛ مفيش منتجات اتنشرت أو أوردرات اتبعتت."
+      :"صفقة ردت، لكن محتاجين نراجع شكل بيانات الاستجابة قبل استيراد المنتجات.";
+    status.classList.toggle("statusGreen",recognized);
+  }catch(e){
+    status.textContent=e.message||"تعذر فحص صفقة.";
+    status.classList.add("inlineError");
+  }finally{buttons.forEach(b=>b.disabled=false);}
+}
+$("testSafqaProducts").addEventListener("click",()=>runSafqaTest("products"));
+$("testSafqaShipping").addEventListener("click",()=>runSafqaTest("price-list"));
+
 $("statusFilter").addEventListener("change",renderList);
 function filtered(){
   const value=$("statusFilter").value;
