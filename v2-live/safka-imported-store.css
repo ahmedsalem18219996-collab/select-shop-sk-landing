@@ -58,3 +58,10 @@
 .ssSafkaStage{aspect-ratio:1/0.84;max-height:300px}
 }
 @media(prefers-reduced-motion:reduce){.shoeCardsGrid .ssSafkaUnifiedCard{transition:none}}
+
+/* Safka departments belong to the existing site navigation, not a separate section. */
+#navCategoryMenu:has(.ssSafkaNavLink){max-height:min(74dvh,520px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+#navCategoryMenu .ssSafkaNavLink{display:flex;align-items:center;justify-content:space-between;gap:13px;min-height:39px}
+#navCategoryMenu .ssSafkaNavLink small{font-size:10px;white-space:nowrap;opacity:.75;flex-shrink:0}
+.siteHeader .mobileCategoryRail{overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;min-width:0}
+.siteHeader .mobileCategoryRail .ssSafkaMobileNavLink{white-space:nowrap;flex:0 0 auto}
