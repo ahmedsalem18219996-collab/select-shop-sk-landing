@@ -233,6 +233,10 @@ function productCard(p){
     const pic=node("img","ssSafkaCardImage");
     pic.src=photos[0];pic.loading="lazy";pic.decoding="async";
     pic.width=720;pic.height=720;pic.alt="صورة "+p.name;
+    pic.addEventListener("load",()=>{
+      const ratio=pic.naturalHeight>0?pic.naturalWidth/pic.naturalHeight:0;
+      pic.classList.toggle("ssSafkaNearSquare",ratio>=.83&&ratio<=1.2);
+    });
     let imageIndex=0;
     pic.addEventListener("error",()=>{
       imageIndex++;
