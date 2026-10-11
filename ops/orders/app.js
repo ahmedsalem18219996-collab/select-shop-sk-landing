@@ -76,7 +76,7 @@ function safqaDisplayText(value){
   return typeof value==="string"&&value.trim()?value.trim().slice(0,180):"";
 }
 function safqaMoney(value){
-  if(typeof value!=="number"&&!(typeof value==="string"&&/^\\d+(?:\\.\\d+)?$/.test(value.trim())))return "غير متاح";
+  if(typeof value!=="number"&&!(typeof value==="string"&&/^\d+(?:\.\d+)?$/.test(value.trim())))return "غير متاح";
   const num=Number(value);
   return Number.isFinite(num)&&num>=0?num.toLocaleString("ar-EG")+" جنيه":"غير متاح";
 }
