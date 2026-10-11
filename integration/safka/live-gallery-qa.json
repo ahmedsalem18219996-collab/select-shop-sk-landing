@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "source": "live selectshopeg.com",
+  "products": 5,
+  "provider_photos_dryer": 8,
+  "provider_videos_dryer": 6,
+  "owner_only": true,
+  "original_cart_unchanged": true,
+  "media_switch_image_video": true,
+  "controls_persist": true,
+  "mobile_css_present": true,
+  "media_playback_with_drive_not_verified": true
+}
