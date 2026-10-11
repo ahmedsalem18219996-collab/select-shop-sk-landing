@@ -114,6 +114,16 @@ function addCategoryTabs(){
     dismiss.type="button";dismiss.setAttribute("aria-label","إغلاق الأقسام");
     top.append(dismiss);
     const choices=node("div","ssMobileDepartmentChoices");
+    // Footwear belongs to the same departments menu as the supplier categories.
+    const shoeItem=node("button","ssMobileDepartmentItem");
+    shoeItem.type="button";shoeItem.dataset.category="shoes";
+    shoeItem.append(node("strong","","الأحذية"),node("small","","4 موديلات"));
+    shoeItem.addEventListener("click",()=>{
+      const shoeTab=tabs.querySelector('[data-filter="shoes"]');
+      closeMobileDepartments();
+      if(shoeTab)shoeTab.click();
+    });
+    choices.append(shoeItem);
     for(const c of verified){
       const item=node("button","ssMobileDepartmentItem");
       item.type="button";
@@ -161,10 +171,10 @@ function syncDepartmentPicker(){
   if(!picker)return;
   const currentFilter=current.filter;
   const selected=categories.find(c=>c.key!=="uncategorized"&&("safka:"+c.key)===currentFilter);
-  const name=selected?.name||"تصفح الأقسام";
+  const name=currentFilter==="shoes"?"الأحذية":selected?.name||"الأقسام";
   const title=$(".ssMobileDepartmentText",picker);
   if(title)title.textContent=name;
-  picker.classList.toggle("is-selected",!!selected);
+  picker.classList.toggle("is-selected",!!selected||currentFilter==="shoes");
   document.querySelectorAll(".ssMobileDepartmentItem").forEach(b=>{
     const active=b.dataset.category===currentFilter;
     b.classList.toggle("is-active",active);
@@ -343,6 +353,15 @@ function openProduct(p,trigger){
       const video=node("video");video.controls=true;video.playsInline=true;video.preload="metadata";
       if(photos.length)video.poster=photos[0];
       video.src=item.url;stage.append(video);
+    }else if(/^https:\/\/drive\.google\.com\/file\/d\/[A-Za-z0-9_-]{15,}\/preview$/.test(item.url)){
+      const embed=node("iframe","ssSafkaDriveVideo");
+      embed.src=item.url;embed.title="فيديو المنتج "+p.name;
+      embed.loading="lazy";embed.allow="autoplay; fullscreen; picture-in-picture";
+      embed.setAttribute("allowfullscreen","");
+      stage.append(embed);
+      const fallback=node("a","ssSafkaVideoFallback","فتح الفيديو في Google Drive ↗");
+      fallback.href=item.url;fallback.rel="noopener noreferrer";fallback.target="_blank";
+      stage.append(fallback);
     }else{
       const link=node("a","","شاهد فيديو المنتج");
       link.href=item.url;link.target="_blank";link.rel="noopener noreferrer";
