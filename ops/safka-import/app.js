@@ -710,6 +710,49 @@ async function openDetail(p){
   estimateBox.append(estimatesTitle,expenseRow,estimateText);
   form.append(label,saveButton,feedback);pricing.append(form,estimateBox);right.append(pricing);
   recalculate();
+  // Public price publication requires an explicit separate owner acknowledgement.
+  // Customer checkout and Safqa supplier POST remain disabled even after publication.
+  const approval=node("div","ssPriceApproval");
+  if(p.owner_verified&&p.review_state==="approved"){
+    approval.append(node("p","detailNote","السعر معتمد ويظهر للجمهور. الشراء المباشر عبر صفقة ما زال غير مفعل."));
+  }else{
+    approval.append(node("h3","","الاعتماد النهائي — خطوة منفصلة"));
+    const approveCheck=node("input");approveCheck.type="checkbox";approveCheck.id="approve-"+p.supplier_product_id;
+    const approveLabel=node("label","","راجعت تكلفة المورد الحقيقية، والعمولة، والشحن، والاختيارات؛ وأوافق على نشر السعر فقط.");
+    approveLabel.prepend(approveCheck);
+    const approveButton=node("button","","اعتماد السعر ونشره للعرض (بدون فتح الشراء)");
+    approveButton.type="button";approveButton.disabled=true;
+    const approveStatus=node("p","feedback");approveStatus.setAttribute("role","status");
+    const syncApproval=()=>{
+      approveButton.disabled=!approveCheck.checked||
+        Number(priceInput.value)!==Number(p.final_price_egp)||
+        !p.final_price_egp;
+    };
+    approveCheck.addEventListener("change",syncApproval);
+    priceInput.addEventListener("input",syncApproval);
+    approveButton.addEventListener("click",async()=>{
+      if(!user||approveButton.disabled)return;
+      if(Number(priceInput.value)!==Number(p.final_price_egp)){
+        approveStatus.textContent="احفظ المسودة أولًا ثم أعد مراجعتها.";return
+      }
+      approveButton.disabled=true;approveStatus.textContent="جاري اعتماد السعر المعروض فقط...";
+      try{
+        const {data,error}=await db.functions.invoke("safka-approve-price",{
+          body:{productId:p.supplier_product_id,expectedPrice:Number(p.final_price_egp),acknowledgeCostAndShipping:true}
+        });
+        if(error||!data?.ok)throw Error(data?.error||error?.message||"approval_failed");
+        p.owner_verified=true;p.review_state="approved";
+        approveStatus.textContent="تم اعتماد السعر للعرض. لا يوجد Checkout لمنتجات صفقة حتى الآن.";
+        approveCheck.checked=false;approveButton.disabled=true;
+        await reload();
+      }catch(e){
+        approveStatus.textContent="تعذر الاعتماد: "+String(e?.message||e).slice(0,130);
+        syncApproval();
+      }
+    });
+    approval.append(approveLabel,approveButton,approveStatus);
+  }
+  pricing.append(approval);
   form.addEventListener("submit",async e=>{
     e.preventDefault();
     if(!user){feedback.textContent="جلسة المدير انتهت؛ سجل دخول مرة أخرى.";return}
@@ -724,6 +767,8 @@ async function openDetail(p){
       });
       if(error||!data?.ok)throw Error(data?.error||"draft_save_failed");
       p.final_price_egp=value;p.owner_verified=false;p.review_state="imported";
+      const approveCheck=approval.querySelector("input[type=checkbox]");if(approveCheck)approveCheck.checked=false;
+      const approveButton=approval.querySelector("button");if(approveButton)approveButton.disabled=true;
       feedback.textContent="تم حفظ "+money(value)+" كمسودة خاصة. المنتج لا يزال غير متاح للشراء.";
       await loadProducts();
     }catch(err){
