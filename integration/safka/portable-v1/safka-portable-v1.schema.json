@@ -1,0 +1,248 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://selectshopeg.com/contracts/safka-portable-v1.schema.json",
+  "title": "SELECT SHOP supplier catalog portable snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schema_version",
+    "exported_at",
+    "origin",
+    "requires_import_review",
+    "excludes",
+    "categories",
+    "products",
+    "summary"
+  ],
+  "properties": {
+    "format": {
+      "const": "select-shop.supplier-catalog"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "exported_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "origin": {
+      "type": "object",
+      "required": [
+        "source",
+        "environment",
+        "website"
+      ],
+      "properties": {
+        "source": {
+          "const": "safka"
+        },
+        "environment": {
+          "const": "select-shop-temporary"
+        },
+        "website": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "requires_import_review": {
+      "const": true
+    },
+    "excludes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "supplier_category_id",
+          "name",
+          "parent_supplier_category_id",
+          "verified"
+        ],
+        "properties": {
+          "supplier_category_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{24}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent_supplier_category_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "verified": {
+            "const": true
+          }
+        }
+      }
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "supplier",
+          "external_product_id",
+          "barcode",
+          "name",
+          "description_text",
+          "supplier_category_id",
+          "supplier_category_name",
+          "category_verified",
+          "supplier_available",
+          "images",
+          "source_videos",
+          "media_state",
+          "source_media_folder",
+          "variants",
+          "purchase_enabled"
+        ],
+        "properties": {
+          "supplier": {
+            "const": "safka"
+          },
+          "external_product_id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{24}$"
+          },
+          "barcode": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "description_text": {
+            "type": "string"
+          },
+          "supplier_category_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "supplier_category_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "category_verified": {
+            "type": "boolean"
+          },
+          "supplier_available": {
+            "type": "boolean"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^https://"
+            }
+          },
+          "source_videos": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^https://drive[.]google[.]com/file/d/[A-Za-z0-9_-]{15,}/preview$"
+            }
+          },
+          "media_state": {
+            "enum": [
+              "pending",
+              "folder_verified",
+              "video_found",
+              "no_video",
+              "needs_review",
+              "access_denied"
+            ]
+          },
+          "source_media_folder": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "external_variant_id",
+                "label",
+                "supplier_available"
+              ],
+              "properties": {
+                "external_variant_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "label": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "supplier_available": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "purchase_enabled": {
+            "const": false
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "product_count",
+        "verified_category_products",
+        "supplier_video_products",
+        "supplier_video_urls",
+        "products_requiring_category_review"
+      ],
+      "properties": {
+        "product_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "verified_category_products": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "supplier_video_products": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "supplier_video_urls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "products_requiring_category_review": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}
