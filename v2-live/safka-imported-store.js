@@ -48,11 +48,11 @@ function addCategoryTabs(){
   if(!tabs)return;
   tabs.querySelectorAll(".ssSafkaFilterTab").forEach(x=>x.remove());
   const existing=new Set(Array.from(tabs.querySelectorAll("[data-filter]"),x=>x.dataset.filter));
-  const entries=categories.filter(c=>c&&typeof c.key==="string"&&Number(c.count)>0);
+  const entries=categories.filter(c=>c&&c.key!=="uncategorized"&&typeof c.key==="string"&&Number(c.count)>0);
   for(const c of entries){
     const key=c.key==="uncategorized"?"safka-other":"safka:"+c.key;
     if(existing.has(key))continue;
-    const label=c.key==="uncategorized"?"بانتظار التصنيف":c.name;
+    const label=c.name;
     const b=node("button","tab ssSafkaFilterTab",label+" ("+Number(c.count).toLocaleString("ar-EG")+")");
     b.type="button";b.dataset.filter=key;b.setAttribute("aria-pressed","false");
     tabs.append(b);
@@ -109,7 +109,7 @@ function addCategoryTabs(){
     panel.setAttribute("role","region");
     panel.setAttribute("aria-label","اختيار قسم من أقسام SELECT SHOP");
     const top=node("div","ssMobileDepartmentHead");
-    top.append(node("strong","","اختار القسم المناسب"));
+    top.append(node("strong","","أقسام المتجر"));
     const dismiss=node("button","ssMobileDepartmentClose","✕");
     dismiss.type="button";dismiss.setAttribute("aria-label","إغلاق الأقسام");
     top.append(dismiss);
@@ -128,6 +128,7 @@ function addCategoryTabs(){
       choices.append(item);
     }
     panel.append(top,choices);
+    panel.append(node("p","ssMobileDepartmentHint","كل المنتجات متاحة أيضًا من زر «الكل» والبحث."));
     const searchWrap=$(".searchWrap",toolbar);
     toolbar.insertBefore(wrap,searchWrap);
     toolbar.insertBefore(panel,searchWrap);
@@ -199,32 +200,59 @@ function ensureStage(){
   }
   return {shelf,grid,status,actions,more:$("button",actions)};
 }
+function mediaSources(p){
+  const photos=(Array.isArray(p.images)?p.images:[]).map(safeMedia).filter(Boolean);
+  const video=(Array.isArray(p.videos)?p.videos:[]).map(safeMedia).filter(Boolean);
+  return {photos:[...new Set(photos)],videos:[...new Set(video)]};
+}
 function productCard(p){
   const article=node("article","productCard editorialCard ssSafkaUnifiedCard");
+  article.dataset.supplier="safka";
+  const {photos,videos}=mediaSources(p);
   const media=node("div","cardMedia ssSafkaUnifiedMedia");
   const open=node("button","cardMediaClick ssSafkaUnifiedOpen");
-  open.type="button";open.setAttribute("aria-label","تفاصيل "+p.name);
-  const image=(Array.isArray(p.images)?p.images:[]).map(safeMedia).find(Boolean);
-  if(image){
-    const pic=node("img","mainCardImage");pic.src=image;pic.loading="lazy";pic.decoding="async";
-    pic.alt="صورة المنتج "+p.name;pic.width=700;pic.height=700;
-    pic.addEventListener("error",()=>{pic.remove();open.append(node("span","ssSafkaNoImage","الصورة غير متاحة"))});
-    open.append(pic);
+  open.type="button";open.setAttribute("aria-label","اعرض صور وتفاصيل "+p.name);
+  if(photos.length){
+    // Soft-focus bleed behind a fully contained, uncropped primary image.
+    // Supplier posters have inconsistent ratios; NEVER stretch or crop the hero.
+    const backdrop=node("span","ssSafkaMediaBackdrop");
+    backdrop.style.backgroundImage="url("+JSON.stringify(photos[0])+")";
+    backdrop.setAttribute("aria-hidden","true");
+    open.append(backdrop);
+    const frame=node("span","ssSafkaImageFrame");
+    const pic=node("img","ssSafkaCardImage");
+    pic.src=photos[0];pic.loading="lazy";pic.decoding="async";
+    pic.width=720;pic.height=720;pic.alt="صورة "+p.name;
+    let imageIndex=0;
+    pic.addEventListener("error",()=>{
+      imageIndex++;
+      if(imageIndex<photos.length){pic.src=photos[imageIndex];backdrop.style.backgroundImage="url("+JSON.stringify(photos[imageIndex])+")";}
+      else{frame.replaceChildren(node("span","ssSafkaNoImage","الصورة غير متاحة"));backdrop.remove()}
+    });
+    frame.append(pic);open.append(frame);
+  }else if(videos.length){
+    const placeholder=node("span","ssSafkaVideoPlaceholder","▶");
+    placeholder.setAttribute("aria-hidden","true");open.append(placeholder);
   }else open.append(node("span","ssSafkaNoImage","الصورة غير متاحة"));
   const openFn=()=>openProduct(p,open);
   open.addEventListener("click",openFn);
   media.append(open,node("span","cardTag","SELECT SHOP"));
+  const mediaBadges=node("div","ssSafkaMediaBadges");
+  if(photos.length>1)mediaBadges.append(node("span","ssSafkaMediaCount",photos.length.toLocaleString("ar-EG")+" صور"));
+  if(videos.length)mediaBadges.append(node("span","ssSafkaVideoBadge","▶ فيديو"));
+  if(mediaBadges.childElementCount)media.append(mediaBadges);
   const body=node("div","cardContent ssSafkaUnifiedBody");
   body.append(node("span","cardCategory",categoryName(p.category_name)));
-  const title=node("div","cardTitle");
+  const title=node("div","cardTitle ssSafkaUnifiedTitle");
   title.append(node("h3","",p.name),node("strong","",price(p)));body.append(title);
-  body.append(node("p","ssSafkaUnifiedCode","كود المنتج: "+(p.barcode||p.id)));
+  const code=node("p","ssSafkaUnifiedCode","كود: "+(p.barcode||p.id));
+  code.title="كود المنتج لدى المورد";body.append(code);
   const bottom=node("div","cardBottom ssSafkaUnifiedBottom");
-  bottom.append(node("span","includedShipping",p.final_price_egp?"راجع التوفر قبل الطلب":"قيد مراجعة السعر"));
-  const button=node("button","","شوف الصور والتفاصيل");
+  const button=node("button","","شوف التفاصيل ↗");
   button.type="button";button.addEventListener("click",openFn);bottom.append(button);
   body.append(bottom);article.append(media,body);return article;
 }
+
 function ensureDialog(){
   if(dialog)return dialog;
   dialog=node("dialog","ssSafkaDialog");dialog.setAttribute("aria-label","تفاصيل منتج من SELECT SHOP");
@@ -284,8 +312,7 @@ function openProduct(p,trigger){
   const media=node("div","ssSafkaMedia");
   const stageWrap=node("div","ssSafkaStageWrap"),stage=node("div","ssSafkaStage");
   const thumbs=node("div","ssSafkaThumbs"),counter=node("span","ssSafkaGalleryCounter");
-  const photos=(Array.isArray(p.images)?p.images:[]).map(safeMedia).filter(Boolean);
-  const videos=(Array.isArray(p.videos)?p.videos:[]).map(safeMedia).filter(Boolean);
+  const {photos,videos}=mediaSources(p);
   const all=[
     ...photos.map(url=>({url,kind:"image"})),
     ...videos.map(url=>({url,kind:"video"}))
@@ -314,6 +341,7 @@ function openProduct(p,trigger){
       stage.append(img);
     }else if(/\.(mp4|webm)$/i.test(new URL(item.url).pathname)){
       const video=node("video");video.controls=true;video.playsInline=true;video.preload="metadata";
+      if(photos.length)video.poster=photos[0];
       video.src=item.url;stage.append(video);
     }else{
       const link=node("a","","شاهد فيديو المنتج");
@@ -339,7 +367,13 @@ function openProduct(p,trigger){
       const image=node("img");
       image.src=item.url;image.loading="lazy";image.alt="";
       b.append(image);
-    }else b.append(node("span","ssSafkaVideoThumb","▶ فيديو"));
+    }else {
+      if(photos.length){
+        const preview=node("img");preview.src=photos[0];preview.loading="lazy";
+        preview.alt="";b.append(preview);
+      }
+      b.append(node("span","ssSafkaVideoThumb","▶ فيديو"));
+    }
     b.addEventListener("click",()=>select(i));
     buttons.push(b);thumbs.append(b);
   }
