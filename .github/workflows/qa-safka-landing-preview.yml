@@ -1,0 +1,63 @@
+name: QA Safqa media landing preview
+on:
+  push:
+    branches:
+      - feature/safka-product-cost-pricing-preview-20261011
+    paths:
+      - .github/workflows/qa-safka-landing-preview.yml
+permissions:
+  contents: write
+jobs:
+  public-preview-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verify deployed pages and strict disabled order preview
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import urllib.request,hashlib,json,time,pathlib
+          urls={
+           'landing':'https://selectshopeg.com/preview/safka-landing/',
+           'landing_js':'https://selectshopeg.com/preview/safka-landing/app.js',
+           'landing_css':'https://selectshopeg.com/preview/safka-landing/style.css',
+           'admin':'https://selectshopeg.com/ops/orders-v2/',
+           'admin_js':'https://selectshopeg.com/ops/orders/app.js'
+          }
+          checks={}
+          for name,url in urls.items():
+            for attempt in range(9):
+              try:
+                req=urllib.request.Request(url,headers={'User-Agent':'SELECT-SHOP-public-qa/1.0','Cache-Control':'no-cache'})
+                with urllib.request.urlopen(req,timeout=15) as resp:
+                  data=resp.read(175000).decode('utf8','replace')
+                  status=resp.status
+                expected={
+                 'landing':'id="galleryRail"' in data and 'id="loginForm"' in data and 'disabled' in data,
+                 'landing_js':'safka-product-detail-readonly' in data and 'ordersCreated' in data and 'mediaViewer' in data and 'renderLanding' in data,
+                 'landing_css':'.mediaViewer video' in data and '@media(max-width:520px)' in data,
+                 'admin':'safka-landing-media-20261011' in data,
+                 'admin_js':'preview/safka-landing/?productId=' in data and 'safqaMoney(' in data and 'safkaMoney(' not in data
+                }
+                checks[name]={'status':status,'verified':bool(expected[name]),'sha256':hashlib.sha256(data.encode()).hexdigest()}
+                if expected[name]:break
+              except Exception as err:checks[name]={'error':type(err).__name__+': '+str(err)[:110]}
+              time.sleep(5)
+          out=pathlib.Path('integration/safka/next-stage/public-preview-qa.json')
+          out.write_text(json.dumps(checks,ensure_ascii=False,indent=2),encoding='utf8')
+          print(out.read_text())
+          PY
+      - name: Save public-only QA (no login or supplier calls)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add integration/safka/next-stage/public-preview-qa.json
+          git commit -m "test(safka): record public preview asset deployment QA" || exit 0
+          HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $HEADER" push origin HEAD:feature/safka-product-cost-pricing-preview-20261011
