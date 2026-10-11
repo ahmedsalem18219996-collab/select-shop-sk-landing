@@ -81,7 +81,7 @@ function ensureStage(){
   if(!actions){
     actions=node("div","ssSafkaUnifiedActions");
     const more=node("button","ssSafkaUnifiedMore","عرض منتجات أكثر");
-    more.type="button";more.addEventListener("click",()=>loadPage(true));
+    more.type="button";more.addEventListener("click",()=>{if(!loading){page++;loadPage(true)}});
     actions.append(more);shelf.append(actions);
   }
   return {shelf,grid,status,actions,more:$("button",actions)};
