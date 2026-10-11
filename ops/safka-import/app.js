@@ -498,6 +498,12 @@ async function loadPricingAudit(){
     }
     $("auditVariants").textContent=String(variantCount);
     $("auditCategory").textContent=String(categoryCount);
+    const {data:priceStrategy,error:strategyError}=await db.from("ss_safka_price_review_v2")
+      .select("supplier_product_id,pricing_segment").order("supplier_product_id").range(0,999);
+    if(!strategyError&&priceStrategy?.length){
+      bundleCount=priceStrategy.filter(v=>v.pricing_segment==="organic_or_bundle").length;
+      $("auditAdsEligible").textContent=String(priceStrategy.filter(v=>v.pricing_segment==="paid_ad_candidate").length);
+    }else $("auditAdsEligible").textContent="—";
     $("auditBundle").textContent=String(bundleCount);
     $("auditPremium").textContent=String(premiumCount);
     const root=$("priorityReviews");root.replaceChildren();
@@ -525,6 +531,49 @@ async function loadPricingAudit(){
     status("تعذر فحص التسعير: "+String(e?.message||"خطأ في الاتصال").slice(0,100),true,"priceAuditMessage");
   }finally{button.disabled=false}
 }
+// Owner-only CSV of ALL Safqa property/option-specific prices (not public supplier costs).
+async function exportVariantPricingCsv(){
+  if(!user)return;
+  const button=$("exportVariantPricingCsv");button.disabled=true;
+  status("جاري تجهيز أسعار الاختيارات...",false,"priceExportMessage");
+  try{
+    const [{data:options,error:optionError},{data:products,error:productError}]=await Promise.all([
+      db.from("ss_safka_variant_price_drafts").select(
+        "supplier_product_id,supplier_variant_id,variant_name,reference_price_egp,draft_price_egp,supplier_available"
+      ).order("supplier_product_id").range(0,999),
+      db.from("ss_safka_import_products").select("supplier_product_id,name,final_price_egp")
+        .order("supplier_product_id").range(0,999)
+    ]);
+    if(optionError||productError||!options?.length)throw Error("تعذر تحميل أسعار الاختيارات");
+    const map=new Map((products||[]).map(p=>[p.supplier_product_id,p]));
+    const columns=["كود منتج صفقة","اسم المنتج","كود الاختيار عند صفقة","اسم اللون/المقاس/الاختيار",
+       "الاختيار متاح","مرجع سعر صفقة للاختيار","سعر اختيار SELECT SHOP المبدئي","سعر المنتج المعروض",
+       "تنبيه"];
+    const cell=v=>{
+      let value=String(v??"");
+      if(/^[=+@\-\t\r]/.test(value))value="'"+value;
+      return '"'+value.replace(/"/g,'""')+'"';
+    };
+    const rows=options.map(v=>{
+      const product=map.get(v.supplier_product_id);
+      const note=Number(product?.final_price_egp)!==Number(v.draft_price_egp)?
+        "سعر الاختيار مختلف عن سعر أعلى اختيار؛ راجع قبل فتح الطلب":"مسودة غير معتمدة";
+      return [v.supplier_product_id,product?.name||"",v.supplier_variant_id,v.variant_name,
+        v.supplier_available?"نعم":"لا",v.reference_price_egp,v.draft_price_egp,
+        product?.final_price_egp??"",note].map(cell).join(",");
+    });
+    const csv="\uFEFF"+[columns.map(cell).join(","),...rows].join("\r\n");
+    const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
+    const link=document.createElement("a");
+    link.href=url;link.download="SELECT-SHOP-SAFKA-VARIANT-PRICES-"+new Date().toISOString().slice(0,10)+".csv";
+    document.body.append(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    status("تم تجهيز "+rows.length+" سعر اختيار بالاسم والكود، خاص بإدارة المتجر.",false,"priceExportMessage");
+  }catch(err){status(String(err?.message||err).slice(0,180),true,"priceExportMessage")}
+  finally{button.disabled=false}
+}
+$("exportVariantPricingCsv").addEventListener("click",exportVariantPricingCsv);
+
 $("runPriceAudit").addEventListener("click",loadPricingAudit);
 $("checkSafkaConnection").addEventListener("click",async()=>{
   if(!user)return;
