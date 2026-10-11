@@ -34,6 +34,7 @@ async function rpc(name,body={},signal){
 }
 let categories=[],current={filter:"all",search:"",shoeCount:4},items=[],total=0,page=1,token=0,loading=false;
 let dialog=null,lastFocus=null;
+let closeMobileDepartments=()=>{};
 function categoryName(raw){
   return raw==="غير مصنف من صفقة"?"القسم قيد المطابقة":(raw||"القسم قيد المطابقة");
 }
@@ -74,52 +75,98 @@ function addCategoryTabs(){
       menu.append(a);
     }
   }
-  // Mobile header should not become a second wall of department chips.
-  // The compact accessible dropdown in the main collection owns these choices.
+  // Only a compact shortcut stays in the mobile header.
   if(rail){
     rail.querySelectorAll(".ssSafkaMobileNavLink").forEach(x=>x.remove());
     const shortcut=node("a","ssSafkaMobileNavLink","تصفح الأقسام");
     shortcut.href="/#products";
     shortcut.addEventListener("click",()=>{
-      const picker=$(".ssMobileDepartmentSelect");
-      if(picker)requestAnimationFrame(()=>picker.focus({preventScroll:true}));
+      requestAnimationFrame(()=>{
+        const button=$(".ssMobileDepartmentButton");
+        if(button&&!button.getAttribute("aria-expanded").includes("true"))button.click();
+      });
     });
     rail.append(shortcut);
   }
   const toolbar=$(".productsSection .toolbar");
   if(toolbar){
-    let wrap=$(".ssMobileCategoryPicker",toolbar);
-    if(!wrap){
-      wrap=node("label","ssMobileCategoryPicker");
-      wrap.append(node("span","ssMobileCategoryLabel","القسم"));
-      const select=node("select","ssMobileDepartmentSelect");
-      select.setAttribute("aria-label","اختار قسم المنتجات");
-      select.addEventListener("change",()=>{
-        const value=select.value;
-        if(!value)return;
-        const tab=Array.from(tabs.querySelectorAll("[data-filter]")).find(el=>el.dataset.filter===value);
+    // Use an IN-PAGE category panel, NEVER a browser-native <select> popup.
+    // The native menu overlaid most of the viewport on 390px Chrome devices.
+    toolbar.querySelectorAll(".ssMobileCategoryPicker,.ssMobileDepartmentPanel").forEach(x=>x.remove());
+    const wrap=node("div","ssMobileCategoryPicker");
+    const picker=node("button","ssMobileDepartmentButton");
+    picker.type="button";
+    picker.setAttribute("aria-label","تصفح أقسام المنتجات");
+    picker.setAttribute("aria-controls","ssMobileDepartments");
+    picker.setAttribute("aria-expanded","false");
+    picker.append(node("span","ssMobileDepartmentText","تصفح الأقسام"),node("span","ssMobileDepartmentChevron","⌄"));
+    wrap.append(picker);
+
+    const panel=node("div","ssMobileDepartmentPanel");
+    panel.id="ssMobileDepartments";panel.hidden=true;
+    panel.setAttribute("role","region");
+    panel.setAttribute("aria-label","اختيار قسم من أقسام SELECT SHOP");
+    const top=node("div","ssMobileDepartmentHead");
+    top.append(node("strong","","اختار القسم المناسب"));
+    const dismiss=node("button","ssMobileDepartmentClose","✕");
+    dismiss.type="button";dismiss.setAttribute("aria-label","إغلاق الأقسام");
+    top.append(dismiss);
+    const choices=node("div","ssMobileDepartmentChoices");
+    for(const c of verified){
+      const item=node("button","ssMobileDepartmentItem");
+      item.type="button";
+      item.dataset.category="safka:"+c.key;
+      item.append(node("strong","",c.name),node("small","",Number(c.count).toLocaleString("ar-EG")+" منتج"));
+      item.addEventListener("click",()=>{
+        const tab=Array.from(tabs.querySelectorAll("[data-filter]"))
+          .find(el=>el.dataset.filter===item.dataset.category);
+        closeMobileDepartments();
         if(tab)tab.click();
       });
-      wrap.append(select);
-      toolbar.insertBefore(wrap,$(".searchWrap",toolbar));
+      choices.append(item);
     }
-    const select=$(".ssMobileDepartmentSelect",wrap);
-    select.replaceChildren();
-    const empty=node("option","","تصفح الأقسام");empty.value="";select.append(empty);
-    for(const c of verified){
-      const option=node("option","",c.name+" ("+Number(c.count).toLocaleString("ar-EG")+")");
-      option.value="safka:"+c.key;
-      select.append(option);
+    panel.append(top,choices);
+    const searchWrap=$(".searchWrap",toolbar);
+    toolbar.insertBefore(wrap,searchWrap);
+    toolbar.insertBefore(panel,searchWrap);
+    const setOpen=open=>{
+      const next=!!open;
+      panel.hidden=!next;
+      picker.setAttribute("aria-expanded",String(next));
+      wrap.classList.toggle("is-open",next);
+      toolbar.classList.toggle("ssDepartmentsExpanded",next);
+    };
+    closeMobileDepartments=()=>setOpen(false);
+    picker.addEventListener("click",()=>setOpen(panel.hidden));
+    dismiss.addEventListener("click",()=>{setOpen(false);picker.focus()});
+    // Keyboard support and close-on-outside-click.
+    if(!document.documentElement.dataset.ssDepartmentEvents){
+      document.documentElement.dataset.ssDepartmentEvents="1";
+      document.addEventListener("keydown",e=>{
+        if(e.key==="Escape")closeMobileDepartments();
+      });
+      document.addEventListener("click",e=>{
+        if(!e.target.closest(".ssMobileCategoryPicker,.ssMobileDepartmentPanel,.ssSafkaMobileNavLink")){
+          closeMobileDepartments();
+        }
+      });
     }
-    // Keep the uncategorized items browseable via 'All'; not a real supplier category.
   }
 }
 function syncDepartmentPicker(){
-  const select=$(".ssMobileDepartmentSelect");
-  if(!select)return;
-  const key=current.filter;
-  select.value=Array.from(select.options).some(o=>o.value===key)?key:"";
-  select.parentElement?.classList.toggle("is-selected",!!select.value);
+  const picker=$(".ssMobileDepartmentButton");
+  if(!picker)return;
+  const currentFilter=current.filter;
+  const selected=categories.find(c=>c.key!=="uncategorized"&&("safka:"+c.key)===currentFilter);
+  const name=selected?.name||"تصفح الأقسام";
+  const title=$(".ssMobileDepartmentText",picker);
+  if(title)title.textContent=name;
+  picker.classList.toggle("is-selected",!!selected);
+  document.querySelectorAll(".ssMobileDepartmentItem").forEach(b=>{
+    const active=b.dataset.category===currentFilter;
+    b.classList.toggle("is-active",active);
+    b.setAttribute("aria-pressed",String(active));
+  });
 }
 function categoryFilter(f){
   return f==="all"?null:f==="safka-other"?"uncategorized":
