@@ -198,6 +198,7 @@ async function ingestVerifiedMediaManifest(){
       false,"mediaIngestMessage");
     await loadMediaCoverage();
     await loadPricingAudit();
+    await loadSafqaOrderInbox();
   }catch(err){
     status("تعذر الحفظ: "+(err?.message||"تحقق من ملف الوسائط").slice(0,170)+
       " — يمكنك إعادة الاستيراد بأمان؛ الدفعات السابقة تحفظ بمعرف المنتج.",true,"mediaIngestMessage");
@@ -539,6 +540,62 @@ $("checkSafkaConnection").addEventListener("click",async()=>{
   }catch(e){status("فشل فحص الاتصال: "+String(e?.message||"خطأ").slice(0,140),true,"safkaConnectionMessage")}
   finally{button.disabled=false}
 });
+
+// Owner-only Safqa guest-order inbox. NEVER calls Safqa supplier order API.
+async function loadSafqaOrderInbox(){
+  if(!user)return;
+  const button=$("reloadSafkaInbox");
+  if(button)button.disabled=true;
+  status("جاري تحميل طلبات الموقع...",false,"safkaInboxMessage");
+  try{
+    const {data,error}=await db.from("ss_safka_checkout_requests")
+      .select("id,order_code,product_title,variant_title,quantity,unit_price_egp,total_egp,customer_name,phone,governorate_name,area,address,notes,status,supplier_status,supplier_order_ref,created_at")
+      .order("created_at",{ascending:false}).limit(100);
+    if(error)throw Error("تعذر قراءة أوردرات صفقة الخاصة.");
+    const root=$("safkaInboxList");root.replaceChildren();
+    if(!data?.length){
+      root.append(node("p","detailNote","لسه مفيش طلبات منتجات صفقة مسجلة على الموقع."));
+    }
+    for(const item of data||[]){
+      const article=node("article","mediaQueueItem ssSafqaOrderCard");
+      const label=item.status==="review"?"بانتظار المراجعة":item.status==="confirmed"?"تم التأكيد داخل الموقع":"ملغي";
+      article.append(node("strong","",item.order_code+" · "+label));
+      article.append(node("p","",item.product_title+" · "+item.variant_title+" × "+item.quantity));
+      article.append(node("small","","الإجمالي: "+money(item.total_egp)+" | الحالة عند صفقة: "+(item.supplier_status==="not_sent"?"لم يُرسل":"يتطلب متابعة")));
+      article.append(node("p","",item.customer_name+" — "+item.phone));
+      article.append(node("small","",item.governorate_name+" — "+item.area+" — "+item.address));
+      if(item.notes)article.append(node("small","","ملاحظات: "+item.notes));
+      article.append(node("small","","تاريخ الطلب: "+new Date(item.created_at).toLocaleString("ar-EG")));
+      if(item.status==="review"&&item.supplier_status==="not_sent"){
+        const controls=node("div","ssSafqaOrderActions");
+        for(const action of ["confirm","cancel"]){
+          const label=action==="confirm"?"تأكيد المراجعة (بدون إرسال لصفقة)":"إلغاء الطلب";
+          const btn=node("button","",label);btn.type="button";
+          btn.addEventListener("click",async()=>{
+            if(!user)return;
+            if(!window.confirm(action==="confirm"?"تأكيد الطلب داخل الموقع فقط؟ لن يتم إرساله إلى صفقة.":"إلغاء هذا الطلب؟"))return;
+            btn.disabled=true;
+            try{
+              const {data:out,error:callError}=await db.functions.invoke("safka-review-order",{body:{orderId:item.id,action}});
+              if(callError||!out?.ok)throw Error(out?.error||callError?.message||"review_failed");
+              await loadSafqaOrderInbox();
+            }catch(e){
+              status("تعذر تحديث الطلب: "+String(e?.message||e).slice(0,150),true,"safkaInboxMessage");
+              btn.disabled=false;
+            }
+          });
+          controls.append(btn);
+        }
+        article.append(controls);
+      }
+      root.append(article);
+    }
+    status("إجمالي الطلبات المعروضة: "+(data||[]).length+
+      " — بيانات خاصة بالمدير. مراجعة الطلب لا تنشئ طلبًا عند صفقة.",false,"safkaInboxMessage");
+  }catch(e){status(String(e?.message||e).slice(0,140),true,"safkaInboxMessage")}
+  finally{if(button)button.disabled=false}
+}
+$("reloadSafkaInbox").addEventListener("click",loadSafqaOrderInbox);
 
 function safeImageUrl(value){
   if(typeof value!=="string")return null;
