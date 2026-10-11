@@ -61,3 +61,10 @@
   .ssSafkaDialog{overscroll-behavior:contain}
   .ssSafkaDetailShare{width:100%}
 }
+
+/* Safqa price preview is explicitly indicative until owner price approval; checkout stays blocked. */
+.ssSafkaUnifiedCard .ssSafkaPricePreview{display:block;color:#dcc18a;font-size:11px;line-height:1.6;margin-block-start:6px;letter-spacing:0}
+.ssSafkaVariantPrice{display:inline;font-size:11px;font-weight:700;color:#c9dfb9;white-space:nowrap}
+.ssSafkaPriceInfo{min-width:0}
+.ssSafkaPriceInfo span{line-height:1.6}
+@media(max-width:640px){.ssSafkaUnifiedCard .ssSafkaPricePreview{font-size:10px}.ssSafkaVariantPrice{font-size:10px;white-space:normal}}
