@@ -73,6 +73,14 @@ function mediaShell(product){
    }
    const badge=el("div","ssMediaCount",(i+1)+" / "+available.length);
    stage.append(badge);
+   const controls=el("div","ssMediaControls");
+   const back=el("button","ssMediaNav","‹");back.type="button";
+   back.setAttribute("aria-label","الصورة أو الفيديو السابق");
+   const next=el("button","ssMediaNav","›");next.type="button";
+   next.setAttribute("aria-label","الصورة أو الفيديو التالي");
+   back.addEventListener("click",()=>selectMedia((current-1+available.length)%available.length));
+   next.addEventListener("click",()=>selectMedia((current+1)%available.length));
+   controls.append(back,next);stage.append(controls);
    for(let index=0;index<mediaItems.length;index++){
      const btn=mediaItems[index];const active=index===i;
      btn.classList.toggle("active",active);
@@ -82,13 +90,6 @@ function mediaShell(product){
    if(source)source.href=item.type==="video"?driveView(item.id):driveView(item.id);
  }
  if(available.length){
-   const controls=el("div","ssMediaControls");
-   const back=el("button","ssMediaNav","‹");back.type="button";back.setAttribute("aria-label","الوسيط السابق");
-   const next=el("button","ssMediaNav","›");next.type="button";next.setAttribute("aria-label","الوسيط التالي");
-   back.addEventListener("click",()=>selectMedia((current-1+available.length)%available.length));
-   next.addEventListener("click",()=>selectMedia((current+1)%available.length));
-   controls.append(back,next);
-   stage.append(controls);
    available.forEach((item,i)=>{
      const btn=el("button","ssMediaThumb "+(item.type==="video"?"ssMediaThumbVideo":""),item.type==="video"?"▶ "+item.label:"");
      btn.type="button";btn.setAttribute("aria-label","اعرض "+item.label);
