@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "checks": {
+    "jwt_verified_auth_gate": true,
+    "only_safka_GET": true,
+    "safqa_key_env_only": true,
+    "service_key_server_only": true,
+    "stage_only": true,
+    "no_checkout": true,
+    "real_source_codes": true,
+    "admin_html": true,
+    "full_page_loop": true,
+    "no_shop_clean": true
+  },
+  "real_supplier_orders": 0,
+  "catalog_published": 0
+}
