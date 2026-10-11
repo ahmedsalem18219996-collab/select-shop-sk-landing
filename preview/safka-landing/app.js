@@ -172,7 +172,7 @@ function renderLanding(detail){
   const name=asText(detail.name||detail.title)||"منتج صفقة";
   document.title=name+" | SELECT SHOP — معاينة";
   $("productName").textContent=name;
-  $("productDescription").textContent=asText(detail.description)||"وصف المنتج مش متوفر من API صفقة حاليًا.";
+  $("productDescription").textContent="وصف المورد غير معتمد بعد. محتاجين نطابق المواصفات والصور والفيديوهات مع نفس الموديل قبل النشر للبيع.";
   $("providerPrice").textContent=fmt(detail.sale_price);
   const opts=$("variants");opts.replaceChildren();
   const variants=Array.isArray(detail.variants)?detail.variants:[];
