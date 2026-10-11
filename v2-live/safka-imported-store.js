@@ -49,12 +49,21 @@ function addCategoryTabs(){
   tabs.querySelectorAll(".ssSafkaFilterTab").forEach(x=>x.remove());
   const existing=new Set(Array.from(tabs.querySelectorAll("[data-filter]"),x=>x.dataset.filter));
   const entries=categories.filter(c=>c&&c.key!=="uncategorized"&&typeof c.key==="string"&&Number(c.count)>0);
+  const pendingCategory=categories.find(c=>c?.key==="uncategorized"&&Number(c.count)>0);
   for(const c of entries){
     const key=c.key==="uncategorized"?"safka-other":"safka:"+c.key;
     if(existing.has(key))continue;
     const label=c.name;
     const b=node("button","tab ssSafkaFilterTab",label+" ("+Number(c.count).toLocaleString("ar-EG")+")");
     b.type="button";b.dataset.filter=key;b.setAttribute("aria-pressed","false");
+    tabs.append(b);
+  }
+  // Suppliers can have unmatched category data. Show it only as a review bucket.
+  // Never mislabel these as a source-verified category.
+  if(pendingCategory){
+    const b=node("button","tab ssSafkaFilterTab ssSafkaUnverifiedTab",
+      "قيد تصنيف المورد ("+Number(pendingCategory.count).toLocaleString("ar-EG")+")");
+    b.type="button";b.dataset.filter="safka-other";b.setAttribute("aria-pressed","false");
     tabs.append(b);
   }
   // Category navigation reuses the SAME collection state and product cards.
@@ -72,6 +81,13 @@ function addCategoryTabs(){
         menu.hidden=true;
         const trigger=$("#navCategoryButton");if(trigger)trigger.setAttribute("aria-expanded","false");
       });
+      menu.append(a);
+    }
+    if(pendingCategory){
+      const a=node("a","ssSafkaNavLink ssSafkaUnverifiedNav","قيد تصنيف المورد");
+      a.href="/#products";a.dataset.filter="safka-other";
+      a.append(node("small","",Number(pendingCategory.count).toLocaleString("ar-EG")+" منتج — القسم غير مؤكد"));
+      a.addEventListener("click",()=>{menu.hidden=true;$("#navCategoryButton")?.setAttribute("aria-expanded","false")});
       menu.append(a);
     }
   }
@@ -137,6 +153,17 @@ function addCategoryTabs(){
       });
       choices.append(item);
     }
+    if(pendingCategory){
+      const item=node("button","ssMobileDepartmentItem ssSafkaUnverifiedItem");
+      item.type="button";item.dataset.category="safka-other";
+      item.append(node("strong","","قيد تصنيف المورد"),
+        node("small","",Number(pendingCategory.count).toLocaleString("ar-EG")+" منتج — لم يتم تأكيد القسم"));
+      item.addEventListener("click",()=>{
+        closeMobileDepartments();
+        tabs.querySelector('[data-filter="safka-other"]')?.click();
+      });
+      choices.append(item);
+    }
     panel.append(top,choices);
     panel.append(node("p","ssMobileDepartmentHint","كل المنتجات متاحة أيضًا من زر «الكل» والبحث."));
     const searchWrap=$(".searchWrap",toolbar);
@@ -171,10 +198,10 @@ function syncDepartmentPicker(){
   if(!picker)return;
   const currentFilter=current.filter;
   const selected=categories.find(c=>c.key!=="uncategorized"&&("safka:"+c.key)===currentFilter);
-  const name=currentFilter==="shoes"?"الأحذية":selected?.name||"الأقسام";
+  const name=currentFilter==="shoes"?"الأحذية":currentFilter==="safka-other"?"قيد تصنيف المورد":selected?.name||"الأقسام";
   const title=$(".ssMobileDepartmentText",picker);
   if(title)title.textContent=name;
-  picker.classList.toggle("is-selected",!!selected||currentFilter==="shoes");
+  picker.classList.toggle("is-selected",!!selected||currentFilter==="shoes"||currentFilter==="safka-other");
   document.querySelectorAll(".ssMobileDepartmentItem").forEach(b=>{
     const active=b.dataset.category===currentFilter;
     b.classList.toggle("is-active",active);
@@ -253,17 +280,23 @@ function productCard(p){
   media.append(open,node("span","cardTag","SELECT SHOP"));
   const mediaBadges=node("div","ssSafkaMediaBadges");
   if(photos.length>1)mediaBadges.append(node("span","ssSafkaMediaCount",photos.length.toLocaleString("ar-EG")+" صور"));
-  if(videos.length)mediaBadges.append(node("span","ssSafkaVideoBadge","▶ فيديو"));
+  if(videos.length)mediaBadges.append(node("span","ssSafkaVideoBadge","▶ "+videos.length.toLocaleString("ar-EG")+" فيديو"));
   if(mediaBadges.childElementCount)media.append(mediaBadges);
   const body=node("div","cardContent ssSafkaUnifiedBody");
   body.append(node("span","cardCategory",categoryName(p.category_name)));
   const title=node("div","cardTitle ssSafkaUnifiedTitle");
   title.append(node("h3","",p.name),node("strong","",price(p)));body.append(title);
-  const code=node("p","ssSafkaUnifiedCode","كود: "+(p.barcode||p.id));
-  code.title="كود المنتج لدى المورد";body.append(code);
+  const code=node("p","ssSafkaUnifiedCode","كود صفقة: "+(p.barcode||p.id));
+  code.title="باركود المنتج في صفقة، وكوده الأصلي موجود في التفاصيل";
+  body.append(code);
+  article.dataset.supplierProductId=p.id;
   const bottom=node("div","cardBottom ssSafkaUnifiedBottom");
   const button=node("button","","شوف التفاصيل ↗");
   button.type="button";button.addEventListener("click",openFn);bottom.append(button);
+  const share=node("button","ssSafkaCopyLink","نسخ الرابط");
+  share.type="button";share.setAttribute("aria-label","نسخ الرابط المباشر لمنتج "+p.name);
+  share.addEventListener("click",()=>copyProductLink(p.id,share));
+  bottom.append(share);
   body.append(bottom);article.append(media,body);return article;
 }
 
@@ -303,6 +336,37 @@ function choiceName(s){
   if(/^(free\s*size|freesize|one size)$/i.test(v))return "مقاس واحد (فري سايز)";
   return v;
 }
+function productLink(id){
+  return location.origin+"/?product=safka-"+encodeURIComponent(id)+"#products";
+}
+async function copyProductLink(id,button){
+  if(!validId(id))return;
+  const link=productLink(id);
+  const previous=button.textContent;
+  try{
+    if(navigator.clipboard?.writeText){
+      await navigator.clipboard.writeText(link);
+      button.textContent="تم نسخ الرابط";
+    }else{
+      // iOS/Safari clipboard may be unavailable without permission.
+      const input=node("textarea");
+      input.value=link;input.readOnly=true;input.style.position="fixed";
+      input.style.top="0";input.style.opacity="0";
+      document.body.append(input);input.select();
+      const copied=document.execCommand("copy");input.remove();
+      if(!copied)throw Error("copy_not_supported");
+      button.textContent="تم نسخ الرابط";
+    }
+  }catch{
+    button.textContent="تعذر النسخ — افتح التفاصيل";
+    if(button.closest(".ssSafkaDialog")){
+      const linkNode=node("a","ssSafkaExternalMedia","افتح رابط المنتج");
+      linkNode.href=link;linkNode.target="_blank";linkNode.rel="noopener noreferrer";
+      button.parentElement.append(linkNode);
+    }
+  }
+  setTimeout(()=>{if(button.isConnected)button.textContent=previous},2400);
+}
 function openProduct(p,trigger){
   if(!validId(p?.id))return;
   const d=ensureDialog();
@@ -330,7 +394,7 @@ function openProduct(p,trigger){
   const all=[
     ...photos.map(url=>({url,kind:"image"})),
     ...videos.map(url=>({url,kind:"video"}))
-  ].slice(0,32);
+  ];
   let active=0;
   const buttons=[];
   const nav=node("div","ssSafkaGalleryNav");
@@ -408,12 +472,7 @@ function openProduct(p,trigger){
   if(all.length>1)media.append(thumbs);
   // Exact supplier-backed media resource verified for this specific Product ID.
   // This is a Drive media folder (with a فيديو subfolder), NOT a direct playable video.
-  if(p.id==="6661c38f6bb2679227b82a14"){
-    const folder=node("a","ssSafkaExternalMedia","شاهد مجلد صور وفيديوهات المورد ↗");
-    folder.href="https://drive.google.com/drive/folders/15Aq-BPK-NlG5UEv7-RkOb6u3YZr4Yve6";
-    folder.target="_blank";folder.rel="noopener noreferrer";
-    media.append(folder);
-  }
+
 
   const body=node("div","ssSafkaDetailBody");
   const eyebrow=node("div","ssSafkaDetailEyebrow");
@@ -471,6 +530,13 @@ function openProduct(p,trigger){
   });
   technical.append(codes);body.append(technical);
   const action=node("div","ssSafkaDetailAction");
+  const share=node("button","ssSafkaCopyLink ssSafkaDetailShare","نسخ رابط المنتج للإعلان");
+  share.type="button";share.addEventListener("click",()=>copyProductLink(p.id,share));
+  action.append(share);
+  if(videos.some(url=>url.startsWith("https://drive.google.com/"))){
+    action.append(node("p","ssSafkaSourceMediaNote",
+      "فيديوهات من روابط المورد على Google Drive، وقد يتطلب تشغيلها صلاحية وصول. نراجع التشغيل قبل الإعلانات."));
+  }
   action.append(node("p","","الطلب غير متاح لحين مراجعة السعر والتوفر."));
   const disabled=node("button","ssSafkaDisabled","قريبًا — جارٍ تجهيز المنتج");
   disabled.type="button";disabled.disabled=true;action.append(disabled);
