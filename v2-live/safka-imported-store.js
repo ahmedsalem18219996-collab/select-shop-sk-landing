@@ -477,7 +477,7 @@ function openProduct(p,trigger){
   const body=node("div","ssSafkaDetailBody");
   const eyebrow=node("div","ssSafkaDetailEyebrow");
   eyebrow.append(node("span","ssSafkaTag",categoryName(p.category_name)),
-    node("span","ssSafkaAvailability","قيد تجهيز السعر"));
+    node("span","ssSafkaAvailability",p.final_price_egp?"السعر معتمد — الطلب بعد المراجعة":"قيد تجهيز السعر"));
   body.append(eyebrow,node("h2","",p.name));
   const info=node("div","ssSafkaPriceInfo");
   info.append(node("span","","السعر النهائي"),node("strong","",price(p)));
@@ -537,9 +537,28 @@ function openProduct(p,trigger){
     action.append(node("p","ssSafkaSourceMediaNote",
       "فيديوهات من روابط المورد على Google Drive، وقد يتطلب تشغيلها صلاحية وصول. نراجع التشغيل قبل الإعلانات."));
   }
-  action.append(node("p","","الطلب غير متاح لحين مراجعة السعر والتوفر."));
-  const disabled=node("button","ssSafkaDisabled","قريبًا — جارٍ تجهيز المنتج");
-  disabled.type="button";disabled.disabled=true;action.append(disabled);
+  const approved=Number.isSafeInteger(Number(p.final_price_egp))&&
+    Number(p.final_price_egp)>0&&Array.isArray(p.variants)&&
+    p.variants.some(v=>v.available===true&&validId(v.id));
+  if(approved){
+    action.append(node("p","","تقدر تسجّل طلبك بعد التأكد من بيانات الشحن؛ الطلب هيتراجع قبل تأكيد التوريد."));
+    const buy=node("button","ssSafkaPurchase","اطلب الآن — حفظ طلب للمراجعة");
+    buy.type="button";
+    buy.addEventListener("click",()=>{
+      if(window.SELECT_SHOP_TEST_MODE){
+        const warning=node("p","ssSafkaSourceMediaNote","وضع اختبار المالك: مش هنسجل أوردر حقيقي.");
+        action.append(warning);buy.disabled=true;return;
+      }
+      d.close();
+      if(window.SS_SAFKA_CHECKOUT?.open)window.SS_SAFKA_CHECKOUT.open(p);
+      else window.alert("خدمة تسجيل الطلب غير متاحة حاليًا.");
+    });
+    action.append(buy);
+  }else{
+    action.append(node("p","","الطلب غير متاح لحين مراجعة السعر والتوفر."));
+    const disabled=node("button","ssSafkaDisabled","قريبًا — جارٍ تجهيز المنتج");
+    disabled.type="button";disabled.disabled=true;action.append(disabled);
+  }
   body.append(action);
   layout.append(media,body);
   d.append(header,layout);
