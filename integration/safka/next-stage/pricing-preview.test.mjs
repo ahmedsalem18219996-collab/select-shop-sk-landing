@@ -59,3 +59,38 @@ test("strip arbitrary secrets/customer fields from product details",()=>{
   assert.equal(JSON.stringify(result).includes("HIDDEN"),false);
   assert.equal(JSON.stringify(result).includes("01099999999"),false);
 });
+
+test("provides public HTTPS photos and direct hosted videos, without secrets",()=>{
+  const id="6a9c3d2bc9d99a6b86da4ff6";
+  const detail=summarizeSafqaProductDetail({data:{product:{
+    _id:id,name:"Product",
+    images:["https://cdn.example.com/image1.jpg",{url:"https://cdn.example.com/image2.png"}],
+    videos:[{url:"https://cdn.example.com/demo.mp4"}],
+    video_url:"https://cdn.example.com/clip.webm",
+    properties:[{_id:"s",key:"Size 42",value:300}],
+    api_safka_key:"PRIVATE_DO_NOT_EXPOSE"
+  }}});
+  assert.equal(detail.media.photos.length,2);
+  assert.equal(detail.media.clips.length,2);
+  assert.equal(detail.media.clips[0].type,"video");
+  assert.equal(JSON.stringify(detail).includes("PRIVATE_DO_NOT_EXPOSE"),false);
+});
+test("rejects private/insecure/signed URLs and non-playable video links",()=>{
+ const p=summarizeSafqaProductDetail({data:{_id:"6a9c3d2bc9d99a6b86da4ff6",
+   images:["http://cdn.example.com/image.jpg","https://localhost/image.jpg",
+     "https://cdn.example.com/image.jpg?token=private"],
+   videos:["https://drive.google.com/file/d/AAA/view",
+     "https://cdn.example.com/promo.mp4?X-Amz-Signature=private"]
+ }});
+ assert.equal(p.media.photos.length,0);
+ assert.equal(p.media.clips.length,0);
+ assert.equal(p.media.fields.videos.count,2);
+});
+test("supports public YouTube link as video candidate only",()=>{
+ const p=summarizeSafqaProductDetail({data:{
+   _id:"6a9c3d2bc9d99a6b86da4ff6",
+   videos:["https://www.youtube.com/watch?v=AbCdEfG1234"]
+ }});
+ assert.equal(p.media.clips.length,1);
+ assert.equal(p.media.clips[0].type,"youtube");
+});
