@@ -45,9 +45,10 @@ const VARIANT_KEYS=[
   "_id","id","key","name","value","min","sale_price","is_available"
 ];
 const REGION_KEYS=[
-  "_id","id","name","governorate","governorate_name","shipping_price",
+  "_id","id","name","governorate","governorate_name",
+  "governorateName","governorateNameAr","is_active","shipping_price",
   "shippingPrice","price","delivery_price","deliveryPrice","shipping",
-  "return_price","returnPrice","extra_shipping","cities"
+  "return_price","returnPrice","extra_shipping"
 ];
 export function summarizeProduct(item){
   const p=take(item,PRODUCT_KEYS);
