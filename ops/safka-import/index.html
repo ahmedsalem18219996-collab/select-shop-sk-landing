@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#141a16">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none';base-uri 'self';form-action 'self';object-src 'none';script-src 'self' https://esm.sh;style-src 'self';img-src 'self' https: data:;media-src https:;frame-src https://www.youtube-nocookie.com https://drive.google.com;connect-src 'self' https://zznqdwrohrycsjfpvkhc.supabase.co https://esm.sh;frame-ancestors 'none'">
 <title>استيراد صفقة | إدارة SELECT SHOP المؤقت</title>
-<link rel="stylesheet" href="./style.css?v=1"><script type="module" src="./app.js?v=1"></script>
+<link rel="stylesheet" href="./style.css?v=1"><script type="module" src="./app.js?v=2"></script>
 </head><body>
 <header class="siteHead"><a href="/" class="logo">SELECT <em>SHOP</em></a><span>إدارة استيراد صفقة · الموقع المؤقت</span><a href="/ops/orders-v2/">لوحة الأوردرات ↗</a></header>
 <main>
@@ -22,9 +22,10 @@
  <div class="titleRow"><div><span class="eyebrow">SAFQA × SELECT SHOP</span><h1>كتالوج صفقة الكامل</h1><p>بيانات المورد الأصلية بالأكواد والأقسام والاختيارات. لا نشر ولا أوردرات من الشاشة دي.</p></div><button id="logout" type="button">خروج</button></div>
  <section class="panel syncPanel">
   <div><h2>استيراد كل المنتجات</h2><p>هندخل المنتجات على دفعات، ونحفظ سعر المورد المقترح منفصل عن سعر البيع النهائي الشامل للشحن.</p></div>
-  <div class="syncControls"><button class="primary" id="importAll" type="button">استورد كل منتجات صفقة</button><button id="reload" type="button">تحديث القائمة</button></div>
+  <div class="syncControls"><button class="primary" id="importAll" type="button">استورد كل منتجات صفقة</button><button id="reload" type="button">تحديث القائمة</button><button id="syncCategories" type="button">طابق الأقسام الأصلية من صفقة</button></div>
   <progress id="syncProgress" hidden max="100" value="0"></progress>
   <p id="syncMessage" class="feedback" role="status" aria-live="polite">مستني بدء الاستيراد.</p>
+   <progress id="categoryProgress" hidden max="100" value="0"></progress><p id="categoryMessage" class="feedback" role="status" aria-live="polite">الأقسام غير المؤكدة هتفضل منفصلة لحين مطابقتها مع المورد.</p>
  </section>
  <div class="overview" id="stats">
   <div class="stat"><span>المنتجات المحفوظة</span><strong id="allCount">—</strong></div>
