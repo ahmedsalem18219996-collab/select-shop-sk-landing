@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "source": "live storefront JS with synthetic Supabase RPC data",
+  "cards": 1,
+  "original_id_visible": true,
+  "images": true,
+  "category": true,
+  "sale_disabled_without_final_price": true,
+  "old_five_demo_hidden": true,
+  "real_provider_calls": 0,
+  "checkout_changes": 0
+}
