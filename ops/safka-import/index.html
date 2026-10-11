@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#141a16">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none';base-uri 'self';form-action 'self';object-src 'none';script-src 'self' https://esm.sh;style-src 'self';img-src 'self' https: data:;media-src https:;frame-src https://www.youtube-nocookie.com https://drive.google.com;connect-src 'self' https://zznqdwrohrycsjfpvkhc.supabase.co https://esm.sh;frame-ancestors 'none'">
 <title>استيراد صفقة | إدارة SELECT SHOP المؤقت</title>
-<link rel="stylesheet" href="./style.css?v=3-price-draft"><script type="module" src="./app.js?v=8-price-draft"></script>
+<link rel="stylesheet" href="./style.css?v=3-price-draft"><script type="module" src="./app.js?v=9-price-count"></script>
 </head><body>
 <header class="siteHead"><a href="/" class="logo">SELECT <em>SHOP</em></a><span>إدارة استيراد صفقة · الموقع المؤقت</span><a href="/ops/orders-v2/">لوحة الأوردرات ↗</a></header>
 <main>
@@ -32,6 +32,7 @@
   <div class="stat"><span>الأقسام الواردة من صفقة</span><strong id="categoryCount">—</strong></div>
   <div class="stat"><span>المحافظات بأسعار الشحن</span><strong id="regionCount">—</strong></div>
   <div class="stat"><span>جاهزة للبيع بعد المراجعة</span><strong id="approvedCount">—</strong></div>
+  <div class="stat"><span>أسعار محفوظة كمسودات</span><strong id="pricedCount">—</strong></div>
  </div>
  <section class="panel portableExport" aria-labelledby="portableHeading">
   <span class="eyebrow">PORTABLE SUPPLIER CATALOG · V1</span>
@@ -71,7 +72,7 @@
   <div id="mediaWorkQueue" class="mediaWorkQueue"></div>
  </section>
  <section class="panel catalog">
-   <div class="filterBar"><div><h2>المنتجات بالأكواد والصور</h2><p>كل كارت بيحتفظ بـ Product ID والباركود، والاختيارات لها أكواد المورد الأصلية.</p></div>
+   <div class="filterBar"><div><h2>المنتجات بالأكواد والميديا والتسعير</h2><p>كل كارت بيحتفظ بـ Product ID والباركود، والاختيارات لها أكواد المورد الأصلية.</p></div>
    <label>بحث<input id="search" type="search" placeholder="اسم المنتج أو الباركود أو الكود"></label>
    <label>القسم<select id="category"><option value="">كل الأقسام</option></select></label>
    <label>عدد النتائج<select id="pageSize"><option value="24">24</option><option value="48">48</option></select></label>
