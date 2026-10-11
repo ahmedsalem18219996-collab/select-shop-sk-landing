@@ -56,7 +56,7 @@ async function safkaGet(path,key){
 Deno.serve(async(req)=>{
   const origin=req.headers.get("origin")||"";
   if(!ORIGINS.has(origin))return new Response("Forbidden",{status:403});
-  if(req.method==="OPTIONS")return response(204,{ok:true},origin);
+  if(req.method==="OPTIONS")return new Response(null,{status:204,headers:{"access-control-allow-origin":origin,"access-control-allow-methods":"POST,OPTIONS","access-control-allow-headers":"authorization,apikey,content-type,x-client-info","access-control-max-age":"600","vary":"Origin"}});
   if(req.method!=="POST")return response(405,{error:"method_not_allowed"},origin);
   const token=req.headers.get("authorization")?.match(/^Bearer ([^\s]+)$/i)?.[1];
   if(!token||token.length<30)return response(401,{error:"not_authenticated"},origin);
