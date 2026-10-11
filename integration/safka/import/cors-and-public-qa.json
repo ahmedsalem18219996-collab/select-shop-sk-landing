@@ -1,0 +1,40 @@
+{
+  "cors_preflight": {
+    "status": 204,
+    "allows_origin": true,
+    "no_response_body": true,
+    "passed": true
+  },
+  "public_catalog_rpc": {
+    "status": 200,
+    "passed": true,
+    "total": 0,
+    "exposed_supplier_cost_key": false
+  },
+  "categories_rpc": {
+    "status": 200,
+    "passed": true,
+    "count": 0
+  },
+  "homepage": {
+    "status": 200,
+    "passed": true,
+    "sha256": "3033a61a202a7af892ea0aba1fb30f2803be40a666675488a952ce1120e02440"
+  },
+  "catalog_js": {
+    "status": 200,
+    "passed": false,
+    "sha256": "1c3940cfbceea6e6256dc6d3c12974c970bcb18377d2ff5592b70a09d7cf119e",
+    "js_syntax_pass": true
+  },
+  "catalog_css": {
+    "status": 200,
+    "passed": true,
+    "sha256": "3262ddca5a03b17144e7f6cc5cb0edaed227424757f899b1f45cdf0aeaf4f009"
+  },
+  "import_page": {
+    "status": 200,
+    "passed": true,
+    "sha256": "1b6397c72d64224dabcfd6810e629edefeeb0f657af90858000ad0c731d2db29"
+  }
+}
