@@ -48,3 +48,34 @@ for path in PATHS:
 OUTPUT.parent.mkdir(parents=True,exist_ok=True)
 OUTPUT.write_text("\n".join(report),encoding="utf-8")
 print(f"Research written to {OUTPUT} ({OUTPUT.stat().st_size} bytes)")
+
+# SPA uses client JavaScript; extract publicly documented route strings.
+import urllib.parse
+try:
+  with urllib.request.urlopen(urllib.request.Request(ROOT,headers={"User-Agent":"Mozilla/5.0"}),timeout=22) as result:
+    page=result.read(100000).decode("utf-8","replace")
+  bundles=[]
+  for script in re.findall(r'<script[^>]+src="([^"]+\.js[^"]*)"',page):
+    url=urllib.parse.urljoin(ROOT,script)
+    if url not in bundles:bundles.append(url)
+  keywords=["Create Order","Products List","api-safka-key","/api/v1/public","productId","Order Request","price list","Integration flow","/order","shippingPrice","product_id","governorate"]
+  snippets=["# Safka docs JS bundle inspection","Bundles found: "+str(len(bundles)),""]
+  for url in bundles[:5]:
+    try:
+      with urllib.request.urlopen(urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0"}),timeout=38) as r:
+        js=r.read(6000000).decode("utf-8","replace")
+      snippets+=["## "+url,"size="+str(len(js))]
+      hits=[]
+      for needle in keywords:
+        locs=list(re.finditer(re.escape(needle),js,re.I))
+        snippets.append("Keyword "+needle+" count="+str(len(locs)))
+        for m in locs[:8]:
+          sample=js[max(0,m.start()-900):min(len(js),m.end()+2100)]
+          if sample not in hits:hits.append(sample)
+      snippets.extend(hits[:50]);snippets.append("---")
+    except Exception as exc:
+      snippets.append("bundle_error="+type(exc).__name__+" "+str(exc)[:180])
+  target=OUTPUT.with_name("research-bundle.md")
+  target.write_text("\n\n".join(snippets)[:185000],encoding="utf-8")
+  print("JS inspection:",target,target.stat().st_size)
+except Exception as exc:print("JS_RESEARCH_ERROR",type(exc).__name__,str(exc)[:180])
