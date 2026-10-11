@@ -1,3 +1,5 @@
+/* Defensive: retire both legacy standalone Safka panels, including owner test mode. */
+#ssSafqaImported,#safkaOwnerProducts{display:none!important}
 /* SELECT SHOP TEMP — unified catalog; NO separate Safka collection panel. */
 .productsSection .toolbar .tabs{display:flex;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;min-width:0;max-width:100%;gap:7px;padding-bottom:3px}
 .productsSection .toolbar .tabs::-webkit-scrollbar{display:none}
