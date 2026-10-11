@@ -65,3 +65,175 @@
 #navCategoryMenu .ssSafkaNavLink small{font-size:10px;white-space:nowrap;opacity:.75;flex-shrink:0}
 .siteHeader .mobileCategoryRail{overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain;min-width:0}
 .siteHeader .mobileCategoryRail .ssSafkaMobileNavLink{white-space:nowrap;flex:0 0 auto}
+
+
+/* 2026-10-11 MOBILE UX: one-row departments control; source image-led dialog. */
+.ssMobileCategoryPicker{display:none}
+.ssSafkaDialog,.ssSafkaDialog *{box-sizing:border-box}
+.ssSafkaDialog{
+  width:min(860px,calc(100vw - 28px));
+  max-width:calc(100vw - 28px);
+  max-height:min(90dvh,850px);
+  padding:0!important;
+  margin:auto;
+  border:1px solid #536c48;
+  border-radius:16px;
+  overflow-x:hidden;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  background:#151f18;
+  color:#f2f6ec;
+  box-shadow:0 24px 85px #000b;
+}
+.ssSafkaDialog::backdrop{background:#030805c9;backdrop-filter:blur(5px)}
+.ssSafkaDialogHead{
+  position:sticky;top:0;z-index:5;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  min-height:61px;margin:0;padding:11px 18px;
+  background:#18241df5;border-bottom:1px solid #344837;
+  backdrop-filter:blur(14px);
+}
+.ssSafkaDialogBrand{display:flex;min-width:0;flex-direction:column;gap:3px}
+.ssSafkaDialogBrand .ssSafkaEyebrow{font:800 10px/1.5 Manrope,Arial,sans-serif;letter-spacing:.1em;color:#dafa78}
+.ssSafkaDialogShortTitle{font-size:12px;font-weight:700;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;max-width:440px;color:#e7eadb}
+.ssSafkaClose{
+  flex:0 0 auto;display:grid;place-items:center;
+  width:38px;height:38px;min-width:38px;min-height:38px;
+  padding:0;border-radius:9px;border:1px solid #465c40;
+  background:#2d4030;color:#f4f7ee;
+  font:500 29px/1 Arial,sans-serif;cursor:pointer;
+}
+.ssSafkaClose:hover{background:#435b3b}
+.ssSafkaClose:focus-visible,.ssSafkaThumb:focus-visible,.ssSafkaGalleryArrow:focus-visible,
+.ssSafkaReadMore:focus-visible{outline:2px solid #dafa78;outline-offset:2px}
+.ssSafkaDetailLayout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:23px;padding:20px}
+.ssSafkaMedia{min-width:0}
+.ssSafkaStageWrap{position:relative;overflow:hidden;border-radius:12px;border:1px solid #3e5540;background:#e9ede5}
+.ssSafkaStage{
+  width:100%;height:auto;aspect-ratio:1/1;
+  max-height:370px;min-height:0;
+  border:0;border-radius:0;background:#eef1eb;
+  display:grid;place-items:center;overflow:hidden;
+}
+.ssSafkaStage img,.ssSafkaStage video{width:100%;height:100%;display:block;object-fit:contain}
+.ssSafkaStage a{padding:20px;color:#225b35}
+.ssSafkaGalleryNav{
+  position:absolute;inset-inline:10px;bottom:9px;
+  display:flex;align-items:center;justify-content:space-between;pointer-events:none;
+}
+.ssSafkaGalleryArrow{
+  pointer-events:auto;display:grid;place-items:center;width:34px;height:34px;
+  border:1px solid #cfdec8;border-radius:100px;background:#12261ace;
+  color:#fff;font-size:25px;line-height:1;cursor:pointer;
+}
+.ssSafkaGalleryCounter{
+  pointer-events:none;background:#182c1bdb;border:1px solid #a5ba94;
+  color:#edf2e5;font-size:11px;line-height:1.5;padding:5px 11px;border-radius:40px;
+  direction:ltr;font-variant-numeric:tabular-nums;
+}
+.ssSafkaThumbs{display:flex;align-items:stretch;gap:7px;padding:2px 0 6px;margin:9px 0 0;overflow-x:auto;scrollbar-width:thin;max-width:100%}
+.ssSafkaThumb{
+  width:59px;height:60px;flex:0 0 59px;min-height:0;padding:2px;overflow:hidden;
+  background:#e9ece7;border-radius:9px;border:2px solid #445840;cursor:pointer;
+}
+.ssSafkaThumb.active{border-color:#e0fa82;outline:1px solid #e0fa82}
+.ssSafkaThumb img{width:100%;height:100%;object-fit:cover;border-radius:5px}
+.ssSafkaVideoThumb{display:grid;place-items:center;width:100%;height:100%;font-size:10px;color:#243c24}
+.ssSafkaDetailBody{min-width:0;display:flex;flex-direction:column;gap:13px;text-align:right}
+.ssSafkaDetailEyebrow{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:7px}
+.ssSafkaTag{display:inline-flex;align-items:center;max-width:100%;font-size:10px;font-weight:700;line-height:1.5;padding:5px 9px;background:#2c4630;color:#e6f7c9;border-radius:6px;overflow-wrap:anywhere}
+.ssSafkaAvailability{background:#424f30;color:#dfefb8;font-size:10px;padding:5px 9px;border-radius:6px}
+.ssSafkaDetailBody h2{font-size:clamp(20px,2.2vw,27px)!important;font-weight:800;line-height:1.5;margin:0;overflow-wrap:anywhere;color:#f4f6ed}
+.ssSafkaPriceInfo{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 13px;border-radius:9px;background:#263428;border:1px solid #3b503b}
+.ssSafkaPriceInfo span{font-size:12px;color:#bcccaf}
+.ssSafkaPriceInfo strong{font-size:17px;color:#def985}
+.ssSafkaDescription,.ssSafkaVariantSection{margin:0;padding:0}
+.ssSafkaDetailBody h3{font-size:14px;line-height:1.5;margin:0 0 8px;font-weight:800;color:#f1f4e6}
+.ssSafkaDesc{
+  font-size:12px;line-height:1.95;white-space:pre-line;overflow-wrap:anywhere;
+  color:#ced8c9;margin:0;max-height:none;
+}
+.ssSafkaDescDisclaimer{display:block;color:#8fa48d;font-size:10px;line-height:1.7;margin-top:7px}
+.ssSafkaReadMore{background:none;border:0;border-bottom:1px dashed #dafa78;padding:5px 1px;color:#def987;font:700 11px inherit;cursor:pointer}
+.ssSafkaOptions{display:flex;flex-wrap:wrap;gap:7px;max-height:160px;overflow:auto}
+.ssSafkaOption{display:inline-flex;justify-content:center;align-items:center;flex:0 0 auto;max-width:100%;font-size:11px;line-height:1.4;padding:8px 10px;background:#273b2c;border:1px solid #627c55;border-radius:7px;color:#e9f4df}
+.ssSafkaOption.is-unavailable{opacity:.5;text-decoration:line-through}
+.ssSafkaTechnical{border:1px solid #3c4e39;border-radius:9px;overflow:hidden}
+.ssSafkaTechnical summary{font-size:11px;color:#c0d6b7;padding:11px 13px;cursor:pointer;user-select:none}
+.ssSafkaCodes{display:grid;grid-template-columns:minmax(0,1fr);gap:5px;padding:4px 12px 12px}
+.ssSafkaCodes span{font-size:10px;color:#9bac99}
+.ssSafkaCodes code{font:11px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;direction:ltr;text-align:left;overflow-wrap:anywhere;color:#e3f4db}
+.ssSafkaDetailAction{display:flex;flex-direction:column;gap:8px;margin-top:auto;padding-top:4px}
+.ssSafkaDetailAction p{font-size:10px;line-height:1.6;color:#bfcfae;margin:0}
+.ssSafkaDisabled{min-height:42px;border-radius:8px;font:700 12px inherit;cursor:not-allowed;padding:9px 12px;background:#334335;border:1px solid #455a40;color:#b9c8ad;opacity:1}
+
+@media(max-width:680px){
+  .productsSection .toolbar{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1.2fr)!important;
+    align-items:stretch;column-gap:8px!important;row-gap:8px!important;
+  }
+  .productsSection .toolbar .tabs{
+    grid-column:1;grid-row:1;display:flex!important;align-items:stretch;
+    width:100%!important;min-width:0!important;max-width:100%!important;
+    padding:0!important;margin:0!important;gap:5px!important;
+    flex-wrap:nowrap!important;overflow:visible!important;
+  }
+  .productsSection .toolbar .tabs .tab:not(.ssSafkaFilterTab){
+    display:flex!important;align-items:center;justify-content:center;
+    min-width:0!important;width:50%!important;flex:1 1 50%!important;
+    white-space:nowrap;padding:7px 5px!important;min-height:43px!important;
+  }
+  .productsSection .toolbar .tabs .ssSafkaFilterTab{display:none!important}
+  .ssMobileCategoryPicker{
+    grid-column:2;grid-row:1;display:flex;align-items:center;
+    position:relative;min-width:0;max-width:100%;height:43px;
+    border:1px solid #576b4d;border-radius:6px;background:#252f23;
+  }
+  .ssMobileCategoryPicker:after{
+    content:"⌄";position:absolute;left:11px;top:50%;transform:translateY(-50%);
+    font-size:17px;color:#dcfa80;pointer-events:none;
+  }
+  .ssMobileCategoryLabel{position:absolute;right:9px;top:2px;color:#9baa91;font-size:8px;pointer-events:none}
+  .ssMobileDepartmentSelect{
+    font:700 11px/1.5 Alexandria,"IBM Plex Sans Arabic",sans-serif;
+    appearance:none;-webkit-appearance:none;background:transparent;border:0;
+    color:#f2f8df;width:100%;height:100%;min-width:0;outline-offset:2px;
+    text-overflow:ellipsis;padding:14px 9px 4px 25px;cursor:pointer;
+  }
+  .ssMobileDepartmentSelect option{background:#1c291d;color:#fff}
+  .ssMobileCategoryPicker.is-selected{border-color:#dafa78}
+  .productsSection .toolbar .searchWrap{
+    grid-column:1/-1;grid-row:2;min-width:0!important;
+    width:100%!important;max-width:none!important;margin:0!important;
+  }
+  .ssSafkaDialog{
+    width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;
+    max-height:calc(100dvh - 12px)!important;
+    border-radius:13px;margin:auto;
+  }
+  .ssSafkaDialogHead{min-height:52px;padding:7px 11px;gap:8px}
+  .ssSafkaDialogShortTitle{font-size:11px;max-width:calc(100vw - 95px)}
+  .ssSafkaClose{width:36px;height:36px;min-width:36px;min-height:36px}
+  .ssSafkaDetailLayout{
+    display:flex;flex-direction:column;gap:13px;padding:11px!important;
+  }
+  .ssSafkaStage{aspect-ratio:1.42/1!important;max-height:235px!important;min-height:0!important}
+  .ssSafkaThumbs{margin:7px 0 0;gap:6px;padding-bottom:3px}
+  .ssSafkaThumb{width:49px;height:50px;flex-basis:49px;border-radius:7px}
+  .ssSafkaGalleryArrow{width:29px;height:29px;font-size:21px}
+  .ssSafkaGalleryCounter{font-size:10px;padding:4px 8px}
+  .ssSafkaDetailBody{gap:11px}
+  .ssSafkaDetailBody h2{font-size:18px!important;line-height:1.55}
+  .ssSafkaPriceInfo{padding:10px 11px}
+  .ssSafkaPriceInfo strong{font-size:15px}
+  .ssSafkaDesc{font-size:12px;line-height:1.85}
+}
+@media(max-width:370px){
+  .productsSection .toolbar{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+  .ssMobileDepartmentSelect{font-size:10px}
+  .ssSafkaStage{max-height:200px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .ssSafkaGalleryArrow,.ssSafkaThumb,.ssSafkaDialog{scroll-behavior:auto;transition:none!important}
+}
