@@ -1,0 +1,3 @@
+status=PASS
+mode=SYNTHETIC_ONLY
+provider_requests=0
