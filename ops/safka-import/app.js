@@ -146,6 +146,41 @@ $("category").addEventListener("change",()=>{page=0;loadProducts()});
 $("pageSize").addEventListener("change",()=>{page=0;loadProducts()});
 $("prevPage").addEventListener("click",()=>{if(page>0){page--;loadProducts()}});
 $("nextPage").addEventListener("click",()=>{if((page+1)*Number($("pageSize").value)<count){page++;loadProducts()}});
+async function loadMediaCoverage(){
+  if(!user)return;
+  try{
+    const [summary,queue]=await Promise.all([
+      db.rpc("ss_safka_media_coverage_summary"),
+      db.rpc("ss_safka_media_work_queue",{p_limit:12,p_offset:0})
+    ]);
+    if(summary.error||queue.error||!summary.data||!Array.isArray(queue.data))
+      throw Error("لا يمكن جلب تغطية فيديوهات صفقة الآن");
+    const metrics=summary.data;
+    const fmt=v=>Number(v||0).toLocaleString("ar-EG");
+    $("mediaProductsCount").textContent=fmt(metrics.video_products);
+    $("mediaClipsCount").textContent=fmt(metrics.video_clips);
+    $("mediaPendingCount").textContent=fmt(metrics.pending);
+    $("mediaNoVideoCount").textContent=fmt(metrics.no_video);
+    const total=Number(metrics.total)||0,verified=Number(metrics.video_products)||0;
+    const pct=total?100*verified/total:0;
+    $("mediaCoverageProgress").value=pct;
+    status("متوفر فيديو أصلي لـ "+fmt(verified)+" من "+fmt(total)+" منتج ("+
+      pct.toFixed(1)+"%). باقي المنتجات تحت الفحص، ولا يتم إنشاء فيديو تلقائي من الصور.",
+      false,"mediaCoverageMessage");
+    const root=$("mediaWorkQueue");root.replaceChildren();
+    for(const p of queue.data){
+      const item=node("div","mediaQueueItem");
+      const code=text(p.id);
+      const a=node("a","",text(p.name)||"منتج صفقة");
+      a.href="https://aff.safka-eg.com/products/available_products/"+encodeURIComponent(code);
+      a.target="_blank";a.rel="noopener noreferrer";
+      const meta=node("small","",code+" • "+text(p.category)+" • "+text(p.status));
+      item.append(a,meta);root.append(item);
+    }
+    if(!queue.data.length)root.append(node("p","","مفيش منتجات متبقية في قائمة الفحص."));
+  }catch(e){status(e.message||"تعذر قراءة بيانات الوسائط",true,"mediaCoverageMessage")}
+}
+
 async function reload(){
   if(!user)return;
   try{
@@ -181,6 +216,7 @@ async function reload(){
     }
     if(!regions.data?.length)regionRoot.append(node("p","","لسه أسعار شحن صفقة ما اتسحبتش."));
     await loadProducts();
+    await loadMediaCoverage();
   }catch(err){status(err.message,true,"catalogMessage")}
 }
 function safeImageUrl(value){
