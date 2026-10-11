@@ -667,7 +667,35 @@ async function openDetail(p){
   saveButton.type="submit";
   const feedback=node("p","feedback");
   feedback.setAttribute("role","status");
-  form.append(label,saveButton,feedback);pricing.append(form);right.append(pricing);
+  // Explanatory margin preview only. Safqa's reference price is NOT an independently verified product cost.
+  const estimateBox=node("div","ssPriceEstimate");
+  const estimatesTitle=node("strong","","تقدير مالي للمراجعة فقط");
+  const expenseRow=node("div","ssEstimateRow");
+  const adLabel=node("label","","ميزانية الإعلان المتوقعة لكل طلب (ج)");
+  const adInput=node("input");adInput.type="number";adInput.min="0";adInput.max="5000";adInput.step="5";adInput.value="80";
+  const returnLabel=node("label","","مخصص مرتجعات / مخاطر للطلب (ج)");
+  const returnInput=node("input");returnInput.type="number";returnInput.min="0";returnInput.max="5000";returnInput.step="5";returnInput.value="40";
+  adLabel.append(adInput);returnLabel.append(returnInput);expenseRow.append(adLabel,returnLabel);
+  const estimateText=node("p","detailNote");
+  const variantsPrices=(Array.isArray(p.variants)?p.variants:[]).filter(x=>x.is_available&&Number(x.suggested_price)>0).map(x=>Number(x.suggested_price));
+  const referencePrice=Math.max(Number(p.suggested_sale_price_egp)||0,...variantsPrices);
+  const recalculate=()=>{
+    const listed=Number(priceInput.value)||0;
+    const ads=Math.max(0,Number(adInput.value)||0),risk=Math.max(0,Number(returnInput.value)||0);
+    const worst=listed-referencePrice-110-ads-risk;
+    const cairo=listed-referencePrice-85-ads-risk;
+    estimateText.textContent="المرجع من صفقة: "+money(referencePrice)+
+      " | باقي نظري بعد شحن 85 ج: "+money(cairo)+
+      " | بعد شحن 110 ج: "+money(worst)+
+      ". ده مش صافي ربح مؤكّد؛ لازم تتحقق من تكلفة المورد والعمولة الفعلية.";
+    estimateText.classList.toggle("error",worst<0);
+  };
+  priceInput.addEventListener("input",recalculate);
+  adInput.addEventListener("input",recalculate);
+  returnInput.addEventListener("input",recalculate);
+  estimateBox.append(estimatesTitle,expenseRow,estimateText);
+  form.append(label,saveButton,feedback);pricing.append(form,estimateBox);right.append(pricing);
+  recalculate();
   form.addEventListener("submit",async e=>{
     e.preventDefault();
     if(!user){feedback.textContent="جلسة المدير انتهت؛ سجل دخول مرة أخرى.";return}
