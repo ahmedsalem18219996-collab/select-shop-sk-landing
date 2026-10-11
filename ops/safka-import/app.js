@@ -418,6 +418,7 @@ function showCard(p){
   info.append(node("div","cardPrice","سعر صفقة المقترح: "+money(p.suggested_sale_price_egp)));
   if(p.review_state==="approved"&&p.owner_verified)
     info.append(node("div","cardPrice","سعرنا المعتمد: "+money(p.final_price_egp)));
+  else if(p.final_price_egp)info.append(node("div","cardPrice","سعر مسودة غير منشور: "+money(p.final_price_egp)));
   else info.append(node("small","","سعر SELECT SHOP شامل الشحن: قيد المراجعة"));
   const open=node("button","","شوف الأكواد والميديا");
   open.type="button";open.addEventListener("click",()=>openDetail(p));
@@ -470,9 +471,21 @@ async function openDetail(p){
   const layout=node("div","detailGrid"),left=node("div","detailMedia"),right=node("div");
   const stage=node("div","detailStage");
   const gallery=node("div","detailGallery");
+  let supplierVideos=Array.isArray(p.videos)?p.videos:[];
+  // Owner catalog's original video field is empty for many rows.
+  // Read the SAME vetted public catalog that powers the customer-facing product gallery.
+  try{
+    const {data:publicResult,error:mediaError}=await db.rpc("ss_safka_public_catalog_v2",{
+      p_page:1,p_limit:1,p_category:null,p_search:p.supplier_product_id
+    });
+    if(!mediaError && Array.isArray(publicResult?.items)){
+      const match=publicResult.items.find(x=>x.id===p.supplier_product_id);
+      if(match && Array.isArray(match.videos))supplierVideos=match.videos;
+    }
+  }catch{}
   let media=[
     ...(Array.isArray(p.images)?p.images:[]).map(url=>({url,type:"image"})),
-    ...(Array.isArray(p.videos)?p.videos:[]).map(url=>({url,type:"video"}))
+    ...supplierVideos.map(url=>({url,type:"video"}))
   ];
   const manually=await db.from("ss_safka_media_assets")
     .select("media_url,source_type,asset_type")
@@ -501,6 +514,41 @@ async function openDetail(p){
   const price=node("p","detailNote","سعر المورد المقترح: "+money(p.suggested_sale_price_egp)+
     " — ليس سعر بيعنا. يلزم حساب التكلفة + الشحن + الربح.");
   right.append(price);
+  const pricing=node("section","priceDraftBox");
+  pricing.append(node("h3","","تسعير SELECT SHOP — مسودة خاصة"));
+  pricing.append(node("p","detailNote","أدخل سعر البيع النهائي شامل التوصيل بعد حساب تكلفة المورد والشحن والإعلانات والمرتجعات. الحفظ لا ينشر المنتج ولا يفتح الطلبات."));
+  const form=node("form","ssDraftPriceForm");
+  const label=node("label","","سعر البيع النهائي (جنيه)");
+  const priceInput=node("input");
+  priceInput.type="number";priceInput.min="1";priceInput.max="1000000";priceInput.step="1";
+  priceInput.required=true;priceInput.inputMode="numeric";
+  priceInput.value=p.final_price_egp?String(p.final_price_egp):"";
+  label.append(priceInput);
+  const saveButton=node("button","primary","حفظ السعر كمسودة");
+  saveButton.type="submit";
+  const feedback=node("p","feedback");
+  feedback.setAttribute("role","status");
+  form.append(label,saveButton,feedback);pricing.append(form);right.append(pricing);
+  form.addEventListener("submit",async e=>{
+    e.preventDefault();
+    if(!user){feedback.textContent="جلسة المدير انتهت؛ سجل دخول مرة أخرى.";return}
+    const value=Number(priceInput.value);
+    if(!Number.isSafeInteger(value)||value<1||value>1000000){
+      feedback.textContent="اكتب سعرًا صحيحًا بالجنيه من 1 إلى 1,000,000.";return;
+    }
+    saveButton.disabled=true;feedback.textContent="جاري حفظ المسودة...";
+    try{
+      const {data,error}=await db.functions.invoke("safka-price-draft",{
+        body:{productId:p.supplier_product_id,priceEgp:value}
+      });
+      if(error||!data?.ok)throw Error(data?.error||"draft_save_failed");
+      p.final_price_egp=value;p.owner_verified=false;p.review_state="imported";
+      feedback.textContent="تم حفظ "+money(value)+" كمسودة خاصة. المنتج لا يزال غير متاح للشراء.";
+      await loadProducts();
+    }catch(err){
+      feedback.textContent="فشل الحفظ: "+String(err?.message||"تعذر الوصول للخادم").slice(0,120);
+    }finally{saveButton.disabled=false}
+  });
   const variants=node("div","detailVariants");
   for(const v of (Array.isArray(p.variants)?p.variants:[])){
     const r=node("div","variant");
