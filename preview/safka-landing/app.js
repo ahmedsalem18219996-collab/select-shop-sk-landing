@@ -173,6 +173,10 @@ function renderLanding(detail){
   document.title=name+" | SELECT SHOP — معاينة";
   $("productName").textContent=name;
   $("productDescription").textContent="وصف المورد غير معتمد بعد. محتاجين نطابق المواصفات والصور والفيديوهات مع نفس الموديل قبل النشر للبيع.";
+  if(id==="6aa81321ca38d5013caa41fc"){
+    $("productName").textContent="مجفف الأحذية الحراري 360° — وحدتين";
+    $("productDescription").textContent="وحدتان تساعدان على تجفيف الرطوبة داخل الأحذية. ملف المورد يذكر حرارة 45–65 درجة وقدرة 10 وات، وهذه المواصفات قيد التأكيد. أي ادعاءات إضافية عن التعقيم تحتاج مراجعة قبل النشر.";
+  }
   $("providerPrice").textContent=fmt(detail.sale_price);
   const opts=$("variants");opts.replaceChildren();
   const variants=Array.isArray(detail.variants)?detail.variants:[];
