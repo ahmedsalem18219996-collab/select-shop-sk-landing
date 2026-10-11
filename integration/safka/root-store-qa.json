@@ -1,0 +1,23 @@
+{
+  "store": {
+    "status": 200,
+    "passes": true,
+    "sha256": "de7857496584a3b723ebd9363882bf53c451ff851a95ddae99bddfe161078ee3"
+  },
+  "script": {
+    "status": 200,
+    "passes": true,
+    "sha256": "4fb0a8b537084889474d77d977e37984af084fe7e4d52c78c49f8bebe2b60f74",
+    "syntax_passes": true
+  },
+  "css": {
+    "status": 200,
+    "passes": true,
+    "sha256": "762e5484e3525216d06b9089e09b9094d44394270e650d6566551b6778721726"
+  },
+  "preview": {
+    "status": 200,
+    "passes": true,
+    "sha256": "64479d2d7c432bd0dee78a53585e22463ae2e8fedea4383db6543d01670f77e1"
+  }
+}
