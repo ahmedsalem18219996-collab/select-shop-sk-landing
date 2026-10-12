@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#141a16">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none';base-uri 'self';form-action 'self';object-src 'none';script-src 'self' https://esm.sh;style-src 'self';img-src 'self' https: data:;media-src https:;frame-src https://www.youtube-nocookie.com https://drive.google.com;connect-src 'self' https://zznqdwrohrycsjfpvkhc.supabase.co https://esm.sh;frame-ancestors 'none'">
 <title>استيراد صفقة | إدارة SELECT SHOP المؤقت</title>
-<link rel="stylesheet" href="./style.css?v=7-variant-prices"><script type="module" src="./app.js?v=18-variant-pricing-v2"></script>
+<link rel="stylesheet" href="./style.css?v=7-variant-prices"><script type="module" src="./app.js?v=19-price-plus90"></script>
 </head><body>
 <header class="siteHead"><a href="/" class="logo">SELECT <em>SHOP</em></a><span>إدارة استيراد صفقة · الموقع المؤقت</span><a href="/ops/orders-v2/">لوحة الأوردرات ↗</a></header>
 <main>
@@ -41,8 +41,8 @@
   <div class="overview">
     <div class="stat"><span>أسعار تحتاج مراجعة فردية</span><strong id="auditVariants">—</strong></div>
     <div class="stat"><span>أقسام غير مؤكدة من المورد</span><strong id="auditCategory">—</strong></div>
-    <div class="stat"><span>بيع طبيعي / باقات</span><strong id="auditBundle">—</strong></div>
-    <div class="stat"><span>مرشحة لاختبار إعلان محدود</span><strong id="auditAdsEligible">—</strong></div>
+    <div class="stat"><span>تحتاج قرار إعلاني منفصل</span><strong id="auditBundle">—</strong></div>
+    <div class="stat"><span>تم تقييمها للإعلانات</span><strong id="auditAdsEligible">—</strong></div>
     <div class="stat"><span>أعلى 900 جنيه</span><strong id="auditPremium">—</strong></div>
   </div>
   <div class="syncControls">
@@ -57,7 +57,7 @@
  <section class="panel priceExport" aria-labelledby="priceExportHeading">
   <span class="eyebrow">SAFQA PRICING · OWNER ONLY</span>
   <h2 id="priceExportHeading">تسعير كل منتجات صفقة</h2>
-  <p>الأسعار محفوظة كمسودات خاصة تشمل احتياطي شحن حتى 110 جنيه وهامشًا تقديريًا للإعلانات والمرتجعات والربح. سعر صفقة المرجعي ليس تكلفة شراء مستقلة مؤكدة؛ الأسعار ليست مقارنة أسعار منافسين ولم تُنشر للعملاء.</p>
+  <p>قاعدة السعر الحالية لكل المنتجات: سعر البيع المقترح في منصة صفقة + متوسط شحن 90 جنيه فقط، بلا أي إضافات. لكل اختيار سعره من المنصة + 90 جنيه، مع إبقاء الأسعار مبدئية لحين الموافقة. السعر المقترح ليس تكلفة شراء مؤكدة ولا يعبر عن هامش ربح.</p>
   <button id="exportPriceCsv" type="button">تنزيل ملف الأسعار الـ462 (CSV)</button>
   <button id="exportVariantPricingCsv" type="button">تنزيل أسعار 505 اختيارات (CSV)</button>
   <p id="priceExportMessage" class="feedback" role="status" aria-live="polite"></p>
