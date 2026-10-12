@@ -111,7 +111,7 @@ for(const p of profiles){
       return{videoOptions:videos,inlineEmbed:!!embed,excerpt:price.slice(0,180)};
    });
    await step(res,"Add a product to shopping bag",async()=>{
-      const card=page.locator(".ssSafkaUnifiedCard").first();
+      const card=page.locator(".ssSafkaUnifiedCard").filter({has:page.locator("button.ssSafkaCardAdd:not([disabled])")}).first();
       await card.locator(".ssSafkaCardAdd").click({timeout:15000});
       const choice=page.locator("dialog.ssBagChoice[open]");
       if(await choice.count())await choice.locator(".ssBagPrimary").click();
@@ -192,7 +192,7 @@ for(const p of profiles){
      });
      if(p.name==="desktop"&&css.gridColumns<4)throw Error("Only "+css.gridColumns+" giant desktop cards per row");
      if(p.engine==="webkit"){
-       const shoe=await page.locator(".ssSafkaUnifiedCard button.ssSafkaCardBuy").first();
+       const shoe=page.locator(".ssSafkaUnifiedCard button.ssSafkaCardBuy:not([disabled])").first();
        await shoe.click();
        const modal=page.locator("dialog.ssCoDialog[open]");
        await modal.waitFor({state:"visible",timeout:11000});
