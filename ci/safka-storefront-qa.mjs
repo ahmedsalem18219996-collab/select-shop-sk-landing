@@ -296,6 +296,18 @@ try{
  assert.equal(result.sentToSupplier,false);
  summary.push({profile:"live-multi-cart-validation-no-write",lines:2,totalEgp:result.totalEgp,orderSaved:false});
 }catch(error){failures.push("cart-backend-no-write: "+(error?.stack||error))}
+// Read live supplier catalog count via server-side key; aggregate only, one global rate-limited check.
+try{
+ const res=await fetch("https://zznqdwrohrycsjfpvkhc.supabase.co/functions/v1/safka-live-audit",{
+  method:"GET",headers:{origin:"https://selectshopeg.com",
+   apikey:"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa"},
+  signal:AbortSignal.timeout(115000)
+ });
+ const source=await res.json();
+ summary.push({profile:"supplier-source-live-count",httpStatus:res.status,...source});
+ // Supplier availability reports don't imply a numerical warehouse stock count.
+ if(res.ok){assert(source.complete);assert.equal(source.physicalStockQuantityExposed,false)}
+}catch(error){summary.push({profile:"supplier-source-live-count",error:String(error?.message||error)})}
 await browser.close();
 await safari.close();
 await writeFile(resultDir + "/summary.json", JSON.stringify({ summary, failures }, null, 2));
