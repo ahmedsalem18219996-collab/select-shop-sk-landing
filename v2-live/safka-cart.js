@@ -22,17 +22,46 @@ function actionButton(text,fn,cls="ssBagSecondary"){
   const button=e("button",cls,text);button.type="button";button.addEventListener("click",fn);
   return button;
 }
-async function getRecommendations(){
-  if(recommendationsCache)return recommendationsCache;
-  const res=await fetch(DB+"/rest/v1/rpc/ss_safka_public_catalog_v2",{
-    method:"POST",headers:{apikey:KEY,"content-type":"application/json"},
-    body:JSON.stringify({p_page:1,p_limit:48,p_category:null,p_search:""}),
-    cache:"no-store",signal:AbortSignal.timeout(12000)
-  });
-  if(!res.ok)throw Error("suggestions_unavailable");
-  const data=await res.json();
-  recommendationsCache=(Array.isArray(data.items)?data.items:[]).filter(p=>mongo(p.id)&&choices(p).length>0);
-  return recommendationsCache;
+// Transparent relevance ranking: prefer same category and product type;
+ // no fake purchase history, urgency, discounts or personalized claims.
+const stopwords=new Set(["من","على","في","مع","باندل","قطعة","قطع","الوان","اللون","متعددة","كامل","مختلف","لل","وال","مقاس","عدد","3","2","1"]);
+const tokens=s=>String(s||"").replace(/[()_\d-]/g," ").split(/\s+/).map(w=>w.trim())
+  .filter(w=>w.length>2&&!stopwords.has(w)).slice(0,7);
+async function recommendationsFor(item){
+ const preferred=item?.categoryName||"";
+ const words=tokens(item?.name||"");
+ const query=words.find(w=>w.length>=4)||words[0]||"";
+ const key=preferred+"|"+query;
+ if(!recommendationsCache)recommendationsCache=new Map();
+ if(recommendationsCache.has(key))return recommendationsCache.get(key);
+ async function fetchList(search,limit){
+   const res=await fetch(DB+"/rest/v1/rpc/ss_safka_public_catalog_v2",{
+     method:"POST",headers:{apikey:KEY,"content-type":"application/json"},
+     body:JSON.stringify({p_page:1,p_limit:limit,p_category:null,p_search:search}),
+     cache:"no-store",signal:AbortSignal.timeout(12000)});
+   if(!res.ok)throw Error("suggestions_unavailable");
+   const data=await res.json();
+   return(Array.isArray(data.items)?data.items:[]).filter(p=>mongo(p.id)&&choices(p).length>0);
+ }
+ let similar=[];
+ try{if(query)similar=await fetchList(query,32)}catch{}
+ let general=[];
+ try{general=await fetchList("",48)}catch{}
+ const all=[...new Map([...similar,...general].map(x=>[x.id,x])).values()];
+ const currentPrice=Number(item?.unitPrice)||0;
+ const currentWords=new Set([...tokens(item?.name),...tokens(preferred)]);
+ all.sort((a,b)=>{
+   const score=p=>{
+     const matches=tokens(p.name).filter(w=>currentWords.has(w)).length;
+     const sameCategory=Boolean(preferred&&p.category_name===preferred);
+     const price=Number(p.display_price_egp)||0;
+     const affordable=currentPrice&&price<=currentPrice*1.4?1:0;
+     return (sameCategory?12:0)+matches*5+affordable;
+   };
+   return score(b)-score(a)||String(a.id).localeCompare(String(b.id));
+ });
+ recommendationsCache.set(key,all);
+ return all;
 }
 async function showRecommendations(){
   if(!cartDialog?.open)return;
@@ -40,15 +69,12 @@ async function showRecommendations(){
   if(!target||target.dataset.loaded==="yes")return;
   target.dataset.loaded="loading";
   try{
-    const all=await getRecommendations();
+    const all=await recommendationsFor(items[items.length-1]);
     if(!cartDialog?.open||!target.isConnected)return;
     const existing=new Set(items.map(i=>i.productId));
-    const preferredCategory=items[items.length-1]?.categoryName;
-    let candidates=all.filter(p=>!existing.has(p.id));
-    candidates.sort((a,b)=>Number(b.category_name===preferredCategory)-Number(a.category_name===preferredCategory));
-    const selected=candidates.slice(0,MAX_SUGGESTIONS);
+    const selected=all.filter(p=>!existing.has(p.id)).slice(0,MAX_SUGGESTIONS);
     if(!selected.length){target.hidden=true;return;}
-    target.replaceChildren(e("h3","ssBagSuggestionsTitle","منتجات تكمّل بيها طلبك"));
+    target.replaceChildren(e("h3","ssBagSuggestionsTitle","منتجات ممكن تعجبك مع طلبك"));
     const rail=e("div","ssBagSuggestionsRail");
     for(const p of selected){
       const tile=e("article","ssBagSuggestion");
