@@ -536,6 +536,14 @@ function openProduct(p,trigger,showVideo=false){
   const info=node("div","ssSafkaPriceInfo");
   info.append(node("span","","السعر شامل التوصيل"),node("strong","",price(p)));
   body.append(info);
+  const confidence=node("div","ssSafkaConversionAssurance");
+  confidence.setAttribute("aria-label","معلومات الطلب");
+  confidence.append(
+    node("span","","السعر شامل التوصيل"),
+    node("span","","تأكيد قبل التجهيز"),
+    node("span","","الدفع عند الاستلام")
+  );
+  body.append(confidence);
   const summary=cleanSupplierText(p.description);
   if(summary){
     const descSection=node("section","ssSafkaDescription");
@@ -617,7 +625,7 @@ function openProduct(p,trigger,showVideo=false){
     unavailable.type="button";unavailable.disabled=true;action.prepend(unavailable);
   }
   // Place the customer order CTA immediately after the total price, before long descriptions.
-  body.insertBefore(action,body.children[3]||null);
+  info.after(action);
   layout.append(media,body);
   d.append(header,layout);
   d.showModal();
