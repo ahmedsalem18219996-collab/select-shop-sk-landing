@@ -377,7 +377,7 @@ async function reload(){
       db.from("ss_safka_import_shipping").select("governorate_id,name_ar,shipping_egp,is_active").order("name_ar").limit(100),
       db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("review_state","approved").eq("owner_verified",true),
       db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("category_key","uncategorized"),
-      db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).not("final_price_egp","is",null)
+      db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("retail_price_verification","verified_note")
     ]);
     if(products.error||categories.error||regions.error||approved.error||pending.error||priced.error)throw Error("تعذّر تحميل ملخص البيانات من Supabase.");
     $("allCount").textContent=(products.count??0).toLocaleString("ar-EG");
@@ -385,6 +385,15 @@ async function reload(){
     $("regionCount").textContent=(regions.data||[]).length.toLocaleString("ar-EG");
     $("approvedCount").textContent=(approved.count??0).toLocaleString("ar-EG");
     $("pricedCount").textContent=(priced.count??0).toLocaleString("ar-EG");
+    const [reviewPrices,currentCat]=await Promise.all([
+      db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true})
+        .neq("retail_price_verification","verified_note"),
+      db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true})
+        .eq("source_category_latest_present",true)
+    ]);
+    if(reviewPrices.error||currentCat.error)throw Error("تعذر فحص حالات التسعير والأقسام الحالية");
+    $("needsPriceReviewCount").textContent=(reviewPrices.count??0).toLocaleString("ar-EG");
+    $("latestSourceCategoriesCount").textContent=(currentCat.count??0).toLocaleString("ar-EG");
     const category=$("category"),prior=category.value;category.replaceChildren();
     const all=node("option","","كل الأقسام");all.value="";category.append(all);
     for(const c of categories.data||[]){
