@@ -485,78 +485,58 @@ $("exportPriceCsv").addEventListener("click",exportPriceReviewCsv);
 
 // Owner-only pricing review. This is an audit, never a publishing action.
 async function loadPricingAudit(){
-  if(!user)return;
-  const button=$("runPriceAudit");button.disabled=true;
-  status("جاري فحص أسعار كل منتجات صفقة...",false,"priceAuditMessage");
-  try{
-    const all=[];
-    for(let start=0;start<5000;start+=500){
-      const {data,error}=await db.from("ss_safka_import_products")
-        .select("supplier_product_id,name,category_name,source_category_confirmed,suggested_sale_price_egp,final_price_egp,variants,owner_verified,review_state")
-        .order("supplier_product_id").range(start,start+499);
-      if(error)throw Error("تعذر تحميل بيانات الأسعار");
-      all.push(...(data||[]));if((data||[]).length<500)break;
-    }
-    let variantCount=0,categoryCount=0,bundleCount=0,premiumCount=0,unpriced=0;
-    const priorities=[];
-    for(const p of all){
-      const base=Number(p.suggested_sale_price_egp)||0,quote=Number(p.final_price_egp)||0;
-      const choices=Array.isArray(p.variants)?p.variants:[];
-      const realPrices=choices.filter(x=>x.is_available===true&&Number(x.suggested_price)>0)
-        .map(x=>Number(x.suggested_price));
-      const high=Math.max(base,...realPrices);
-      const differing=choices.some(x=>x.is_available===true&&Number(x.suggested_price)>0&&Number(x.suggested_price)!==base);
-      if(differing)variantCount++;
-      if(!p.source_category_confirmed)categoryCount++;
-      if(base>0&&quote>base*3)bundleCount++;
-      if(quote>=900)premiumCount++;
-      if(!quote)unpriced++;
-      const issues=[];
-      if(differing)issues.push("اختيارات مختلفة السعر");
-      if(!p.source_category_confirmed)issues.push("القسم يحتاج مراجعة");
-      if(base>0&&quote>base*3)issues.push("أنسب لعروض الباقات");
-      if(!quote)issues.push("غير مسعّر");
-      const balance=quote-high-90;
-      if(balance<0)issues.push("راجع فروق أسعار الاختيارات قبل الاعتماد");
-      priorities.push({p,issues,balance,base,quote,high,differing,
-        priority:(differing?100:0)+(!p.source_category_confirmed?18:0)+(balance<0?50:0)+(base>0&&quote>base*3?16:0)});
-    }
-    $("auditVariants").textContent=String(variantCount);
-    $("auditCategory").textContent=String(categoryCount);
-    const {data:priceStrategy,error:strategyError}=await db.from("ss_safka_price_review_v2")
-      .select("supplier_product_id,pricing_segment").order("supplier_product_id").range(0,999);
-    if(!strategyError&&priceStrategy?.length){
-      bundleCount=priceStrategy.filter(v=>v.pricing_segment==="organic_or_bundle").length;
-      $("auditAdsEligible").textContent=String(priceStrategy.filter(v=>v.pricing_segment==="paid_ad_candidate").length);
-    }else $("auditAdsEligible").textContent="—";
-    $("auditBundle").textContent=String(bundleCount);
-    $("auditPremium").textContent=String(premiumCount);
-    const root=$("priorityReviews");root.replaceChildren();
-    const picked=priorities.filter(x=>x.issues.length).sort((a,b)=>b.priority-a.priority||a.p.name.localeCompare(b.p.name,"ar")).slice(0,12);
-    for(const rec of picked){
-      const item=node("div","mediaQueueItem");
-      item.append(node("strong","",rec.p.name));
-      item.append(node("small","","سعر صفقة المقترح: "+money(rec.base)+" | سعرنا المبدئي: "+money(rec.quote)));
-      item.append(node("small","","الفرق عن أعلى اختيار + 90 شحن: "+money(rec.balance)+" (مش صافي ربح)"));
-      item.append(node("small","",rec.issues.join(" • ")));
-      const jump=node("button","","افتح المنتج وراجع سعره");
-      jump.type="button";
-      jump.addEventListener("click",async()=>{
-        $("search").value=rec.p.supplier_product_id;$("category").value="";
-        page=0;await loadProducts();
-        $(".catalog")?.scrollIntoView({block:"start",behavior:"smooth"});
-      });
-      item.append(jump);root.append(item);
-    }
-    status("راجع "+all.length+" منتج. اختلاف اختيارات: "+variantCount+
-      "؛ أقسام غير مؤكدة: "+categoryCount+"؛ مسودات ناقصة: "+unpriced+
-      ". كل الأسعار ما زالت غير منشورة، والفارق المعروض ليس صافي ربح.",
-      false,"priceAuditMessage");
-  }catch(e){
-    status("تعذر فحص التسعير: "+String(e?.message||"خطأ في الاتصال").slice(0,100),true,"priceAuditMessage");
-  }finally{button.disabled=false}
+ if(!user)return;
+ const button=$("runPriceAudit");button.disabled=true;
+ status("جاري تدقيق السعر المقترح من ملاحظات صفقة...",false,"priceAuditMessage");
+ try{
+  const all=[];
+  for(let offset=0;offset<5000;offset+=500){
+   const {data,error}=await db.from("ss_safka_import_products")
+    .select("supplier_product_id,name,category_name,source_category_latest_present,suggested_sale_price_egp,retail_note_suggested_egp,retail_price_verification,final_price_egp")
+    .order("supplier_product_id").range(offset,offset+499);
+   if(error)throw Error("فشل قراءة الأسعار من قاعدة البيانات");
+   all.push(...(data||[]));if((data||[]).length<500)break;
+  }
+  const valid=all.filter(p=>p.retail_price_verification==="verified_note"&&
+    Number(p.final_price_egp)>0&&Number(p.final_price_egp)===Number(p.retail_note_suggested_egp)+90);
+  const manual=all.filter(p=>p.retail_price_verification==="manual_review"||
+     p.retail_price_verification==="unverified");
+  const variants=all.filter(p=>p.retail_price_verification==="variant_review");
+  const unresolved=all.filter(p=>p.retail_price_verification!=="verified_note");
+  const missingCat=all.filter(p=>!p.source_category_latest_present);
+  $("auditVariants").textContent=String(variants.length);
+  $("auditCategory").textContent=String(missingCat.length);
+  $("auditBundle").textContent=String(manual.length);
+  $("auditAdsEligible").textContent=String(valid.length);
+  $("auditPremium").textContent=String(valid.filter(p=>Number(p.final_price_egp)>=900).length);
+  const queue=$("priorityReviews");queue.replaceChildren();
+  for(const p of [...variants,...manual].slice(0,16)){
+    const item=node("div","mediaQueueItem");
+    item.append(node("strong","",p.name));
+    item.append(node("small","",
+      p.retail_price_verification==="variant_review"?
+      "الاختيارات مختلفة السعر: لا تقبل أوردر قبل تأكيد كل اختيار":
+      "سعر البيع المقترح غير ثابت في ملاحظات المورد؛ الطلب موقوف"));
+    item.append(node("small","","سعر المورد sale_price: "+money(p.suggested_sale_price_egp)+
+      " | البيع المقترح من الملاحظة: "+(p.retail_note_suggested_egp?money(p.retail_note_suggested_egp):"غير متاح")));
+    const btn=node("button","","افتح المنتج وراجع");
+    btn.type="button";btn.onclick=async()=>{
+       $("search").value=p.supplier_product_id;$("category").value="";
+       page=0;await loadProducts();$(".catalog")?.scrollIntoView({block:"start",behavior:"smooth"});
+    };
+    item.append(btn);queue.append(item);
+  }
+  status("إجمالي "+all.length+" — أسعار متحققة بالمعادلة المطلوبة: "+valid.length+
+   "؛ أسعار موقوفة: "+unresolved.length+
+   " (ملاحظات غير واضحة "+manual.length+"، واختلاف اختيارات "+variants.length+")"+
+   "؛ الأقسام غير مثبتة في آخر API: "+missingCat.length+
+   ". التحقق من السعر لا يعني التأكد من الربح أو المنافسة.",
+   unresolved.length>0,"priceAuditMessage");
+ }catch(err){
+  status("تعذر فحص الأسعار: "+String(err?.message||err).slice(0,140),true,"priceAuditMessage");
+ }finally{button.disabled=false}
 }
-// Owner-only CSV of ALL Safqa property/option-specific prices (not public supplier costs).
+// Owner-only CSV of product/option price provenance and pending reviews.
 async function exportVariantPricingCsv(){
   if(!user)return;
   const button=$("exportVariantPricingCsv");button.disabled=true;
