@@ -12,6 +12,11 @@ const clean=(v,n)=>typeof v==="string"?v.slice(0,n):"";
 const encoder=new TextEncoder();
 let items=[],selector=null,cartDialog=null,regionsCache=null,recommendationsCache=null;
 const MAX_SUGGESTIONS=4;
+function funnelEvent(event,fields){
+ if(window.SELECT_SHOP_TEST_MODE===true)return;
+ try{if(typeof window.gtag==="function")
+   window.gtag("event",event,{currency:"EGP",...fields})}catch{}
+}
 function keepShopping(){
   if(cartDialog?.open)cartDialog.close();
   document.getElementById("products")?.scrollIntoView({behavior:"smooth",block:"start"});
@@ -125,7 +130,11 @@ function addItem(product,variantId,amount=1){
    unitPrice:Number(option.display_price_egp),name:clean(product.name,350),
    variant:clean(option.name||"اختيار",220),photo:photo(product),
    categoryName:clean(product.category_name,100)});
- save();openCart();notify("تمت إضافة المنتج للسلة. تقدر تكمّل التسوق أو تأكد الطلب.");
+ save();
+ funnelEvent("add_to_cart",{value:Number(option.display_price_egp)*amount,
+   items:[{item_id:product.id,item_name:String(product.name).slice(0,100),
+     item_variant:variantId,price:Number(option.display_price_egp),quantity:amount}]});
+ openCart();notify("تمت إضافة المنتج للسلة. تقدر تكمّل التسوق أو تأكد الطلب.");
 }
 function choose(product){
  const variants=choices(product);
@@ -224,6 +233,9 @@ function renderBag(){
 }
 async function openCheckout(){
  if(!cartDialog?.open||!items.length)return;
+ funnelEvent("begin_checkout",{value:subtotal(),items:items.map(i=>({
+  item_id:i.productId,item_variant:i.variantId,price:i.unitPrice,quantity:i.quantity
+ }))});
  const c=cartDialog.querySelector("[data-bag-form]"),list=cartDialog.querySelector("[data-bag-list]");
  list.hidden=true;c.hidden=false;c.replaceChildren();
  const back=e("button","ssBagLink","← العودة للسلة");back.type="button";
@@ -276,6 +288,7 @@ async function openCheckout(){
     body:JSON.stringify(order),signal:AbortSignal.timeout(25000)});
    const result=await response.json();
    if(!response.ok||!result.ok)throw Error(result.error||"order_failed");
+   funnelEvent("generate_lead",{value:result.totalEgp,lead_type:"order_received_for_review"});
    items=[];save();c.replaceChildren();
    c.append(e("h3","ssBagSuccess","تم تسجيل طلبك بنجاح"),
      e("p","", "رقم الطلب: "+result.orderCode),
