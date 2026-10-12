@@ -1,177 +1,166 @@
-/* SELECT SHOP TEMP ONLY — Safqa product checkout is gated by owner-reviewed price and Turnstile.
-   Public app has no Safqa credentials. Order capture is ONLY to private SELECT SHOP inbox,
-   never an automatic supplier order. Existing shoe checkout remains unchanged. */
+/* SELECT SHOP temporary customer checkout: public prices, private review-only orders. */
 (()=>{"use strict";
 const BASE="https://zznqdwrohrycsjfpvkhc.supabase.co";
 const KEY="sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa";
-const $=(s,p=document)=>p.querySelector(s);
-const n=(tag,cls,text)=>{
-  const node=document.createElement(tag);
-  if(cls)node.className=cls;
-  if(text!==undefined)node.textContent=String(text);
-  return node;
+const make=(tag,cls,label)=>{
+  const el=document.createElement(tag);
+  if(cls)el.className=cls;
+  if(label!==undefined)el.textContent=String(label);
+  return el;
 };
-const valid=code=>typeof code==="string"&&/^[a-f0-9]{24}$/i.test(code);
-const money=number=>Number(number).toLocaleString("ar-EG")+" ج.م";
-let configPromise=null;
-async function config(){
-  if(!configPromise)configPromise=fetch(BASE+"/functions/v1/safka-checkout-config",{
-    method:"GET",headers:{apikey:KEY},cache:"no-store",signal:AbortSignal.timeout(12000)
-  }).then(r=>{if(!r.ok)throw Error("config_failed");return r.json()});
-  return configPromise;
-}
+const money=v=>Number(v).toLocaleString("ar-EG")+" ج.م";
+const idOk=v=>typeof v==="string"&&/^[a-f0-9]{24}$/i.test(v);
+const int=v=>Number.isSafeInteger(Number(v))?Number(v):0;
+const encode=new TextEncoder();
+let regionsCache=null;
 async function regions(){
-  const res=await fetch(BASE+"/rest/v1/rpc/ss_safka_checkout_regions",{
-    method:"POST",headers:{apikey:KEY,"content-type":"application/json"},body:"{}",signal:AbortSignal.timeout(12000)
-  });
-  if(!res.ok)throw Error("shipping_regions_unavailable");
-  const data=await res.json();
-  return Array.isArray(data)?data:[];
+  if(!regionsCache)regionsCache=fetch(BASE+"/rest/v1/rpc/ss_safka_checkout_regions",{
+    method:"POST",headers:{apikey:KEY,"content-type":"application/json"},body:"{}",cache:"no-store",
+    signal:AbortSignal.timeout(12000)
+  }).then(async res=>{
+    if(!res.ok)throw Error("shipping_unavailable");
+    const rows=await res.json();
+    if(!Array.isArray(rows)||!rows.length)throw Error("shipping_unavailable");
+    return rows;
+  }).catch(e=>{regionsCache=null;throw e});
+  return regionsCache;
 }
-function makeField(labelText,key,type="text",max=140){
-  const label=n("label","ssCoLabel",labelText);
-  const field=n(type==="notes"?"textarea":"input","ssCoInput");
-  field.name=key;field.required=key!=="notes";
-  field.maxLength=max;
-  if(type==="tel"){field.type="tel";field.inputMode="tel";field.pattern="0[1][0125][0-9]{8}";field.placeholder="01xxxxxxxxx";}
-  else if(type==="notes"){field.rows=2;field.required=false;}
-  else{field.type="text";}
-  label.append(field);return {label,field};
+function labeled(text,name,type="text",maxlength=120){
+  const wrapper=make("label","ssCoLabel",text);
+  const el=make(type==="notes"?"textarea":"input","ssCoInput");
+  el.name=name;el.maxLength=maxlength;el.required=type!=="notes";
+  if(type==="tel"){el.type="tel";el.inputMode="tel";el.autocomplete="tel";el.placeholder="01xxxxxxxxx";}
+  else if(type==="notes"){el.rows=2;el.required=false;}
+  else {el.type="text";}
+  if(name==="name")el.autocomplete="name";
+  if(name==="address")el.autocomplete="street-address";
+  wrapper.append(el);return {wrapper,el};
 }
-function loadTurnstile(){
-  if(window.turnstile?.render)return Promise.resolve();
-  if(window.SS_SAFKA_TURNSTILE_LOADING)return window.SS_SAFKA_TURNSTILE_LOADING;
-  window.SS_SAFKA_TURNSTILE_LOADING=new Promise((resolve,reject)=>{
-    const script=document.createElement("script");
-    script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-    script.async=true;script.defer=true;
-    const timer=setTimeout(()=>reject(Error("captcha_timeout")),15000);
-    script.onload=()=>{
-      const wait=()=>{
-        if(window.turnstile?.render){clearTimeout(timer);resolve();}
-        else setTimeout(wait,100);
-      };wait();
-    };
-    script.onerror=()=>{clearTimeout(timer);reject(Error("captcha_script_failed"));};
-    document.head.append(script);
-  });
-  return window.SS_SAFKA_TURNSTILE_LOADING;
+async function antiSpamProof(requestId){
+  // Mild device proof + server hourly rate limit. No third-party tracking or CAPTCHA widget.
+  for(let i=0;i<1500000;i++){
+    const nonce=i.toString(16);
+    const buffer=await crypto.subtle.digest("SHA-256",encode.encode("SELECT-SHOP-ORDER:"+requestId+":"+nonce));
+    const bytes=new Uint8Array(buffer);
+    if(bytes[0]===0&&bytes[1]===0)return nonce;
+    if(i%2048===0)await new Promise(resolve=>setTimeout(resolve,0));
+  }
+  throw Error("security_validation_unavailable");
 }
 async function open(product){
-  if(!valid(product?.id)||!Number.isSafeInteger(Number(product.final_price_egp))||
-     Number(product.final_price_egp)<=0||product.can_purchase!==false)return;
-  const options=(Array.isArray(product.variants)?product.variants:[]).filter(v=>v.available===true&&valid(v.id));
-  if(!options.length)return;
-  const dialog=n("dialog","ssCoDialog");
-  dialog.setAttribute("aria-label","طلب منتج SELECT SHOP");
-  const close=n("button","ssCoClose","×");close.type="button";close.setAttribute("aria-label","إغلاق");
-  close.onclick=()=>dialog.close();
-  const title=n("h2","","اطلب من SELECT SHOP");
-  const summary=n("p","ssCoProduct",product.name+" — "+money(product.final_price_egp));
-  const info=n("p","ssCoInfo","بيانات الطلب تتحفظ في SELECT SHOP للمراجعة والتأكيد، ومش بتتبعت للمورد تلقائيًا.");
-  const form=n("form","ssCoForm");form.noValidate=false;
-  const choose=n("label","ssCoLabel","اللون / المقاس / الاختيار");
-  const variant=n("select","ssCoInput");variant.name="variant";variant.required=true;
-  for(const v of options){
-    const opt=n("option","",String(v.name||"الاختيار")+" — "+v.id.slice(-5));
-    opt.value=v.id;variant.append(opt);
-  }
-  choose.append(variant);
-  const qtyLabel=n("label","ssCoLabel","الكمية");
-  const qty=n("select","ssCoInput");qty.name="quantity";
-  for(let i=1;i<=3;i++){const opt=n("option","",String(i));opt.value=String(i);qty.append(opt)}
-  qtyLabel.append(qty);
-  const name=makeField("الاسم بالكامل","name","text",120);
-  const phone=makeField("رقم الموبايل","phone","tel",24);
-  const regionLabel=n("label","ssCoLabel","المحافظة");
-  const governorate=n("select","ssCoInput");governorate.name="governorate";governorate.required=true;
-  governorate.append(n("option","","جاري تحميل المحافظات..."));
-  regionLabel.append(governorate);
-  const area=makeField("المدينة / المنطقة","area","text",120);
-  const address=makeField("العنوان بالتفصيل","address","text",280);
-  const notes=makeField("ملاحظات (اختياري)","notes","notes",300);
-  const line=n("p","ssCoTotal","الإجمالي شامل التوصيل: "+money(product.final_price_egp));
-  qty.addEventListener("change",()=>line.textContent="الإجمالي شامل التوصيل: "+money(Number(qty.value)*Number(product.final_price_egp)));
-  const captcha=n("div","ssCoCaptcha");
-  const status=n("p","ssCoStatus","جاري التحقق من جاهزية الطلب");
-  status.setAttribute("role","status");
-  const submit=n("button","ssCoSubmit","تأكيد إرسال طلب للمراجعة");
+  if(!idOk(product?.id))return;
+  const choices=(Array.isArray(product.variants)?product.variants:[])
+    .filter(v=>v.available===true&&idOk(v.id)&&int(v.display_price_egp)>0);
+  if(!choices.length)return;
+  const dialog=make("dialog","ssCoDialog");
+  dialog.setAttribute("aria-label","إتمام طلب SELECT SHOP");
+  const outer=make("div","ssCoContent");
+  const close=make("button","ssCoClose","×");close.type="button";
+  close.setAttribute("aria-label","إغلاق");close.addEventListener("click",()=>dialog.close());
+  const h=make("h2","","إتمام الطلب");
+  const summary=make("p","ssCoProduct",product.name);
+  const note=make("p","ssCoInfo","اختار المقاس أو اللون وكمّل بيانات التوصيل. هنتواصل معاك لتأكيد الأوردر.");
+  const form=make("form","ssCoForm");
+  const choiceRow=make("label","ssCoLabel","اللون / المقاس / الاختيار");
+  const variant=make("select","ssCoInput");variant.name="variant";variant.required=true;
+  for(const v of choices){const option=make("option","",(v.name||"اختيار")+" — "+money(v.display_price_egp));option.value=v.id;variant.append(option);}
+  choiceRow.append(variant);
+  const quantityRow=make("label","ssCoLabel","الكمية");
+  const quantity=make("select","ssCoInput");quantity.name="quantity";
+  for(let i=1;i<=3;i++){const option=make("option","",String(i));option.value=String(i);quantity.append(option);}
+  quantityRow.append(quantity);
+  const name=labeled("الاسم بالكامل","name","text",120);
+  const phone=labeled("رقم الموبايل","phone","tel",24);
+  const city=labeled("المدينة / المنطقة","area","text",120);
+  const address=labeled("العنوان بالتفصيل","address","text",280);
+  const notes=labeled("ملاحظات إضافية (اختياري)","notes","notes",300);
+  const govRow=make("label","ssCoLabel","المحافظة");
+  const gov=make("select","ssCoInput");gov.required=true;gov.name="governorate";
+  const placeholder=make("option","","جاري تحميل المحافظات");placeholder.value="";gov.append(placeholder);govRow.append(gov);
+  const total=make("p","ssCoTotal");
+  const calc=()=>{
+    const v=choices.find(x=>x.id===variant.value)||choices[0];
+    total.textContent="الإجمالي شامل التوصيل: "+money(int(v.display_price_egp)*Number(quantity.value||1));
+  };
+  variant.addEventListener("change",calc);quantity.addEventListener("change",calc);calc();
+  const status=make("p","ssCoStatus","جاري تجهيز نموذج الطلب");
+  status.setAttribute("role","status");status.setAttribute("aria-live","polite");
+  const submit=make("button","ssCoSubmit","تأكيد الطلب");
   submit.type="submit";submit.disabled=true;
-  const explain=n("small","ssCoDisclaimer","مش هنخصم فلوس أونلاين. سعر المنتج شامل التوصيل، والدفع عند الاستلام بعد التأكيد.");
-  form.append(choose,qtyLabel,name.label,phone.label,regionLabel,area.label,address.label,notes.label,line,captcha,submit,explain,status);
-  const wrapper=n("div","ssCoContent");wrapper.append(close,title,summary,info,form);dialog.append(wrapper);
+  const terms=make("small","ssCoDisclaimer","الدفع عند الاستلام بعد تأكيد الطلب. لن نطلب بيانات بطاقة بنكية.");
+  // A decoy field helps avoid automated bot submissions; it is never shown to customers.
+  const website=make("input","ssCoHoney");
+  website.name="website";website.autocomplete="off";website.tabIndex=-1;
+  website.setAttribute("aria-hidden","true");website.type="text";
+  form.append(choiceRow,quantityRow,name.wrapper,phone.wrapper,govRow,city.wrapper,address.wrapper,
+    notes.wrapper,total,terms,website,submit,status);
+  outer.append(close,h,summary,note,form);dialog.append(outer);
   dialog.addEventListener("click",e=>{if(e.target===dialog)dialog.close()});
   dialog.addEventListener("close",()=>{
-    try{const id=dialog.dataset.widgetId;if(id&&window.turnstile)window.turnstile.remove(id)}catch{}
     dialog.remove();document.body.classList.remove("hasDialog");
   });
-  for(const d of document.querySelectorAll("dialog[open]"))d.close();
+  document.querySelectorAll("dialog.ssCoDialog[open]").forEach(d=>d.close());
   document.body.append(dialog);dialog.showModal();document.body.classList.add("hasDialog");
-  let ready=false,token="",requestId=crypto.randomUUID();
+  const requestId=crypto.randomUUID();
+  let proof=null,processing=false,ready=false;
   try{
-    const [gate,shipping]=await Promise.all([config(),regions()]);
-    governorate.replaceChildren();
-    const initial=n("option","","اختار المحافظة");initial.value="";governorate.append(initial);
-    for(const g of shipping){
-      if(!valid(g?.id)||!g.name)continue;
-      const opt=n("option","",g.name);opt.value=g.id;governorate.append(opt);
-    }
-    if(!gate.checkoutConfigured||!gate.siteKey){
-      status.textContent="الطلب المباشر تحت التجهيز حاليًا؛ لسه مش متاح تأكيد أوردر من الموقع.";
-      return;
-    }
-    if(!shipping.length){status.textContent="المحافظات غير متاحة حاليًا؛ جرب لاحقًا.";return;}
-    await loadTurnstile();
+    const [regionsList,nonce]=await Promise.all([regions(),antiSpamProof(requestId)]);
     if(!dialog.isConnected)return;
-    const widget=window.turnstile.render(captcha,{
-      sitekey:gate.siteKey,theme:"auto",
-      callback:value=>{token=value;submit.disabled=!ready||!token;},
-      "expired-callback":()=>{token="";submit.disabled=true;},
-      "error-callback":()=>{token="";submit.disabled=true;status.textContent="تعذر التحقق الأمني. جرّب إعادة فتح الطلب.";}
-    });
-    dialog.dataset.widgetId=String(widget);
-    ready=true;submit.disabled=!token;
-    status.textContent="راجع بياناتك واختياراتك ثم أكّد الطلب.";
+    gov.replaceChildren();
+    const first=make("option","","اختار المحافظة");first.value="";gov.append(first);
+    for(const place of regionsList){
+      if(!idOk(place.id)||!place.name)continue;
+      const option=make("option","",place.name);option.value=place.id;gov.append(option);
+    }
+    proof=nonce;ready=true;submit.disabled=false;
+    status.textContent="جاهز لتسجيل طلبك.";
   }catch{
-    status.textContent="تعذر تحميل نظام الطلبات الآن، تقدر تستفسر على واتساب.";
-    return;
+    status.textContent="تعذر تجهيز الطلب حاليًا. تواصل مع خدمة العملاء.";
   }
-  form.addEventListener("input",()=>{requestId=crypto.randomUUID()});
   form.addEventListener("submit",async e=>{
-    e.preventDefault();if(!ready||!token||submit.disabled)return;
+    e.preventDefault();
+    if(!ready||processing||!proof)return;
     if(!form.reportValidity())return;
-    const check=phone.field.value.replace(/\s|-/g,"");
-    if(!/^01[0125][0-9]{8}$/.test(check)){
-      status.textContent="راجع رقم الموبايل المصري المكون من 11 رقم.";return;
+    const number=phone.el.value.trim().replace(/[\s-]/g,"");
+    if(!/^01[0125][0-9]{8}$/.test(number)){
+      status.textContent="راجع رقم الموبايل المصري (11 رقم).";phone.el.focus();return;
     }
-    submit.disabled=true;
-    status.textContent="جاري تسجيل الطلب في SELECT SHOP...";
-    const payload={requestId,productId:product.id,variantId:variant.value,
-      quantity:Number(qty.value),governorateId:governorate.value,
-      customer:{name:name.field.value.trim(),phone:check,area:area.field.value.trim(),
-        address:address.field.value.trim(),notes:notes.field.value.trim()},turnstileToken:token};
+    if(!gov.value){status.textContent="اختار المحافظة.";return;}
+    processing=true;submit.disabled=true;status.textContent="جاري تسجيل الطلب...";
+    const payload={
+      requestId,productId:product.id,variantId:variant.value,quantity:Number(quantity.value),
+      governorateId:gov.value,cityId:"",
+      customer:{name:name.el.value.trim(),phone:number,area:city.el.value.trim(),
+        address:address.el.value.trim(),notes:notes.el.value.trim()},
+      workNonce:proof,website:website.value
+    };
     try{
-      const response=await fetch(BASE+"/functions/v1/safka-capture-order",{
-        method:"POST",cache:"no-store",headers:{"apikey":KEY,"content-type":"application/json"},
-        body:JSON.stringify(payload),signal:AbortSignal.timeout(20000)
+      const res=await fetch(BASE+"/functions/v1/safka-capture-order",{
+        method:"POST",headers:{apikey:KEY,"content-type":"application/json"},
+        body:JSON.stringify(payload),cache:"no-store",signal:AbortSignal.timeout(24000)
       });
-      const body=await response.json();
-      if(!response.ok||!body.ok)throw Error(body.error||"request_failed");
+      const data=await res.json();
+      if(!res.ok||!data.ok)throw Error(data.error||"order_save_failed");
       form.replaceChildren();
-      form.append(n("h3","","تم تسجيل طلبك للمراجعة"),
-        n("p","ssCoSuccess","رقم الطلب: "+body.orderCode),
-        n("p","","الإجمالي: "+money(body.totalEgp)),
-        n("p","","هنراجع الطلب ونأكد معاك. لم يُرسل للمورد بعد."));
+      form.append(make("h3","","اتسجّل طلبك بنجاح"),
+        make("p","ssCoSuccess","رقم الطلب: "+data.orderCode),
+        make("p","ssCoTotal","الإجمالي شامل التوصيل: "+money(data.totalEgp)),
+        make("p","ssCoInfo","هنراجع الأوردر ونتواصل معاك لتأكيده قبل التجهيز."),
+        make("p","ssCoDisclaimer","احتفظ برقم الطلب للمتابعة."));
     }catch(err){
-      const errors={captcha_failed:"التحقق الأمني غير صحيح.",captcha_required:"أعد التحقق الأمني.",
-        product_not_ready:"المنتج لم يعد متاحًا للطلب.",variant_not_available:"الاختيار مش متوفر حاليًا.",
-        checkout_not_configured:"نظام الطلبات غير مفعّل حاليًا.",order_save_failed:"تعذر تسجيل الطلب؛ تواصل مع خدمة العملاء.",
-        captcha_unavailable:"التحقق الأمني متعطل حاليًا.",rate_limit_exceeded:"في طلبات كتير؛ جرّب لاحقًا."};
-      status.textContent=errors[err.message]||"تعذر تأكيد التسجيل. تحقق من رقم الطلب قبل إعادة المحاولة.";
-      token="";
-      try{window.turnstile?.reset(dialog.dataset.widgetId)}catch{}
-      submit.disabled=true;
-    }
+      const errors={
+        invalid_order_details:"راجع الاسم ورقم الموبايل والعنوان.",
+        unknown_governorate:"المحافظة مش متاحة حاليًا.",
+        rate_limit_exceeded:"في طلبات كثيرة، تواصل مع خدمة العملاء.",
+        variant_not_available:"الاختيار المطلوب مش متوفر حاليًا.",
+        product_not_ready:"المنتج مش متاح للطلب حاليًا.",
+        price_not_ready:"السعر اتغير. اقفل الطلب وافتح المنتج من جديد.",
+        validation_required:"فشل التحقق الأمني. اقفل الطلب وجرّب مرة تانية.",
+        request_id_conflict:"بيانات الطلب اتغيرت؛ اقفل الطلب وابدأ من جديد."
+      };
+      status.textContent=errors[err.message]||"تعذر تأكيد الحفظ. لو كنت حاولت قبل كده، تواصل معانا قبل إعادة الطلب.";
+      submit.disabled=false;
+    }finally{processing=false;}
   });
 }
 window.SS_SAFKA_CHECKOUT=Object.freeze({open});
