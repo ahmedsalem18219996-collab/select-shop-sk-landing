@@ -296,7 +296,16 @@ function productCard(p){
 
   article.dataset.supplierProductId=p.id;
   const bottom=node("div","cardBottom ssSafkaUnifiedBottom");
-  const button=node("button","","شوف التفاصيل ↗");
+  const buyNow=node("button","ssSafkaCardBuy","اطلب الآن");
+  buyNow.type="button";
+  const orderable=(Array.isArray(p.variants)?p.variants:[]).some(v=>v.available===true&&validId(v.id)&&Number(v.display_price_egp)>0);
+  buyNow.disabled=!orderable;
+  buyNow.addEventListener("click",()=>{
+    if(orderable&&window.SS_SAFKA_CHECKOUT?.open)window.SS_SAFKA_CHECKOUT.open(p);
+    else openFn();
+  });
+  bottom.append(buyNow);
+  const button=node("button","ssSafkaCardDetails","التفاصيل");
   button.type="button";button.addEventListener("click",openFn);bottom.append(button);
 
   if(videos.length){
