@@ -53,6 +53,10 @@ if(env.GITHUB_EVENT_NAME==="push"){
  }));
  // Continue into the normal sync: the audit and price correction use the same signed source.
 }
+if(env.GITHUB_EVENT_NAME==="push"){
+ const probe=await stage("probe_category_details");
+ console.log("SAFKA_CATEGORY_DETAIL_SOURCE_PROBE="+JSON.stringify(probe));
+}
 const shipped=await stage("shipping");
 console.log("Shipping regions synced:",shipped.saved);
 let completed=false,sourceRows=0,productsSaved=0,pageCount=0,confirmedPages=null,verified=0,manual=0,variantReview=0;
