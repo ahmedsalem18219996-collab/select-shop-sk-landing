@@ -34,6 +34,8 @@ async function rpc(name,body={},signal){
 }
 let categories=[],current={filter:"all",search:"",shoeCount:4},items=[],total=0,page=1,token=0,loading=false;
 let dialog=null,lastFocus=null;
+let autoPager=null;
+const connections={saveData:!!navigator.connection?.saveData};
 let closeMobileDepartments=()=>{};
 function categoryName(raw){
   return /صفقة|safka/i.test(raw)?"منتجات متنوعة":(raw||"منتجات متنوعة");
@@ -239,6 +241,17 @@ function ensureStage(){
     const more=node("button","ssSafkaUnifiedMore","عرض منتجات أكثر");
     more.type="button";more.addEventListener("click",()=>{if(!loading){page++;loadPage(true)}});
     actions.append(more);shelf.append(actions);
+  }
+  // At ~500+ products, progressively load cards near the bottom, not hundreds at once.
+  // The manual "عرض منتجات أكثر" button remains a fallback for data-saving mode.
+  if(!autoPager&&"IntersectionObserver" in window&&!connections.saveData){
+    autoPager=new IntersectionObserver(entries=>{
+      if(entries.some(e=>e.isIntersecting)&&!loading&&!actions.hidden&&
+         items.length<total&&current.filter!=="shoes"){
+        page+=1;loadPage(true);
+      }
+    },{rootMargin:"0px 0px 280px 0px",threshold:0.01});
+    autoPager.observe(actions);
   }
   return {shelf,grid,status,actions,more:$("button",actions)};
 }
@@ -672,6 +685,15 @@ async function boot(){
     if(stage)stage.status.textContent="المنتجات غير متاحة الآن، حاول تحديث الصفحة.";
   }
 }
+document.querySelectorAll("[data-quick-search]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    const input=$("#searchInput");
+    if(!input)return;
+    input.value=button.dataset.quickSearch||"";
+    input.dispatchEvent(new Event("input",{bubbles:true}));
+    $("#products")?.scrollIntoView({block:"start",behavior:"smooth"});
+  });
+});
 window.addEventListener("selectshop:collection-rendered",e=>{if(categories.length)onCollectionRendered(e.detail)});
 document.addEventListener("DOMContentLoaded",boot,{once:true});
 })();
