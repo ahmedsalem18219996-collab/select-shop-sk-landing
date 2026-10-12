@@ -116,3 +116,26 @@
     flex-basis:90px;min-height:44px;padding:8px 5px;font-size:10px
  }
 }
+
+/* Customer-only checkout: clear CTA; supplier/editorial metadata never shown. */
+.shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaUnifiedBottom .ssSafkaCardBuy,
+.ssSafkaDialog .ssSafkaDetailAction .ssSafkaPurchase{
+ background:linear-gradient(130deg,#fbd5a1,#f4b96c)!important;
+ color:#13241b!important;border:1px solid #ffd998!important;
+ font-weight:850!important;box-shadow:0 6px 17px #f4bb6740!important;
+ border-radius:10px!important;min-height:46px!important;
+ cursor:pointer!important;font-family:inherit!important;
+}
+.shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaUnifiedBottom .ssSafkaCardBuy:disabled{
+ opacity:.55!important;cursor:not-allowed!important
+}
+.shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaUnifiedBottom .ssSafkaCardDetails{
+ background:#304339!important;color:#f5f4e6!important;
+ border:1px solid #708b73!important;border-radius:9px!important;
+}
+.ssSafkaDialog .ssSafkaDetailAction{margin-top:10px;padding:10px 0 12px;border-bottom:1px solid #45624a}
+.ssSafkaDialog .ssSafkaDetailAction .ssSafkaPurchase{width:100%;font-size:17px!important;letter-spacing:.01em}
+@media(max-width:680px){
+ .ssSafkaDialog .ssSafkaDetailAction .ssSafkaPurchase{min-height:54px!important;font-size:17px!important}
+ .shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaUnifiedBottom .ssSafkaCardBuy{min-height:44px!important}
+}
