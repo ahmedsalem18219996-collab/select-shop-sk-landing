@@ -414,6 +414,12 @@ async function copyProductLink(id,button){
   setTimeout(()=>{if(button.isConnected)button.textContent=previous},2400);
 }
 function openProduct(p,trigger,showVideo=false){
+  if(window.SELECT_SHOP_TEST_MODE!==true&&typeof window.gtag==="function")
+    try{window.gtag("event","view_item",{currency:"EGP",
+      value:Number(p.display_price_egp)||0,
+      items:[{item_id:p.id,item_name:String(p.name).slice(0,100),
+        price:Number(p.display_price_egp)||0,quantity:1}]})}catch{}
+
   if(!validId(p?.id))return;
   const d=ensureDialog();
   lastFocus=trigger||document.activeElement;
