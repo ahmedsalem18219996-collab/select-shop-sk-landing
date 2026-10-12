@@ -290,7 +290,13 @@ async function openCart(){
  const form=e("section","ssBagCheckout");form.dataset.bagForm="";form.hidden=true;
  normal.append(notice,list,total,buttons,suggestions,shoeNote);
  shell.append(head,status,normal,form);cartDialog.append(shell);
- cartDialog.onclose=()=>{cartDialog.remove();cartDialog=null};
+ // Each dialog only disposes itself. Old close events must NEVER delete a newer
+ // cart instance after a recommendation triggers addItem/openCart synchronously.
+ const openedCart=cartDialog;
+ openedCart.onclose=()=>{
+   openedCart.remove();
+   if(cartDialog===openedCart)cartDialog=null;
+ };
  document.body.append(cartDialog);cartDialog.showModal();renderBag();
  void showRecommendations();
  const warnings=await refreshCart();
