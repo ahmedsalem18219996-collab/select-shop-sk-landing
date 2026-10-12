@@ -1,3 +1,6 @@
+-- SELECT SHOP TEMP ONLY. Current production RPC snapshot, Oct 12 2026.
+-- Price is visible ONLY for note-verified products.
+-- No change to SELECT-SHOP-CLEAN. This file must not be transplanted without its audit columns.
 CREATE OR REPLACE FUNCTION public.ss_safka_public_catalog_v2(p_page integer DEFAULT 1, p_limit integer DEFAULT 24, p_category text DEFAULT NULL::text, p_search text DEFAULT ''::text)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -31,13 +34,23 @@ BEGIN
     'variants',(SELECT COALESCE(jsonb_agg(jsonb_build_object(
       'id',v.value->>'provider_id','name',v.value->>'name',
       'available',(v.value->>'is_available')='true',
-      'display_price_egp',(SELECT vp.draft_price_egp FROM public.ss_safka_variant_price_drafts vp
-        WHERE vp.supplier_product_id=x.supplier_product_id AND vp.supplier_variant_id=v.value->>'provider_id')
+      'display_price_egp',CASE WHEN x.retail_price_verification='verified_note'
+        THEN (SELECT vp.draft_price_egp FROM public.ss_safka_variant_price_drafts vp
+          WHERE vp.supplier_product_id=x.supplier_product_id AND vp.supplier_variant_id=v.value->>'provider_id')
+        ELSE NULL END
     )),'[]'::jsonb) FROM jsonb_array_elements(x.variants) v),
-    'final_price_egp', CASE WHEN x.review_state='approved' AND x.owner_verified
+    'final_price_egp', CASE WHEN x.retail_price_verification='verified_note'
+       AND x.review_state='approved' AND x.owner_verified
       THEN x.final_price_egp ELSE NULL END,
-    'display_price_egp',x.final_price_egp,
-    'price_status',CASE WHEN x.review_state='approved' AND x.owner_verified
+    'display_price_egp',CASE WHEN x.retail_price_verification<>'verified_note'
+      THEN NULL WHEN x.review_state='approved' AND x.owner_verified
+      THEN x.final_price_egp
+      ELSE COALESCE((SELECT min(vp.draft_price_egp)::integer
+        FROM public.ss_safka_variant_price_drafts vp
+        WHERE vp.supplier_product_id=x.supplier_product_id AND vp.supplier_available=true),
+        x.final_price_egp) END,
+    'price_status',CASE WHEN x.retail_price_verification<>'verified_note'
+      THEN 'needs_review' WHEN x.review_state='approved' AND x.owner_verified
       THEN 'approved' ELSE 'indicative' END,
     'can_purchase',false,'source','safka'
   ) ORDER BY x.name COLLATE "C",x.supplier_product_id),'[]'::jsonb) INTO v_rows
@@ -53,4 +66,4 @@ BEGIN
     'page',v_page,'page_size',v_limit,'currency','EGP',
     'drafts_buyable',false);
 END; $function$
-
+;
