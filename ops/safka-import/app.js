@@ -402,6 +402,13 @@ async function reload(){
       regionRoot.append(cell);
     }
     if(!regions.data?.length)regionRoot.append(node("p","","لسه أسعار شحن صفقة ما اتسحبتش."));
+    const {data:fresh,error:freshError}=await db.from("ss_safka_import_products")
+      .select("synced_at").order("synced_at",{ascending:false}).limit(1).maybeSingle();
+    if(!freshError&&fresh?.synced_at)
+      $("safkaLastSync").textContent="آخر مزامنة فعلية من صفقة: "+
+        new Date(fresh.synced_at).toLocaleString("ar-EG",{timeZone:"Africa/Cairo"})+
+        " — التحديث الآلي يوميًا، والتوفر بيتراجع وقت تسجيل الأوردر.";
+    else $("safkaLastSync").textContent="وقت آخر مزامنة غير متاح؛ استخدم زر استيراد كل المنتجات عند الحاجة.";
     await loadProducts();
     await loadMediaCoverage();
   }catch(err){status(err.message,true,"catalogMessage")}
