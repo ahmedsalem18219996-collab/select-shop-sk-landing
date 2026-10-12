@@ -93,7 +93,7 @@ export function normalizeProduct(p){
    suggested_sale_price_egp:num(p.sale_price),
    variants:variantsOf(p),
    images:publicMedia(pictureItems,"image"),videos:publicMedia(videoItems,"video"),
-   is_available:p.is_available!==false
+   is_available:p.is_available!==false&&p.is_active!==false
  };
 }
 export function normalizeRegion(p){
