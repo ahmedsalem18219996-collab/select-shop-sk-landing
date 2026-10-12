@@ -136,6 +136,18 @@ for (const profile of [
     await bag.waitFor({state:"visible",timeout:15000});
     assert(await bag.locator(".ssBagItem").count()>=1,"Supplier cart did not retain selected product");
     assert(await page.locator("[data-safka-bag-count]").count()>=1,"Supplier cart header badge missing");
+    const continueShopping=bag.locator('[data-bag-continue]');
+    await continueShopping.waitFor({state:"visible",timeout:12000});
+    assert((await continueShopping.innerText()).includes("أضف منتج آخر"),"Smart cart must offer another product");
+    await continueShopping.click();
+    await bag.waitFor({state:"hidden",timeout:10000});
+    await page.locator("[data-safka-bag-open]").click();
+    await bag.waitFor({state:"visible",timeout:11000});
+    assert(await bag.locator(".ssBagItem").count()>=1,"Continue-shopping lost the selected item");
+    const suggestions=bag.locator("[data-bag-recommendations] .ssBagSuggestion");
+    await suggestions.first().waitFor({state:"visible",timeout:22000});
+    assert(await suggestions.count()>0,"Smart cart related-product suggestions missing");
+    await page.screenshot({path:resultDir+"/"+profile.name+"-smart-cart.png",fullPage:false});
     await bag.locator(".ssBagClose").click();
     const cleanAdUrl=base+"/?product="+sample+"#products";
     await page.goto(cleanAdUrl,{waitUntil:"domcontentloaded",timeout:60000});
@@ -155,6 +167,21 @@ for (const profile of [
     await multiBag.locator(".ssBagClose").click();
     if(profile.name==="desktop"){
       await page.goto(base,{waitUntil:"domcontentloaded",timeout:60000});
+      const heroText=await page.locator("#heroTitle").innerText();
+      assert(heroText.includes("DISCOVER")&&heroText.includes("YOUR NEXT."),
+        "The owner's original hero headline was changed");
+      for(const type of ["fashion","home","gifts"]){
+        const asset="/assets/hero-select-"+type+".svg";
+        const res=await page.request.get(base+asset,{timeout:12000});
+        assert(res.ok(),"Custom-designed hero artwork not served: "+asset);
+        const body=await res.text();
+        assert(body.startsWith("<svg")&&body.includes('viewBox="0 0 640 360"'),
+          "Hero artwork is missing SVG graphics");
+      }
+      await page.locator(".tgh-tile img").first().waitFor({state:"attached",timeout:15000});
+      const heroSource=await page.locator(".tgh-tile img").first().getAttribute("src");
+      assert(heroSource.includes("/assets/hero-select-"),
+        "Rotating hero carousel is still using supplier images");
       await page.locator(".ssSafkaUnifiedCard").first().waitFor({state:"visible",timeout:40000});
       await page.locator(".ssSafkaUnifiedActions").scrollIntoViewIfNeeded();
       await page.waitForTimeout(900);
@@ -172,7 +199,7 @@ for (const profile of [
       },null,{timeout:20000});
       assert((await page.locator("#searchInput").inputValue())==="تنظيف","Quick search did not update catalog search");
       await page.screenshot({path:resultDir+"/desktop-expanded-catalog.png",fullPage:false});
-      summary.push({profile:"desktop-large-catalog-navigation",loadedCards:loaded,quickSearch:"تنظيف"});
+      summary.push({profile:"desktop-large-catalog-navigation",loadedCards:loaded,quickSearch:"تنظيف",customHeroImages:3,originalHeadline:true});
     }
 
     summary.push({ profile: profile.name, title, video: directVideo, overflowPx: horizontalOverflow,
