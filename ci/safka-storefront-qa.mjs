@@ -1,7 +1,7 @@
 // Public READ-ONLY SELECT SHOP TEMP storefront QA. Never submits orders.
 import { strict as assert } from "node:assert";
 import { mkdir, writeFile } from "node:fs/promises";
-import { chromium } from "playwright";
+import { chromium, webkit } from "playwright";
 
 const base = "https://selectshopeg.com";
 const sample = "69c1db9dcc2eaa4914727bbd";
@@ -10,12 +10,15 @@ await mkdir(resultDir, { recursive: true });
 const failures = [];
 const summary = [];
 const browser = await chromium.launch({ headless: true });
+const safari = await webkit.launch({ headless: true });
 
 for (const profile of [
   { name: "desktop", viewport: { width: 1440, height: 900 }, isMobile: false, hasTouch: false },
   { name: "mobile", viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
+  { name: "iphone-webkit", viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, engine: "webkit" },
 ]) {
-  const context = await browser.newContext({
+  const target = profile.engine === "webkit" ? safari : browser;
+  const context = await target.newContext({
     viewport: profile.viewport, isMobile: profile.isMobile,
     hasTouch: profile.hasTouch, deviceScaleFactor: 1,
     locale: "ar-EG", timezoneId: "Africa/Cairo",
@@ -144,6 +147,7 @@ try {
 }
 
 await browser.close();
+await safari.close();
 await writeFile(resultDir + "/summary.json", JSON.stringify({ summary, failures }, null, 2));
 console.log(JSON.stringify({ summary, failures }, null, 2));
 if (failures.length) process.exitCode = 1;
