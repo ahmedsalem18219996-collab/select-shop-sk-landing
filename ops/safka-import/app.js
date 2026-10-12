@@ -791,7 +791,7 @@ async function openDetail(p){
   // Campaign landing links belong only in authenticated owner dashboard, never in public cards.
   const campaign=node("div","ssCampaignOwnerLink");
   campaign.append(node("strong","","رابط المنتج للإعلانات — للإدارة فقط"));
-  const campaignUrl="https://selectshopeg.com/?product=safka-"+encodeURIComponent(p.supplier_product_id)+"#products";
+  const campaignUrl="https://selectshopeg.com/?product="+encodeURIComponent(p.supplier_product_id)+"#products";
   const campaignInput=node("input");campaignInput.type="text";campaignInput.readOnly=true;
   campaignInput.value=campaignUrl;campaignInput.dir="ltr";
   campaignInput.setAttribute("aria-label","رابط هبوط المنتج للحملات");
