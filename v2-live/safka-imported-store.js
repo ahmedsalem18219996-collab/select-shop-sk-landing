@@ -309,16 +309,24 @@ function productCard(p){
   add.type="button";add.disabled=!orderable;
   add.addEventListener("click",()=>window.SS_SAFKA_CART?.choose(p));
   bottom.append(add);
-  const button=node("button","ssSafkaCardDetails","التفاصيل");
-  button.type="button";button.addEventListener("click",openFn);bottom.append(button);
+  // Product title/image open full product details; avoid a fourth giant button in a small card.
+  title.querySelector("h3").addEventListener("click",openFn);
+  title.querySelector("h3").tabIndex=0;title.querySelector("h3").setAttribute("role","button");
+  title.querySelector("h3").setAttribute("aria-label","تفاصيل "+p.name);
+  title.querySelector("h3").addEventListener("keydown",e=>{
+    if(e.key==="Enter"||e.key===" "){e.preventDefault();openFn();}
+  });
 
   if(videos.length){
     const direct=videos[0].match(/^https:\/\/drive\.google\.com\/file\/d\/[A-Za-z0-9_-]{15,}\/preview$/)?
       videos[0].replace(/\/preview$/,"/view"):videos[0];
     const watch=node("a","ssSafkaCardVideoDirect","▶ مشاهدة الفيديو");
     watch.href=direct;watch.target="_blank";watch.rel="noopener noreferrer";
-    watch.setAttribute("aria-label","مشاهدة فيديو المنتج "+p.name+" في مصدر الفيديو");
-    bottom.append(watch);
+    watch.setAttribute("aria-label","شاهد فيديو "+p.name+" داخل الموقع");
+    watch.addEventListener("click",event=>{
+      event.preventDefault();openProduct(p,watch,true);
+    });
+    media.append(watch);
   }
   body.append(bottom);article.append(media,body);return article;
 }
@@ -390,7 +398,7 @@ async function copyProductLink(id,button){
   }
   setTimeout(()=>{if(button.isConnected)button.textContent=previous},2400);
 }
-function openProduct(p,trigger){
+function openProduct(p,trigger,showVideo=false){
   if(!validId(p?.id))return;
   const d=ensureDialog();
   lastFocus=trigger||document.activeElement;
@@ -445,37 +453,22 @@ function openProduct(p,trigger){
       if(photos.length)video.poster=photos[0];
       video.src=item.url;stage.append(video);
     }else if(/^https:\/\/drive\.google\.com\/file\/d\/[A-Za-z0-9_-]{15,}\/preview$/.test(item.url)){
-      // Drive preview iframes fail in iOS/In-App browsers when third-party cookies are blocked.
-      // Always offer a direct first-party Google Drive viewer. Never claim embed playback succeeded.
+      // Play videos IN the product gallery. Google Drive may block some embeds;
+      // an external viewer link remains visible without exposing supplier details.
       const viewer=item.url.replace(/\/preview$/,"/view");
-      const choice=node("div","ssSafkaDriveChoice");
-      choice.append(node("span","ssSafkaVideoPlayMark","▶"));
-      choice.append(node("strong","","شاهد فيديو المنتج"));
-      const primary=node("a","ssSafkaDrivePrimary","▶ تشغيل الفيديو");
-      primary.href=viewer;primary.target="_blank";primary.rel="noopener noreferrer";
-      primary.setAttribute("aria-label","فتح فيديو "+p.name+" في Google Drive");
-      choice.append(primary);
-      const secondary=node("button","ssSafkaDriveInline","جرّب التشغيل داخل الموقع");
-      secondary.type="button";
-      const player=node("div","ssSafkaDriveInlinePanel");
-      player.hidden=true;
-      secondary.addEventListener("click",()=>{
-        if(!player.hidden){
-          player.replaceChildren();player.hidden=true;secondary.textContent="جرّب التشغيل داخل الموقع";return;
-        }
-        const embed=node("iframe","ssSafkaDriveVideo");
-        embed.src=item.url;embed.title="معاينة فيديو المورد "+p.name;
-        embed.loading="eager";embed.referrerPolicy="strict-origin-when-cross-origin";
-        embed.allow="autoplay; fullscreen; picture-in-picture";
-        embed.setAttribute("allowfullscreen","");
-        player.append(embed);
-        player.hidden=false;
-        secondary.textContent="إغلاق المشغّل الداخلي";
-      });
-      choice.append(secondary,player);
-      choice.append(node("small","ssSafkaDriveDisclaimer",
-        "لو المشغّل الداخلي مش بيشتغل عندك، اضغط تشغيل الفيديو فوق. بعض فيديوهات Drive تحتاج صلاحية مشاهدة أو تمنعها إعدادات المتصفح."));
-      stage.append(choice);
+      const player=node("div","ssSafkaInStoreVideo");
+      const iframe=node("iframe","ssSafkaDriveVideo");
+      iframe.title="فيديو المنتج: "+p.name;
+      iframe.src=item.url;iframe.loading="eager";
+      iframe.referrerPolicy="strict-origin-when-cross-origin";
+      iframe.allow="autoplay; fullscreen; picture-in-picture";
+      iframe.setAttribute("allowfullscreen","");
+      player.append(iframe);
+      const help=node("div","ssSafkaVideoHelp");
+      help.append(node("span","","الفيديو داخل المتجر"));
+      const fallback=node("a","ssSafkaDrivePrimary","فتح الفيديو لو مش شغّال");
+      fallback.href=viewer;fallback.target="_blank";fallback.rel="noopener noreferrer";
+      help.append(fallback);player.append(help);stage.append(player);
     }else{
       const link=node("a","","شاهد فيديو المنتج");
       link.href=item.url;link.target="_blank";link.rel="noopener noreferrer";
@@ -510,7 +503,7 @@ function openProduct(p,trigger){
     b.addEventListener("click",()=>select(i));
     buttons.push(b);thumbs.append(b);
   }
-  if(all.length)select(0);
+  if(all.length)select(showVideo&&videos.length?photos.length:0);
   else {stage.append(node("p","ssSafkaPlaceholder","لا توجد صور متاحة لهذا المنتج"));nav.hidden=true}
   stageWrap.append(stage);
   if(all.length>1)stageWrap.append(nav);
@@ -576,7 +569,12 @@ function openProduct(p,trigger){
     const watch=node("a","ssSafkaWatchProductVideo","▶ شاهد فيديو المنتج");
     watch.href=drive?first.replace(/\/preview$/,"/view"):first;
     watch.rel="noopener noreferrer";watch.target="_blank";
-    watch.setAttribute("aria-label","شاهد فيديو المنتج "+p.name);
+    watch.setAttribute("aria-label","شاهد فيديو المنتج "+p.name+" داخل الموقع");
+    watch.addEventListener("click",event=>{
+      event.preventDefault();
+      select(photos.length);
+      stageWrap.scrollIntoView({block:"nearest",behavior:"smooth"});
+    });
     action.append(watch);
   }
 
