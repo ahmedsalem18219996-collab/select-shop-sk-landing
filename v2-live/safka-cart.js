@@ -236,7 +236,7 @@ function init(){
  if(original){
   const launcher=e("button","cartAction ssBagHeader","سلة المنتجات ");
   launcher.type="button";launcher.dataset.safkaBagOpen="";
-  launcher.append(e("strong","ssBagCount",String(quantity()))).lastChild.dataset.safkaBagCount="";
+  const badge=e("strong","ssBagCount",String(quantity()));badge.dataset.safkaBagCount="";launcher.append(badge);
   launcher.addEventListener("click",()=>openCart());
   original.before(launcher);
  }
