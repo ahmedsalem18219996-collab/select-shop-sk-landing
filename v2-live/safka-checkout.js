@@ -12,6 +12,11 @@ const money=v=>Number(v).toLocaleString("ar-EG")+" ج.م";
 const idOk=v=>typeof v==="string"&&/^[a-f0-9]{24}$/i.test(v);
 const int=v=>Number.isSafeInteger(Number(v))?Number(v):0;
 const encode=new TextEncoder();
+function funnelEvent(event,details){
+ if(window.SELECT_SHOP_TEST_MODE===true)return;
+ try{if(typeof window.gtag==="function")
+   window.gtag("event",event,{currency:"EGP",...details})}catch{}
+}
 let regionsCache=null;
 async function regions(){
   if(!regionsCache)regionsCache=fetch(BASE+"/rest/v1/rpc/ss_safka_checkout_regions",{
@@ -52,6 +57,9 @@ async function open(product){
   const choices=(Array.isArray(product.variants)?product.variants:[])
     .filter(v=>v.available===true&&idOk(v.id)&&int(v.display_price_egp)>0);
   if(!choices.length)return;
+  funnelEvent("begin_checkout",{value:Number(product.display_price_egp)||0,
+   items:[{item_id:product.id,item_name:String(product.name).slice(0,100),quantity:1,
+    price:Number(product.display_price_egp)||0}]});
   const dialog=make("dialog","ssCoDialog");
   dialog.setAttribute("aria-label","إتمام طلب SELECT SHOP");
   const outer=make("div","ssCoContent");
@@ -141,6 +149,7 @@ async function open(product){
       });
       const data=await res.json();
       if(!res.ok||!data.ok)throw Error(data.error||"order_save_failed");
+      funnelEvent("generate_lead",{value:data.totalEgp,lead_type:"order_received_for_review"});
       form.replaceChildren();
       form.append(make("h3","","اتسجّل طلبك بنجاح"),
         make("p","ssCoSuccess","رقم الطلب: "+data.orderCode),
