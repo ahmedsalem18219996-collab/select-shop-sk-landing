@@ -304,6 +304,14 @@ function productCard(p){
   share.type="button";share.setAttribute("aria-label","نسخ الرابط المباشر لمنتج "+p.name);
   share.addEventListener("click",()=>copyProductLink(p.id,share));
   bottom.append(share);
+  if(videos.length){
+    const direct=videos[0].match(/^https:\/\/drive\.google\.com\/file\/d\/[A-Za-z0-9_-]{15,}\/preview$/)?
+      videos[0].replace(/\/preview$/,"/view"):videos[0];
+    const watch=node("a","ssSafkaCardVideoDirect","▶ مشاهدة الفيديو");
+    watch.href=direct;watch.target="_blank";watch.rel="noopener noreferrer";
+    watch.setAttribute("aria-label","مشاهدة فيديو المنتج "+p.name+" في مصدر الفيديو");
+    bottom.append(watch);
+  }
   body.append(bottom);article.append(media,body);return article;
 }
 
