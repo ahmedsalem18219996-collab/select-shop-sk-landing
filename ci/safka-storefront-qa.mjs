@@ -110,6 +110,18 @@ for (const profile of [
     await card.waitFor({ state: "visible", timeout: 30000 });
     assert(await page.locator(".ssSafkaUnifiedCard a.ssSafkaCardVideoDirect").count() > 0,
       "No direct video buttons on supplier product cards");
+    const cardBuy = page.locator(".ssSafkaUnifiedCard button.ssSafkaCardBuy").first();
+    await cardBuy.waitFor({state:"visible"});
+    assert(await cardBuy.isEnabled(),"Customer cannot order from product card");
+    await cardBuy.click();
+    const cardCheckout=page.locator("dialog.ssCoDialog[open]");
+    await cardCheckout.waitFor({state:"visible",timeout:12000});
+    await cardCheckout.locator(".ssCoClose").click();
+    const cleanAdUrl=base+"/?product="+sample+"#products";
+    await page.goto(cleanAdUrl,{waitUntil:"domcontentloaded",timeout:60000});
+    await page.locator("dialog.ssSafkaDialog[open]").waitFor({state:"visible",timeout:60000});
+    assert(!new URL(page.url()).searchParams.get("product")?.includes("safka"),
+      "Public product URL exposes supplier brand");
 
     summary.push({ profile: profile.name, title, video: directVideo, overflowPx: horizontalOverflow,
       supplierCardsInLoadedGrid: await page.locator(".ssSafkaUnifiedCard").count(), checkoutFormMocked:true, jsErrors: errors });
