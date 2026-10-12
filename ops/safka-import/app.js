@@ -432,14 +432,17 @@ async function exportPriceReviewCsv(){
     const all=[];
     for(let offset=0;offset<5000;offset+=100){
       const {data,error}=await db.from("ss_safka_import_products").select(
-        "supplier_product_id,barcode,name,category_name,source_category_confirmed,suggested_sale_price_egp,final_price_egp,variants,review_state,owner_verified"
+        "supplier_product_id,barcode,name,category_name,source_category_confirmed,source_category_latest_present,suggested_sale_price_egp,retail_note_suggested_egp,retail_price_verification,final_price_egp,variants,review_state,owner_verified"
       ).order("supplier_product_id",{ascending:true}).range(offset,offset+99);
       if(error)throw Error("تعذر قراءة الأسعار من قاعدة البيانات");
       all.push(...(data||[]));
       if((data||[]).length<100)break;
     }
     if(!all.length)throw Error("قائمة الأسعار فارغة");
-    const headers=["كود صفقة","باركود","اسم المنتج","القسم","القسم مؤكد من المورد","سعر صفقة المقترح","أعلى سعر اختيار متاح","سعر بيع SELECT SHOP المقترح شامل الشحن","فرق السعر عن المرجع","متوسط الشحن المضاف","حالة النشر","ملاحظات"];
+    const headers=["كود صفقة","باركود","اسم المنتج","القسم المحفوظ","القسم ظاهر في API الحالي",
+  "sale_price للمورد (ليس المقترح)","سعر البيع المقترح من ملاحظات صفقة",
+  "أعلى سعر مورد للاختيار","سعر البيع النهائي للعميل شامل التوصيل","حالة التحقق من السعر",
+  "الشحن المتوسط المضمن في السعر","حالة النشر","ملاحظات"];
     const csvValue=x=>{
       let val=String(x??"");
       // Defuse spreadsheet formula injection when exporting supplier-provided strings.
@@ -452,14 +455,20 @@ async function exportPriceReviewCsv(){
       const valid=variants.filter(v=>v.is_available&&Number(v.suggested_price)>0);
       const expensive=valid.length?Math.max(...valid.map(v=>Number(v.suggested_price))):0;
       const reference=Math.max(original,expensive);
-      const price=Number(p.final_price_egp)||0;
+      const verified=p.retail_price_verification==="verified_note";
+      const price=verified?Number(p.final_price_egp)||0:0;
       const notes=[];
-      if(!p.source_category_confirmed)notes.push("القسم يحتاج مراجعة");
+      if(!p.source_category_latest_present)notes.push("القسم غير وارد في API الحالي؛ لا تعتبره مطابقًا لصفقة");
+      if(!verified)notes.push("السعر غير مؤكد — لا تعرضه ولا تقبل أوردر");
+      if(p.retail_price_verification==="variant_review")notes.push("اختيارات المورد أسعارها مختلفة — مراجعة يدوية");
       if(variants.some(v=>Number(v.suggested_price)>0&&Number(v.suggested_price)!==original))notes.push("اختيارات بأسعار مختلفة");
       if(original>0&&price>original*3)notes.push("مناسب لعرض متعدد أكثر من إعلان قطعة");
       if(!price)notes.push("لم يُسعَّر");
-      return [p.supplier_product_id,p.barcode,p.name,p.category_name,p.source_category_confirmed?"نعم":"لا",
-        original,reference,price,price-original,90,p.review_state==="approved"&&p.owner_verified?"معتمد":"مسودة غير منشورة",notes.join("؛ ")].map(csvValue).join(",");
+      return [p.supplier_product_id,p.barcode,p.name,p.category_name,
+        p.source_category_latest_present?"نعم":"لا",original,p.retail_note_suggested_egp??"",
+        reference,price||"",p.retail_price_verification||"unverified",90,
+        p.review_state==="approved"&&p.owner_verified?"معتمد":"مسودة لمراجعة المورد",
+        notes.join("؛ ")].map(csvValue).join(",");
     });
     const content="\uFEFF"+[headers.map(csvValue).join(","),...records].join("\r\n");
     const file=new Blob([content],{type:"text/csv;charset=utf-8"});
@@ -557,7 +566,7 @@ async function exportVariantPricingCsv(){
       db.from("ss_safka_variant_price_drafts").select(
         "supplier_product_id,supplier_variant_id,variant_name,reference_price_egp,draft_price_egp,supplier_available"
       ).order("supplier_product_id").range(0,999),
-      db.from("ss_safka_import_products").select("supplier_product_id,name,final_price_egp")
+      db.from("ss_safka_import_products").select("supplier_product_id,name,final_price_egp,retail_price_verification,retail_note_suggested_egp")
         .order("supplier_product_id").range(0,999)
     ]);
     if(optionError||productError||!options?.length)throw Error("تعذر تحميل أسعار الاختيارات");
@@ -572,11 +581,13 @@ async function exportVariantPricingCsv(){
     };
     const rows=options.map(v=>{
       const product=map.get(v.supplier_product_id);
-      const note=Number(product?.final_price_egp)!==Number(v.draft_price_egp)?
-        "سعر الاختيار مختلف عن سعر أعلى اختيار؛ راجع قبل فتح الطلب":"مسودة غير معتمدة";
+      const ready=product?.retail_price_verification==="verified_note";
+      const note=!ready?"موقوف — سعر البيع المقترح غير مؤكد أو اختلاف أسعار الاختيارات":
+        Number(product?.final_price_egp)!==Number(v.draft_price_egp)?
+        "اختلاف سعر الاختيار؛ أوقف الطلب وراجع":"مسودة متحققة من ملاحظة المورد";
       return [v.supplier_product_id,product?.name||"",v.supplier_variant_id,v.variant_name,
-        v.supplier_available?"نعم":"لا",v.reference_price_egp,v.draft_price_egp,
-        product?.final_price_egp??"",note].map(cell).join(",");
+        v.supplier_available?"نعم":"لا",v.reference_price_egp,ready?v.draft_price_egp:"",
+        ready?product?.final_price_egp??"":"",note].map(cell).join(",");
     });
     const csv="\uFEFF"+[columns.map(cell).join(","),...rows].join("\r\n");
     const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));
