@@ -162,6 +162,30 @@ for(const p of profiles){
       if(unusable.length)record(res,"warning","Small cart tap targets",unusable);
       return{cartButtons:initial.carts,smallTapTargets:unusable.length};
    });
+   await step(res,"Confirm desktop density and Safari checkout select contrast",async()=>{
+     const css=await page.evaluate(()=>{
+       const grid=document.querySelector(".shoeCardsGrid.unifiedCardsGrid");
+       const columns=grid?getComputedStyle(grid).gridTemplateColumns.split(" ").filter(Boolean).length:0;
+       return {gridColumns:columns};
+     });
+     if(p.name==="desktop"&&css.gridColumns<4)throw Error("Only "+css.gridColumns+" giant desktop cards per row");
+     if(p.engine==="webkit"){
+       const shoe=await page.locator(".ssSafkaUnifiedCard button.ssSafkaCardBuy").first();
+       await shoe.click();
+       const modal=page.locator("dialog.ssCoDialog[open]");
+       await modal.waitFor({state:"visible",timeout:11000});
+       const select=modal.locator("select.ssCoInput").first();
+       const colors=await select.evaluate(el=>{
+         const style=getComputedStyle(el);
+         return {background:style.backgroundColor,color:style.color,fill:style.getPropertyValue("-webkit-text-fill-color")};
+       });
+       await page.screenshot({path:out+"/"+p.name+"-08-readable-dropdown.png"});
+       await modal.locator(".ssCoClose").click();
+       if(/rgb\\(255, 255, 255\\)/.test(colors.background))throw Error("Safari dropdown white on white");
+       return {gridColumns:css.gridColumns,selectColors:colors};
+     }
+     return css;
+   });
    await step(res,"Check image and viewport health",async()=>{
      const d=await page.evaluate(()=>{
        const imgs=[...document.querySelectorAll(".ssSafkaUnifiedCard img")].filter(x=>{
