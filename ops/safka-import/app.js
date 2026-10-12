@@ -911,6 +911,7 @@ async function openDetail(p){
     const syncApproval=()=>{
       approveButton.disabled=!approveCheck.checked||
         p.retail_price_verification!=="verified_note"||
+        !p.source_category_latest_present||
         Number(priceInput.value)!==Number(p.final_price_egp)||
         !p.final_price_egp;
     };
@@ -936,6 +937,8 @@ async function openDetail(p){
         syncApproval();
       }
     });
+    if(!p.source_category_latest_present)
+      approveStatus.textContent="الاعتماد الرسمي موقوف: API صفقة الأخير لا يُظهر تصنيف المنتج؛ قسم أقدم غير كافٍ لإثبات مطابقته.";
     approval.append(approveLabel,approveButton,approveStatus);
   }
   pricing.append(approval);
