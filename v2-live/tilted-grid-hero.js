@@ -11,16 +11,29 @@
  if(!band)return;
  stage.dataset.tghMounted="yes";
  const catalog=window.SELECT_FOUNDATION_CATALOG||{};
- const paths=[
-  ["wk",0],["alex",1],["eqwal",0],["sk",0],["wk",4],
-  ["alex",3],["wk",6],["sk",1],["eqwal",2],["wk",1]
- ];
- const images=paths.map(([id,index])=>{
+ // A diverse, curated scene pool: fashion, home, beauty, cars and gifts.
+ // Existing original footwear photos are retained. Supplier image URLs are public
+ // storefront assets, never supplier identifiers, prices or fulfillment details.
+ const paths=[["wk",0],["alex",1],["eqwal",0],["sk",0],["wk",4],["sk",1]];
+ const originals=paths.map(([id,index])=>{
   const p=catalog[id],v=p?.variants?.[index]||p?.variants?.[0];
   if(!v?.image)return null;
-  return {src: v.image.startsWith("/")?v.image:"/"+v.image,
+  return {src:v.image.startsWith("/")?v.image:"/"+v.image,
     name:p.name+" "+v.name,contain:false};
  }).filter(Boolean);
+ const lifestyle=[
+  {src:"https://safka.fra1.cdn.digitaloceanspaces.com/media/products/1790784712532-27807D19-541F-44A6-BE50-7A6222F3668F.webp",name:"أدوات للمنزل",contain:true},
+  {src:"https://safka.fra1.cdn.digitaloceanspaces.com/media/products/1781133512942-1000373663.webp",name:"مستلزمات السيارات",contain:true},
+  {src:"https://safka.fra1.cdn.digitaloceanspaces.com/media/products/1790938824305-B61702BB-21FF-4E30-86FA-93946694ECF1.webp",name:"الجمال والعناية",contain:true},
+  {src:"https://safka.fra1.cdn.digitaloceanspaces.com/media/products/1775296363776-IMG_8101.webp",name:"اختيارات الأطفال",contain:true},
+  {src:"https://safka.fra1.cdn.digitaloceanspaces.com/media/products/1771234397055-IMG_6583.webp",name:"هدايا للبيت",contain:true},
+  {src:"https://safka.fra1.cdn.digitaloceanspaces.com/media/products/1771074131847-IMG_6392.webp",name:"منتجات رياضية",contain:true}
+ ];
+ const images=[];
+ for(let i=0;i<Math.max(originals.length,lifestyle.length);i++){
+   if(lifestyle[i])images.push(lifestyle[i]);
+   if(originals[i])images.push(originals[i]);
+ }
  if(!images.length){stage.classList.add("tgh-unavailable");return}
  const SLICES=16, CAMERA=1.6, MAX_SHARE=.55, SPEED=4.2, ASPECT=1.62, GAP=.065;
  const rad=deg=>deg*Math.PI/180;
