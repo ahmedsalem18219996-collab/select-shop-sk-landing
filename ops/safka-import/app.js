@@ -725,10 +725,14 @@ function showCard(p){
   meta.append(node("span","","صور: "+images.length));
   if(Array.isArray(p.videos)&&p.videos.length)meta.append(node("span","","فيديوهات: "+p.videos.length));
   info.append(meta);
-  info.append(node("div","cardPrice","سعر صفقة المقترح: "+money(p.suggested_sale_price_egp)));
-  if(p.review_state==="approved"&&p.owner_verified)
-    info.append(node("div","cardPrice","سعرنا المعتمد: "+money(p.final_price_egp)));
-  else if(p.final_price_egp)info.append(node("div","cardPrice","سعر مسودة غير منشور: "+money(p.final_price_egp)));
+  info.append(node("div","cardPrice","sale_price للمورد: "+money(p.suggested_sale_price_egp)));
+  info.append(node("div","cardPrice","سعر البيع المقترح من الملاحظة: "+
+    (p.retail_note_suggested_egp?money(p.retail_note_suggested_egp):"غير مؤكد")));
+  if(p.retail_price_verification!=="verified_note")
+    info.append(node("div","cardPrice","غير متاح للطلب — السعر يحتاج مراجعة"));
+  else if(p.review_state==="approved"&&p.owner_verified)
+    info.append(node("div","cardPrice","سعر معتمد شامل التوصيل: "+money(p.final_price_egp)));
+  else if(p.final_price_egp)info.append(node("div","cardPrice","سعر متحقق شامل التوصيل: "+money(p.final_price_egp)));
   else info.append(node("small","","سعر SELECT SHOP شامل الشحن: قيد المراجعة"));
   const open=node("button","","شوف الأكواد والميديا");
   open.type="button";open.addEventListener("click",()=>openDetail(p));
@@ -738,7 +742,7 @@ async function loadProducts(){
   if(!user)return;
   const limit=Number($("pageSize").value)||24;
   let q=db.from("ss_safka_import_products")
-    .select("supplier_product_id,barcode,name,description,category_key,category_name,suggested_sale_price_egp,variants,images,videos,review_state,final_price_egp,owner_verified,source_category_confirmed",{count:"exact"})
+    .select("supplier_product_id,barcode,name,description,category_key,category_name,source_category_latest_present,suggested_sale_price_egp,retail_note_suggested_egp,retail_price_verification,variants,images,videos,review_state,final_price_egp,owner_verified,source_category_confirmed",{count:"exact"})
     .order("name",{ascending:true}).range(page*limit,(page+1)*limit-1);
   const cat=$("category").value;if(cat)q=q.eq("category_key",cat);
   const search=$("search").value.trim().slice(0,80);
@@ -835,11 +839,14 @@ async function openDetail(p){
   campaign.append(campaignInput,copyLink);right.append(campaign);
   right.append(node("div","detailCode","Product ID: "+p.supplier_product_id));
   if(p.barcode)right.append(node("div","detailCode","Barcode: "+p.barcode));
-  const cat=node("p","detailNote",p.source_category_confirmed?
-    "القسم وارد من بيانات صفقة.":"صفقة لم ترجع قسمًا معتمدًا للمنتج ده عبر API.");
+  const cat=node("p","detailNote",p.source_category_latest_present?
+    "القسم ورد في أحدث بيانات صفقة.":
+    "تنبيه: واجهة API الحالية لا تؤكد القسم؛ التصنيف المحفوظ قديم أو غير معروف.");
   right.append(cat);
-  const price=node("p","detailNote","سعر المورد المقترح: "+money(p.suggested_sale_price_egp)+
-    "  — سعر البيع عندنا: سعر المنصة المقترح + 90 جنيه (للإدارة فقط).");
+  const price=node("p","detailNote","sale_price للمورد: "+money(p.suggested_sale_price_egp)+
+    " — سعر البيع المقترح في الملاحظات: "+
+    (p.retail_note_suggested_egp?money(p.retail_note_suggested_egp):"غير مؤكد")+
+    " — سعر SELECT SHOP: "+(p.retail_price_verification==="verified_note"?money(p.final_price_egp):"موقوف مؤقتًا"));
   right.append(price);
   const pricing=node("section","priceDraftBox");
   pricing.append(node("h3","","تسعير SELECT SHOP — مسودة خاصة"));
@@ -852,12 +859,12 @@ async function openDetail(p){
         " ← الجديد: "+money(audit.proposed_price_egp)));
       const label=audit.pricing_segment==="paid_ad_candidate"?"مرشح لاختبار إعلان بميزانية محدودة":
         audit.pricing_segment==="manual_price_check"?"اختيارات تحتاج مراجعة يدوية":
-        "أنسب للبيع الطبيعي أو الباقات؛ لا إعلان منفرد دون اختبار";
+        "تحتاج اختبار سوق ومراجعة هامش ربح قبل أي إعلان";
       pricing.append(node("p","detailNote","قاعدة التسعير الحالية: سعر صفقة المقترح + 90 جنيه شحن. "+label+
         "؛ هامش الربح الحقيقي غير معروف من البيانات دي."));
     }
   }catch{}
-  pricing.append(node("p","detailNote","قاعدة الأسعار الحالية: سعر صفقة المقترح + 90 جنيه. الطلب من الموقع يُحفظ داخليًا للمراجعة قبل تحويله إلى المورد."));
+  pricing.append(node("p","detailNote","قاعدة أسعار المنتجات المؤكدة: سعر البيع المقترح من ملاحظة صفقة +90 جنيه كمتوسط شحن؛ الطلبات تُراجع يدويًا ولا تُرسل للمورد تلقائيًا."));
   const form=node("form","ssDraftPriceForm");
   const label=node("label","","سعر البيع النهائي (جنيه)");
   const priceInput=node("input");
@@ -871,7 +878,7 @@ async function openDetail(p){
   feedback.setAttribute("role","status");
   // Safqa suggested SALE price is not supplier cost. Avoid displaying invented net profit.
   const priceExplainer=node("p","ssPriceHistory");
-  const supplierQuote=Number(p.suggested_sale_price_egp)||0;
+  const supplierQuote=Number(p.retail_note_suggested_egp)||0;
   const expectedPrice=supplierQuote+90;
   const updateExplainer=()=>{
     const candidate=Number(priceInput.value)||0;
@@ -880,6 +887,10 @@ async function openDetail(p){
       ". السعر الحالي: "+money(candidate)+". الفرق عن القاعدة: "+money(candidate-expectedPrice)+
       ". أسعار الاختيارات المختلفة موجودة تحت؛ لا نفترض تكلفة شراء أو صافي ربح.";
   };
+  if(p.retail_price_verification!=="verified_note"){
+    priceInput.disabled=true;saveButton.disabled=true;
+    feedback.textContent="المنتج موقوف حتى يتوفر سعر مقترح موثوق من المصدر، وتُراجع فروق الاختيارات.";
+  }
   priceInput.addEventListener("input",updateExplainer);
   form.append(label,saveButton,feedback);
   pricing.append(priceExplainer,form);right.append(pricing);
@@ -899,6 +910,7 @@ async function openDetail(p){
     const approveStatus=node("p","feedback");approveStatus.setAttribute("role","status");
     const syncApproval=()=>{
       approveButton.disabled=!approveCheck.checked||
+        p.retail_price_verification!=="verified_note"||
         Number(priceInput.value)!==Number(p.final_price_egp)||
         !p.final_price_egp;
     };
