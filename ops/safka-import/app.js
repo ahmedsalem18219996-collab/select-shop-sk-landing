@@ -442,7 +442,8 @@ async function exportPriceReviewCsv(){
     const headers=["كود صفقة","باركود","اسم المنتج","القسم المحفوظ","القسم ظاهر في API الحالي",
   "sale_price للمورد (ليس المقترح)","سعر البيع المقترح من ملاحظات صفقة",
   "أعلى سعر مورد للاختيار","سعر البيع النهائي للعميل شامل التوصيل","حالة التحقق من السعر",
-  "الشحن المتوسط المضمن في السعر","حالة النشر","ملاحظات"];
+  "فرق السعر المرجعي قبل الشحن","رصيد نظري عند شحن 85 ج قبل المصاريف","رصيد نظري عند شحن 110 ج قبل المصاريف",
+  "مخاطرة إعلانية تقديرية","الشحن المتوسط المضمن في السعر","حالة النشر","ملاحظات"];
     const csvValue=x=>{
       let val=String(x??"");
       // Defuse spreadsheet formula injection when exporting supplier-provided strings.
@@ -457,16 +458,26 @@ async function exportPriceReviewCsv(){
       const reference=Math.max(original,expensive);
       const verified=p.retail_price_verification==="verified_note";
       const price=verified?Number(p.final_price_egp)||0:0;
+      // "sale_price" is an upstream reference, not a verified all-in purchase cost.
+      const referenceGap=verified&&reference>0?Number(p.retail_note_suggested_egp)-reference:null;
+      const after85=verified&&price&&reference>0?price-reference-85:null;
+      const after110=verified&&price&&reference>0?price-reference-110:null;
+      const risk=!verified?"موقوف: السعر غير مؤكد":referenceGap===null?
+        "موقوف: مرجع المورد مفقود":referenceGap<90?
+        "مرتفع: فرق السعر أقل من 90 قبل الإعلان":referenceGap<150?
+        "مراجعة: فرق السعر أقل من 150 قبل الإعلان":"يلزم اعتماد تكاليف الإعلان والمورد";
       const notes=[];
       if(!p.source_category_latest_present)notes.push("القسم غير وارد في API الحالي؛ لا تعتبره مطابقًا لصفقة");
       if(!verified)notes.push("السعر غير مؤكد — لا تعرضه ولا تقبل أوردر");
       if(p.retail_price_verification==="variant_review")notes.push("اختيارات المورد أسعارها مختلفة — مراجعة يدوية");
       if(variants.some(v=>Number(v.suggested_price)>0&&Number(v.suggested_price)!==original))notes.push("اختيارات بأسعار مختلفة");
-      if(original>0&&price>original*3)notes.push("مناسب لعرض متعدد أكثر من إعلان قطعة");
+      if(after110!==null&&after110<=0)notes.push("عرضة لخسارة أو تعادل نظري عند الشحن الأعلى قبل مصاريف التسويق");
+      if(referenceGap!==null&&referenceGap<90)notes.push("مراجعة تسويق عاجلة: فرق السعر المرجعي محدود");
       if(!price)notes.push("لم يُسعَّر");
       return [p.supplier_product_id,p.barcode,p.name,p.category_name,
         p.source_category_latest_present?"نعم":"لا",original,p.retail_note_suggested_egp??"",
-        reference,price||"",p.retail_price_verification||"unverified",90,
+        reference,price||"",p.retail_price_verification||"unverified",
+        referenceGap??"",after85??"",after110??"",risk,90,
         p.review_state==="approved"&&p.owner_verified?"معتمد":"مسودة لمراجعة المورد",
         notes.join("؛ ")].map(csvValue).join(",");
     });
@@ -504,13 +515,18 @@ async function loadPricingAudit(){
   const variants=all.filter(p=>p.retail_price_verification==="variant_review");
   const unresolved=all.filter(p=>p.retail_price_verification!=="verified_note");
   const missingCat=all.filter(p=>!p.source_category_latest_present);
+  const lowGap=valid.filter(p=>Number(p.suggested_sale_price_egp)>0&&
+    Number(p.retail_note_suggested_egp)-Number(p.suggested_sale_price_egp)<90)
+    .sort((a,b)=>(Number(a.retail_note_suggested_egp)-Number(a.suggested_sale_price_egp))-
+      (Number(b.retail_note_suggested_egp)-Number(b.suggested_sale_price_egp)));
+  $("auditLowMargin").textContent=String(lowGap.length);
   $("auditVariants").textContent=String(variants.length);
   $("auditCategory").textContent=String(missingCat.length);
   $("auditBundle").textContent=String(manual.length);
   $("auditAdsEligible").textContent=String(valid.length);
   $("auditPremium").textContent=String(valid.filter(p=>Number(p.final_price_egp)>=900).length);
   const queue=$("priorityReviews");queue.replaceChildren();
-  for(const p of [...variants,...manual].slice(0,16)){
+  for(const p of [...variants,...manual].slice(0,12)){
     const item=node("div","mediaQueueItem");
     item.append(node("strong","",p.name));
     item.append(node("small","",
@@ -526,11 +542,28 @@ async function loadPricingAudit(){
     };
     item.append(btn);queue.append(item);
   }
+  for(const p of lowGap.slice(0,12)){
+    const difference=Number(p.retail_note_suggested_egp)-Number(p.suggested_sale_price_egp);
+    const item=node("div","mediaQueueItem");
+    item.append(node("strong","",p.name));
+    item.append(node("small","","فرق السعر المرجعي قبل الإعلان: "+money(difference)+
+      ". ليس ربحًا صافيًا؛ تكلفة المورد والعمولات تحتاج اعتماد."));
+    item.append(node("small","","سعر العميل "+money(p.final_price_egp)+
+      " | مرجع المورد "+money(p.suggested_sale_price_egp)+
+      " | رصيد افتراضي عند شحن 110 جنيه "+money(Number(p.final_price_egp)-Number(p.suggested_sale_price_egp)-110)));
+    const btn=node("button","","راجع تسعير المنتج");
+    btn.type="button";btn.onclick=async()=>{
+      $("search").value=p.supplier_product_id;$("category").value="";
+      page=0;await loadProducts();$(".catalog")?.scrollIntoView({block:"start",behavior:"smooth"});
+    };
+    item.append(btn);queue.append(item);
+  }
   status("إجمالي "+all.length+" — أسعار متحققة بالمعادلة المطلوبة: "+valid.length+
    "؛ أسعار موقوفة: "+unresolved.length+
    " (ملاحظات غير واضحة "+manual.length+"، واختلاف اختيارات "+variants.length+")"+
    "؛ الأقسام غير مثبتة في آخر API: "+missingCat.length+
-   ". التحقق من السعر لا يعني التأكد من الربح أو المنافسة.",
+   "؛ فروق سعر مرجعي أقل من 90 قبل الإعلانات: "+lowGap.length+
+   ". لا يوجد اعتماد ربحية أو موافقة إطلاق إعلانات.",
    unresolved.length>0,"priceAuditMessage");
  }catch(err){
   status("تعذر فحص الأسعار: "+String(err?.message||err).slice(0,140),true,"priceAuditMessage");
