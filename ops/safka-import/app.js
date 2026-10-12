@@ -788,13 +788,30 @@ async function openDetail(p){
   left.append(stage,gallery);
   right.append(node("small","",p.category_name||"غير مصنف"),node("h2","",p.name));
   right.append(node("p","",p.description||"الوصف من المورد غير متاح؛ محتاج مراجعة قبل البيع."));
+  // Campaign landing links belong only in authenticated owner dashboard, never in public cards.
+  const campaign=node("div","ssCampaignOwnerLink");
+  campaign.append(node("strong","","رابط المنتج للإعلانات — للإدارة فقط"));
+  const campaignUrl="https://selectshopeg.com/?product=safka-"+encodeURIComponent(p.supplier_product_id)+"#products";
+  const campaignInput=node("input");campaignInput.type="text";campaignInput.readOnly=true;
+  campaignInput.value=campaignUrl;campaignInput.dir="ltr";
+  campaignInput.setAttribute("aria-label","رابط هبوط المنتج للحملات");
+  const copyLink=node("button","","نسخ رابط الإعلان");
+  copyLink.type="button";
+  copyLink.addEventListener("click",async()=>{
+    try{
+      if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(campaignUrl);
+      else{campaignInput.select();document.execCommand("copy");}
+      copyLink.textContent="تم نسخ الرابط";
+    }catch{campaignInput.select();copyLink.textContent="انسخ الرابط من الحقل";}
+  });
+  campaign.append(campaignInput,copyLink);right.append(campaign);
   right.append(node("div","detailCode","Product ID: "+p.supplier_product_id));
   if(p.barcode)right.append(node("div","detailCode","Barcode: "+p.barcode));
   const cat=node("p","detailNote",p.source_category_confirmed?
     "القسم وارد من بيانات صفقة.":"صفقة لم ترجع قسمًا معتمدًا للمنتج ده عبر API.");
   right.append(cat);
   const price=node("p","detailNote","سعر المورد المقترح: "+money(p.suggested_sale_price_egp)+
-    " — ليس سعر بيعنا. يلزم حساب التكلفة + الشحن + الربح.");
+    "  — سعر البيع عندنا: سعر المنصة المقترح + 90 جنيه (للإدارة فقط).");
   right.append(price);
   const pricing=node("section","priceDraftBox");
   pricing.append(node("h3","","تسعير SELECT SHOP — مسودة خاصة"));
@@ -812,7 +829,7 @@ async function openDetail(p){
         "؛ هامش الربح الحقيقي غير معروف من البيانات دي."));
     }
   }catch{}
-  pricing.append(node("p","detailNote","أدخل سعر البيع النهائي شامل التوصيل بعد حساب تكلفة المورد والشحن والإعلانات والمرتجعات. الحفظ لا ينشر المنتج ولا يفتح الطلبات."));
+  pricing.append(node("p","detailNote","قاعدة الأسعار الحالية: سعر صفقة المقترح + 90 جنيه. الطلب من الموقع يُحفظ داخليًا للمراجعة قبل تحويله إلى المورد."));
   const form=node("form","ssDraftPriceForm");
   const label=node("label","","سعر البيع النهائي (جنيه)");
   const priceInput=node("input");
