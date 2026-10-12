@@ -34,7 +34,7 @@ async function rpc(name,body={},signal){
 }
 let categories=[],current={filter:"all",search:"",shoeCount:4},items=[],total=0,page=1,token=0,loading=false;
 let dialog=null,lastFocus=null;
-let autoPager=null;
+let autoPager=null,autoPagerTarget=null;
 const connections={saveData:!!navigator.connection?.saveData};
 let closeMobileDepartments=()=>{};
 function categoryName(raw){
@@ -242,16 +242,18 @@ function ensureStage(){
     more.type="button";more.addEventListener("click",()=>{if(!loading){page++;loadPage(true)}});
     actions.append(more);shelf.append(actions);
   }
-  // At ~500+ products, progressively load cards near the bottom, not hundreds at once.
-  // The manual "عرض منتجات أكثر" button remains a fallback for data-saving mode.
-  if(!autoPager&&"IntersectionObserver" in window&&!connections.saveData){
-    autoPager=new IntersectionObserver(entries=>{
-      if(entries.some(e=>e.isIntersecting)&&!loading&&!actions.hidden&&
-         items.length<total&&current.filter!=="shoes"){
+  // Auto-load only near the current live collection's bottom; reconnect after
+  // a category/search redraw because the main catalog rebuilds the DOM.
+  if("IntersectionObserver" in window&&!connections.saveData){
+    if(!autoPager)autoPager=new IntersectionObserver(entries=>{
+      const visible=entries.some(e=>e.isIntersecting&&e.target.isConnected&&!e.target.hidden);
+      if(visible&&!loading&&items.length<total&&current.filter!=="shoes"){
         page+=1;loadPage(true);
       }
     },{rootMargin:"0px 0px 280px 0px",threshold:0.01});
-    autoPager.observe(actions);
+    if(autoPagerTarget!==actions){
+      autoPager.disconnect();autoPager.observe(actions);autoPagerTarget=actions;
+    }
   }
   return {shelf,grid,status,actions,more:$("button",actions)};
 }
@@ -651,8 +653,9 @@ async function loadPage(append=false){
     if(!values.length&&items.length<total){stage.status.textContent="تعذر تحميل بقية المنتجات.";stage.actions.hidden=true}
   }catch{
     if(version===token){
-      stage.status.textContent="تعذر تحميل بعض المنتجات الآن، حاول مرة أخرى.";
-      stage.actions.hidden=true;
+      stage.status.textContent="تعذر تحميل بعض المنتجات الآن. اضغط عرض منتجات أكثر لإعادة المحاولة.";
+      if(append){page=Math.max(1,page-1);stage.actions.hidden=false;stage.more.disabled=false;}
+      else stage.actions.hidden=true;
       countResults(current.shoeCount+total);
     }
   }finally{if(version===token)loading=false}
