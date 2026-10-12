@@ -83,21 +83,54 @@ Deno.serve(async(req)=>{
   let input;
   try{input=await safeJson(req)}catch{return response(400,{error:"invalid_json"},origin)}
   const type=input?.mode;
-  if(type!=="products"&&type!=="shipping")return response(422,{error:"invalid_mode"},origin);
-  const page=type==="products"?(input.page??1):null;
-  if(type==="products"&&(!Number.isInteger(page)||page<1||page>10000))
+  if(type!=="products"&&type!=="shipping"&&type!=="audit")return response(422,{error:"invalid_mode"},origin);
+  const page=type==="products"||type==="audit"?(input.page??1):null;
+  if((type==="products"||type==="audit")&&(!Number.isInteger(page)||page<1||page>10000))
     return response(422,{error:"invalid_page"},origin);
   const admin=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
   let root;
   try{
-    root=await safkaGet(type==="products"?
+    root=await safkaGet(type==="products"||type==="audit"?
       "/products?"+new URLSearchParams({page:String(page),size:"30"}):"/price-list",key);
   }catch(error){
     const message=String(error instanceof Error?error.message:error);
     const status=message.match(/^safka_http_(\d{3})$/)?.[1]||null;
     return response(502,{error:"safka_read_failed",providerStatus:status?Number(status):null},origin);
   }
-  const records=findRecords(root,type);
+  const records=findRecords(root,type==="audit"?"products":type);
+  if(type==="audit"&&records){
+    // Audits never touch the database or place supplier orders.
+    // The supplier's free-text note may contain "سعر البيع المقترح"
+    // distinct from the JSON sale_price used by our import.
+    const arabicNumerals=x=>String(x).replace(/[٠-٩]/g,c=>String(c.charCodeAt(0)-1632))
+      .replace(/[۰-۹]/g,c=>String(c.charCodeAt(0)-1776));
+    const raw=records.map(p=>{
+      const note=arabicNumerals(String(p?.note||p?.notes||"").slice(0,1600));
+      const m=note.match(/سعر\s*(?:البيع\s*)?المقترح\s*(?:هو\s*)?[:：–=\-]?\s*([0-9][0-9,]*)/i);
+      const suggested=m?Number(m[1].replace(/,/g,"")):null;
+      const sale=Number(p?.sale_price);
+      const category=p?.category??p?.categories?.[0]??p?.categoryName??p?.category_name;
+      return {id:String(p?._id||p?.id||""),name:String(p?.name||"").slice(0,90),
+        sale:Number.isFinite(sale)?sale:null,noteSuggested:Number.isFinite(suggested)&&suggested>0?suggested:null,
+        hasNote:note.length>0,hasCategory:!!category};
+    }).filter(p=>/^[a-f0-9]{24}$/i.test(p.id));
+    const withSuggested=raw.filter(p=>p.noteSuggested!==null&&p.sale!==null);
+    const differences=withSuggested.filter(p=>p.noteSuggested!==p.sale);
+    return response(200,{ok:true,mode:"audit",page,received:records.length,
+      count:raw.length,sourceTotalPages:totalPages(root),
+      categoryPresent:raw.filter(p=>p.hasCategory).length,
+      missingCategory:raw.filter(p=>!p.hasCategory).length,
+      withNote:raw.filter(p=>p.hasNote).length,
+      noteSuggestedParsed:withSuggested.length,
+      suggestedAboveSale:withSuggested.filter(p=>p.noteSuggested>p.sale).length,
+      suggestedEqualsSale:withSuggested.filter(p=>p.noteSuggested===p.sale).length,
+      suggestedBelowSale:withSuggested.filter(p=>p.noteSuggested<p.sale).length,
+      sampleDifferences:differences.slice(0,5).map(p=>({
+        id:p.id,name:p.name,salePrice:p.sale,noteSuggestedRetail:p.noteSuggested,
+        listedSitePrice:p.sale+90,noteSuggestedPlus90:p.noteSuggested+90
+      })),
+      noDatabaseWrites:true,noSupplierOrders:true},origin);
+  }
   if(!records)return response(502,{error:"unrecognized_safka_response",rootKeys:Object.keys(root||{}).slice(0,15)},origin);
   const normal=(type==="products"?records.map(normalizeProduct):records.map(normalizeRegion)).filter(Boolean);
   // Fail closed when provider replies with entries but none are mappable.
