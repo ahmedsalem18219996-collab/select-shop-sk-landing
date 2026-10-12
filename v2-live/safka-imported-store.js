@@ -315,6 +315,7 @@ function productCard(p){
   buyNow.type="button";
   const orderable=(Array.isArray(p.variants)?p.variants:[]).some(v=>v.available===true&&validId(v.id)&&Number(v.display_price_egp)>0);
   buyNow.disabled=!orderable;
+  if(!orderable)buyNow.textContent=p.price_status==="needs_review"?"السعر تحت المراجعة":"غير متاح";
   buyNow.addEventListener("click",()=>{
     if(orderable&&window.SS_SAFKA_CHECKOUT?.open)window.SS_SAFKA_CHECKOUT.open(p);
     else openFn();
@@ -322,6 +323,7 @@ function productCard(p){
   bottom.append(buyNow);
   const add=node("button","ssSafkaCardAdd","أضف إلى السلة");
   add.type="button";add.disabled=!orderable;
+  if(!orderable)add.textContent="غير متاح للسلة";
   add.addEventListener("click",()=>window.SS_SAFKA_CART?.choose(p));
   bottom.append(add);
   // Product title/image open full product details; avoid a fourth giant button in a small card.
@@ -627,7 +629,7 @@ function openProduct(p,trigger,showVideo=false){
     });
     buy.after(addToBag);
   }else{
-    const unavailable=node("button","ssSafkaDisabled","غير متوفر حاليًا");
+    const unavailable=node("button","ssSafkaDisabled",p.price_status==="needs_review"?"السعر قيد المراجعة — الطلب متوقف مؤقتًا":"غير متوفر حاليًا");
     unavailable.type="button";unavailable.disabled=true;action.prepend(unavailable);
   }
   // Place the customer order CTA immediately after the total price, before long descriptions.
