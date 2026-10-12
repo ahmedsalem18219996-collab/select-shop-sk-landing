@@ -1,0 +1,46 @@
+/* SELECT SHOP TEMP: Supplier cart, separate fulfillment from original shoe cart. */
+.ssBagHeader{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px}
+.ssBagCount{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:50%;padding:0 6px;background:#f2bb75;color:#14251b;font-size:12px}
+.ssBagDialog{position:fixed;inset:0;margin:auto;width:min(680px,calc(100vw - 14px));max-height:min(94dvh,850px);overflow:auto;
+ border:1px solid #bb9666;border-radius:20px;padding:0;box-shadow:0 24px 75px #000b;z-index:9999;
+ background:linear-gradient(145deg,#15241d,#0d1b15);color:#f9f2dd;font-family:inherit;overscroll-behavior:contain}
+.ssBagDialog::backdrop{background:#050b08cf;backdrop-filter:blur(6px)}
+.ssBagContent{display:grid;gap:13px;padding:clamp(14px,3vw,25px);box-sizing:border-box}
+.ssBagHead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ssBagContent h2{font-size:clamp(21px,4vw,27px);font-weight:850;color:#f6d9a7;margin:0}
+.ssBagContent h3{color:#f3dab2}
+.ssBagClose{width:42px;height:42px;flex:none;border-radius:50%;background:#2c4334;border:1px solid #6f886e;color:#f5ebd7;font-size:27px;cursor:pointer}
+.ssBagMuted{font-size:12px;color:#d1dccb;line-height:1.7;margin:0}
+.ssBagItems{display:grid;gap:10px;max-height:min(48dvh,420px);overflow:auto}
+.ssBagItem{display:flex;align-items:start;gap:12px;border:1px solid #536950;border-radius:14px;background:#20332a;padding:10px;min-width:0}
+.ssBagImg{width:82px;height:82px;object-fit:contain;background:#e8ebe4;border-radius:9px;flex:none}
+.ssBagItemBody{display:grid;gap:5px;min-width:0;flex:1}
+.ssBagItemBody strong{font-size:13px;line-height:1.5;overflow-wrap:anywhere}
+.ssBagItemBody small{font-size:11px;color:#c5d3bd}
+.ssBagLinePrice{font-weight:800;color:#f5d295}
+.ssBagQty{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ssBagQty button{border:1px solid #7c9879;min-height:34px;min-width:34px;border-radius:9px;background:#304435;color:#fff;cursor:pointer;font-size:17px}
+.ssBagQty .ssBagRemove{margin-inline-start:auto;background:#47322b;border-color:#b18174;font-size:12px;padding:0 10px}
+.ssBagTotal{display:block;padding:12px;border-radius:12px;background:#2b3f30;color:#ffe0aa;font-size:17px;font-weight:850;line-height:1.5}
+.ssBagPrimary{width:100%;border:1px solid #f9d392;border-radius:12px;background:linear-gradient(120deg,#f6ca88,#edb36b);color:#1c291f;font-weight:850;min-height:49px;cursor:pointer;font-family:inherit;font-size:15px}
+.ssBagPrimary:disabled{opacity:.55;cursor:not-allowed}
+.ssBagLabel{display:grid;gap:7px;color:#f5e8d5;font-weight:750;font-size:12px}
+.ssBagInput{display:block;box-sizing:border-box;width:100%;min-height:46px;padding:10px;border:1px solid #718774;background:#20342a;color:#f5f5ef;border-radius:10px;font:inherit;font-size:15px}
+.ssBagForm{display:grid;gap:12px}
+.ssBagStatus{min-height:14px;margin:0;color:#f1d69c;font-size:12px;line-height:1.6}
+.ssBagLink{background:none;border:0;color:#f7d398;text-align:start;cursor:pointer;font:inherit;padding:10px}
+.ssBagSuccess{font-size:20px}
+.ssBagNotice{position:fixed;z-index:10010;bottom:max(18px,env(safe-area-inset-bottom));right:12px;max-width:340px;background:#263b2b;color:#f6dfb9;border:1px solid #c5a477;padding:12px;border-radius:12px;box-shadow:0 8px 30px #0008}
+.ssBagList[hidden],.ssBagCheckout[hidden]{display:none!important}
+.shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard .ssSafkaCardAdd,
+.ssSafkaDialog .ssSafkaDetailAction .ssSafkaAddToBag{
+ background:#2c493a!important;color:#f4e4c4!important;border:1px solid #97b095!important;
+ font-weight:800!important;min-height:44px!important;border-radius:10px!important;cursor:pointer
+}
+@media(max-width:680px){
+ .ssBagHeader{padding:5px 8px;font-size:11px;white-space:nowrap}
+ .ssBagDialog{max-height:calc(100dvh - 8px);width:calc(100vw - 8px);border-radius:15px}
+ .ssBagContent{padding:14px;padding-bottom:max(20px,env(safe-area-inset-bottom))}
+ .ssBagInput{font-size:16px}.ssBagImg{width:65px;height:65px}
+ .ssBagItems{max-height:40dvh}
+}
