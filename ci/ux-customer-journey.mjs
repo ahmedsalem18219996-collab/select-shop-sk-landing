@@ -60,6 +60,21 @@ for(const p of profiles){
       if(!data.title.includes("DISCOVER"))throw Error("Unexpected hero text");
       return data;
    });
+   await step(res,"Single cart entry explains separate fulfillment",async()=>{
+      const original=page.locator("[data-open-cart]").first();
+      await original.click();
+      const hub=page.locator("dialog.ssUnifiedHub[open]");
+      await hub.waitFor({state:"visible",timeout:9000});
+      const choices=hub.locator(".ssUnifiedHubOption");
+      if(await choices.count()!==2)throw Error("Cart chooser must explain both item groups");
+      if(!(await hub.innerText()).includes("طلبين منفصلين"))
+        throw Error("Separate checkout costs must be explained to shoppers");
+      await choices.first().click();
+      const supplier=page.locator("dialog.ssBagDialog[open]:not(.ssBagChoice)");
+      await supplier.waitFor({state:"visible",timeout:13000});
+      await supplier.locator(".ssBagClose").click();
+      return{oneVisibleCartEntrance:true,separateFulfillmentDisclosed:true};
+   });
    await step(res,"Discover catalog from hero CTA",async()=>{
       const heroCTA=page.locator(".heroActions a[href*='#products']").first();
       await heroCTA.click({timeout:12000});
