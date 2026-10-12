@@ -305,6 +305,10 @@ function productCard(p){
     else openFn();
   });
   bottom.append(buyNow);
+  const add=node("button","ssSafkaCardAdd","أضف إلى السلة");
+  add.type="button";add.disabled=!orderable;
+  add.addEventListener("click",()=>window.SS_SAFKA_CART?.choose(p));
+  bottom.append(add);
   const button=node("button","ssSafkaCardDetails","التفاصيل");
   button.type="button";button.addEventListener("click",openFn);bottom.append(button);
 
@@ -587,6 +591,14 @@ function openProduct(p,trigger){
       else window.alert("تعذر فتح نموذج الطلب. جرّب تحديث الصفحة.");
     });
     action.prepend(buy);
+    const addToBag=node("button","ssSafkaAddToBag","أضف إلى السلة");
+    addToBag.type="button";
+    addToBag.addEventListener("click",()=>{
+      d.close();
+      if(window.SS_SAFKA_CART?.choose)window.SS_SAFKA_CART.choose(p);
+      else window.alert("تعذر فتح السلة. حدّث الصفحة.");
+    });
+    buy.after(addToBag);
   }else{
     const unavailable=node("button","ssSafkaDisabled","غير متوفر حاليًا");
     unavailable.type="button";unavailable.disabled=true;action.prepend(unavailable);
