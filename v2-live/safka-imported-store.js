@@ -292,7 +292,7 @@ function productCard(p){
   const title=node("div","cardTitle ssSafkaUnifiedTitle");
   title.append(node("h3","",p.name),node("strong","",price(p)));body.append(title);
   if(p.price_status==="indicative"&&p.display_price_egp)
-    body.append(node("small","ssSafkaPricePreview","سعر مبدئي شامل التوصيل — البيع بعد التأكيد"));
+    body.append(node("small","ssSafkaPricePreview","سعر صفقة المقترح + ٩٠ ج شحن — قبل تأكيد الطلب"));
   const code=node("p","ssSafkaUnifiedCode","كود صفقة: "+(p.barcode||p.id));
   code.title="باركود المنتج في صفقة، وكوده الأصلي موجود في التفاصيل";
   body.append(code);
@@ -511,7 +511,7 @@ function openProduct(p,trigger){
       p.display_price_egp?"سعر مبدئي — الطلب غير مفعّل":"قيد تجهيز السعر"));
   body.append(eyebrow,node("h2","",p.name));
   const info=node("div","ssSafkaPriceInfo");
-  info.append(node("span","",p.price_status==="indicative"?"سعر مبدئي شامل التوصيل — قابل للتأكيد":"السعر النهائي شامل التوصيل"),node("strong","",price(p)));
+  info.append(node("span","",p.price_status==="indicative"?"سعر صفقة المقترح + متوسط شحن ٩٠ ج — للمراجعة":"السعر النهائي شامل التوصيل"),node("strong","",price(p)));
   body.append(info);
   const summary=cleanSupplierText(p.description);
   if(summary){
