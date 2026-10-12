@@ -76,6 +76,21 @@ function variantsOf(p){
    min:num(v.min),is_available:v.is_available===true
  })).filter(x=>x.provider_id);
 }
+// Documented Safka price distinction: JSON sale_price is a supplier quote,
+// whereas the note includes "سعر البيع المقترح" (consumer retail guide).
+// Never guess a number from free text without an exact unique label.
+export function suggestedRetailFromNote(p){
+ const original=typeof p?.note==="string"?p.note:typeof p?.notes==="string"?p.notes:"";
+ const note=original.slice(0,2500)
+  .replace(/[٠-٩]/g,c=>String(c.charCodeAt(0)-1632))
+  .replace(/[۰-۹]/g,c=>String(c.charCodeAt(0)-1776));
+ const matches=[...note.matchAll(/سعر\s*(?:البيع\s*)?المقترح\s*(?:هو\s*)?[:：–=\-]?\s*([0-9][0-9,]*)/gi)];
+ if(matches.length!==1)return null;
+ const amount=Number(matches[0][1].replace(/,/g,""));
+ const base=Number(p?.sale_price);
+ return Number.isSafeInteger(amount)&&amount>0&&amount<=1000000&&
+   Number.isFinite(base)&&base>0&&amount>=base?amount:null;
+}
 export function normalizeProduct(p){
  if(!record(p))return null;
  const supplier_product_id=trim(p._id||p.id,80);
@@ -83,15 +98,24 @@ export function normalizeProduct(p){
  const name=trim(p.name||p.title,350);
  if(!name)return null;
  const cat=categoryOf(p);
+ const retail=suggestedRetailFromNote(p);
+ const options=variantsOf(p);
+ const base=Number(p.sale_price);
+ const variantMismatch=options.some(v=>Number(v.suggested_price)>0&&Number(v.suggested_price)!==base);
+ const verification=retail===null?"manual_review":variantMismatch?"variant_review":"verified_note";
  const pictureItems=p.images||p.pictures||p.image||[];
  const videoItems=p.videos||p.video||p.video_urls||p.video_url||[];
  return {
    supplier_product_id,barcode:trim(p.barcode,150),name,
    category_key:cat.key,category_name:cat.name,category_parent_key:cat.parent,
    source_category_confirmed:cat.confirmed,
+   source_category_latest_present:cat.confirmed,
    description:trim(p.description,12000),
    suggested_sale_price_egp:num(p.sale_price),
-   variants:variantsOf(p),
+   retail_note_suggested_egp:retail,
+   retail_price_verification:verification,
+   retail_note_checked_at:new Date().toISOString(),
+   variants:options,
    images:publicMedia(pictureItems,"image"),videos:publicMedia(videoItems,"video"),
    is_available:p.is_available!==false&&p.is_active!==false
  };
