@@ -624,6 +624,16 @@ async function loadSafqaOrderInbox(){
       .select("id,order_code,product_title,variant_title,quantity,unit_price_egp,total_egp,customer_name,phone,governorate_name,area,address,notes,status,supplier_status,supplier_order_ref,created_at")
       .order("created_at",{ascending:false}).limit(100);
     if(error)throw Error("تعذر قراءة أوردرات صفقة الخاصة.");
+    const cartLines=new Map();
+    if(data?.length){
+      const {data:lines,error:lineError}=await db.from("ss_safka_checkout_cart_items")
+        .select("order_id,supplier_product_id,supplier_variant_id,product_title,variant_title,quantity,unit_price_egp,line_total_egp")
+        .in("order_id",data.map(x=>x.id)).limit(800);
+      if(lineError)throw Error("تعذر تحميل تفاصيل سلال المنتجات. لم يتم إظهار أوردر ناقص.");
+      for(const line of lines||[]){
+        const group=cartLines.get(line.order_id)||[];group.push(line);cartLines.set(line.order_id,group);
+      }
+    }
     const root=$("safkaInboxList");root.replaceChildren();
     if(!data?.length){
       root.append(node("p","detailNote","لسه مفيش طلبات منتجات صفقة مسجلة على الموقع."));
@@ -632,7 +642,18 @@ async function loadSafqaOrderInbox(){
       const article=node("article","mediaQueueItem ssSafqaOrderCard");
       const label=item.status==="review"?"بانتظار المراجعة":item.status==="confirmed"?"تم التأكيد داخل الموقع":"ملغي";
       article.append(node("strong","",item.order_code+" · "+label));
-      article.append(node("p","",item.product_title+" · "+item.variant_title+" × "+item.quantity));
+      const lines=cartLines.get(item.id)||[];
+      if(lines.length){
+        article.append(node("strong","ssSafqaBundleHeading","محتويات السلة · "+lines.length+" اختيار"));
+        const group=node("div","ssSafqaBundleLines");
+        for(const line of lines){
+          group.append(node("p","",line.product_title+" — "+line.variant_title+
+            " × "+line.quantity+" = "+money(line.line_total_egp)));
+          group.append(node("small","","كود المنتج: "+line.supplier_product_id+
+            " | كود الاختيار: "+line.supplier_variant_id));
+        }
+        article.append(group);
+      }else article.append(node("p","",item.product_title+" · "+item.variant_title+" × "+item.quantity));
       article.append(node("small","","الإجمالي: "+money(item.total_egp)+" | الحالة عند صفقة: "+(item.supplier_status==="not_sent"?"لم يُرسل":"يتطلب متابعة")));
       article.append(node("p","",item.customer_name+" — "+item.phone));
       article.append(node("small","",item.governorate_name+" — "+item.area+" — "+item.address));
