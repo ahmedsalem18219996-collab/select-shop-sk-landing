@@ -28,3 +28,9 @@
 .ssCoSuccess{font-weight:800;color:#c3f4d3;font-size:18px;direction:ltr;text-align:right}
 @media(max-width:600px){.ssCoDialog{width:calc(100vw - 12px);max-height:calc(100dvh - 12px);border-radius:15px}
 .ssCoContent{padding:16px;padding-bottom:max(18px,env(safe-area-inset-bottom))}.ssCoDialog .ssCoInput{font-size:16px}}
+
+/* Bot decoy is never visible to real customers. */
+.ssCoHoney{position:absolute!important;left:-9999px!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+.ssCoDialog .ssCoSubmit{background:#f0bf78;color:#152419;font-weight:850;border:1px solid #ffd6a0;cursor:pointer}
+.ssCoDialog .ssCoSubmit:disabled{opacity:.6;cursor:not-allowed}
+.ssCoDialog .ssCoSuccess{overflow-wrap:anywhere}
