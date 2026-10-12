@@ -125,7 +125,7 @@ for(const p of profiles){
    await step(res,"Change quantities and continue shopping",async()=>{
       const bag=page.locator("dialog.ssBagDialog[open]:not(.ssBagChoice)");
       const before=await bag.locator("[data-bag-total]").innerText();
-      await bag.locator(".ssBagItem").first().locator(".ssBagQty button").last().click();
+      await bag.locator(".ssBagItem").first().locator(".ssBagQty button").nth(1).click();
       const after=await bag.locator("[data-bag-total]").innerText();
       if(before===after)record(res,"warning","Quantity control requires extra taps",before);
       await bag.locator("[data-bag-continue]").click();
