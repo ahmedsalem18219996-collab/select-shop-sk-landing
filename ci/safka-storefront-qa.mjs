@@ -80,6 +80,69 @@ for (const profile of [
     await context.close();
   }
 }
+// Read-only catalog-wide contract check. No order endpoints called.
+try {
+  const anonKey = "sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa";
+  const database = "https://zznqdwrohrycsjfpvkhc.supabase.co";
+  const all = [];
+  let expected = null;
+  for (let pageNum = 1; pageNum <= 20; pageNum++) {
+    const response = await fetch(database + "/rest/v1/rpc/ss_safka_public_catalog_v2", {
+      method: "POST", headers: { apikey: anonKey, "content-type": "application/json" },
+      body: JSON.stringify({ p_page: pageNum, p_limit: 48, p_category: null, p_search: "" }),
+      signal: AbortSignal.timeout(24000),
+    });
+    assert(response.ok, "Catalog public page " + pageNum + " returned " + response.status);
+    const payload = await response.json();
+    assert(Array.isArray(payload.items), "Invalid catalog JSON on page " + pageNum);
+    expected ??= Number(payload.total);
+    all.push(...payload.items);
+    if (all.length >= expected) break;
+  }
+  assert.equal(expected, 462, "Unexpected Safqa product count (source should have 462)");
+  assert.equal(all.length, expected, "Pagination omitted supplier products");
+  const seen = new Set();
+  let variants = 0, withVideos = 0, videoUrls = 0, withoutVideo = 0;
+  let missingImages = 0, withoutDirectVideos = 0;
+  for (const p of all) {
+    assert(/^[a-f0-9]{24}$/i.test(p.id), "Invalid supplier product ID");
+    assert(!seen.has(p.id), "Duplicate supplier product ID " + p.id);
+    seen.add(p.id);
+    assert(p.can_purchase === false, "Unapproved supplier checkout unexpectedly opened: " + p.id);
+    assert(["approved", "indicative"].includes(p.price_status), "Missing price status " + p.id);
+    assert(Number.isInteger(p.display_price_egp) && p.display_price_egp > 0,
+      "Missing visible indicative price for " + p.id);
+    assert(Array.isArray(p.images) && p.images.length > 0, "Missing supplier product photos " + p.id);
+    if (!p.images?.length) missingImages++;
+    assert(Array.isArray(p.variants) && p.variants.length > 0, "No supplier options for " + p.id);
+    variants += p.variants.length;
+    for (const v of p.variants) {
+      assert(/^[a-f0-9]{24}$/i.test(v.id), "Invalid supplier option ID " + p.id);
+      assert(Number.isInteger(v.display_price_egp) && v.display_price_egp > 0,
+        "Supplier variant without independent displayed price " + p.id);
+    }
+    const prices = p.variants.filter(v => v.available).map(v => Number(v.display_price_egp));
+    if (prices.length) assert.equal(p.display_price_egp, Math.min(...prices),
+      "Card does not show cheapest available price of supplier options: " + p.id);
+    const videos = Array.isArray(p.videos) ? p.videos : [];
+    if (videos.length) withVideos++; else withoutVideo++;
+    videoUrls += videos.length;
+    for (const video of videos) {
+      assert(/^https:\/\/drive\.google\.com\/file\/d\/[A-Za-z0-9_-]{15,}\/preview$/.test(video),
+        "Supplier video not a verified Drive file preview URL: " + p.id);
+    }
+  }
+  assert.equal(variants, 505, "Unexpected supplier option prices count");
+  assert.equal(withVideos, 411, "Supplier videos coverage unexpectedly changed");
+  assert.equal(withoutVideo, 51, "Unexpected no-video product count");
+  assert.equal(videoUrls, 2678, "Video links missing from public catalog");
+  summary.push({ profile: "full-catalog-read-only", products: all.length, variants,
+    productsWithSupplierVideos: withVideos, productsWithoutSupplierVideos: withoutVideo,
+    linkedVideoUrls: videoUrls, missingImages, supplierCheckoutEnabled: false });
+} catch (error) {
+  failures.push("catalog-audit: " + (error?.stack || error));
+}
+
 await browser.close();
 await writeFile(resultDir + "/summary.json", JSON.stringify({ summary, failures }, null, 2));
 console.log(JSON.stringify({ summary, failures }, null, 2));
