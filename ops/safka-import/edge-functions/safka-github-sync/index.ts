@@ -83,11 +83,31 @@ Deno.serve(async(req)=>{
   let input;
   try{input=await safeJson(req)}catch{return response(400,{error:"invalid_json"},origin)}
   const type=input?.mode;
-  if(type!=="products"&&type!=="shipping"&&type!=="audit")return response(422,{error:"invalid_mode"},origin);
+  if(type!=="products"&&type!=="shipping"&&type!=="audit"&&type!=="probe_category_details")return response(422,{error:"invalid_mode"},origin);
   const page=type==="products"||type==="audit"?(input.page??1):null;
   if((type==="products"||type==="audit")&&(!Number.isInteger(page)||page<1||page>10000))
     return response(422,{error:"invalid_page"},origin);
   const admin=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
+  if(type==="probe_category_details"){
+    const ids=["6886882c8d9f44a8a150de3d","69c1db9dcc2eaa4914727bbd",
+      "6aa80df0ca38d5013ca7d692","66c2889449e955603d22cd3e",
+      "6a6e658d3f6ed554e3f689e6","6a772024849bf12335b6d6ae",
+      "6a5819aeecf12e1a4ca0afd3","6a6132098a583679361b1a88"];
+    const checks=await Promise.all(ids.map(async id=>{
+      try{
+        const body=await safkaGet("/product/"+id,key);
+        const p=body?.product||body?.data?.product||body?.data||body;
+        if(!p||String(p._id||p.id)!==id)return {id,status:"source_id_mismatch"};
+        const cats=["category","category_id","categoryId","categoryName","category_name","categories"]
+          .filter(k=>p[k]!==undefined&&p[k]!==null);
+        return {id,status:"ok",categoryFields:cats,
+           categoryValues:cats.map(k=>({field:k,value:JSON.stringify(p[k]).slice(0,110)}))};
+      }catch(e){return {id,status:String(e?.message||e).slice(0,45)}}
+    }));
+    return response(200,{ok:true,mode:type,checked:checks.length,
+      withCategory:checks.filter(x=>x.categoryFields?.length>0).length,
+      checks,noDatabaseWrites:true,noOrders:true},origin);
+  }
   let root;
   try{
     root=await safkaGet(type==="products"||type==="audit"?
