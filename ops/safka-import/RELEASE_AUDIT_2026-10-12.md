@@ -43,3 +43,13 @@ Scope: `selectshopeg.com` temporary storefront and Supabase `zznqdwrohrycsjfpvkh
 Audit remains OPEN. The importer is programmed to fail closed on unverified price notes on future synchronizations. This is a safety stop, not a guarantee of perfect data.
 
 The original four shoe SKUs and SELECT-SHOP-CLEAN are outside this import scope.
+
+## Pricing exposure / marketing triage (12 October follow-up)
+
+- A fresh read-only Postgres audit confirms **393/393** verified-note product drafts equal Safka note-retail + 90 EGP, with **0** price mismatches and **0** unsafe non-null final drafts among the 71 held SKUs. All 507 stored option rows were inspected: 0 inconsistent verified options and 0 available options for held-price SKUs.
+- The public RPC was independently paginated and returned **464** unique storefront products: **393 indicative prices**, **71 hidden/null prices**, **0 leaked held quotes**, **0 owner-approved items**, **0 supplier-purchase-enabled flags**. Indicative customer pricing is not an owner profitability approval.
+- Supplier upstream `sale_price` **is not independently certified as SELECT SHOP's all-in acquisition/commission cost**. Use it only for *theoretical reference-price spread*, not net profit.
+- **34/393** note-verified products have a reference spread below EGP 90 (recommended note retail minus upstream sale_price); **138/393** below EGP 150. At supplier shipping EGP 110, one SKU shows a hypothetical EGP -5 balance before ads/returns/fees: automatic metal card wallet, supplier ref EGP 85 / note retail EGP 100 / site quote EGP 190. This is a risk flag, **not** evidence of an actual realized loss.
+- Latest verified shipping schedule: **26 active regions, EGP 85–110**, 12 above the EGP 90 price buffer. Never call the EGP 90 add-on actual province shipping or a guaranteed margin.
+- Fixed private `ops/safka-import/` owner dashboard: removed misleading ad-readiness classification (previously all 393 price-verified rows); added 34-item low-spread risk metric and priority risk queue; owner-only CSV now carries both 85 and 110 shipping scenarios and risk notes. **No product-price edits, advertising status changes, supplier orders, or SELECT-SHOP-CLEAN modifications** were made in this follow-up.
+- To resolve 67 `manual_review` and 4 `variant_review` products, use independently verified recommended retail **from current supplier note per specific product/option** or authorized merchant export. Do not reclassify `sale_price` or variant supplier quotes as consumer retail.
