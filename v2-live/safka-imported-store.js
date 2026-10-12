@@ -45,9 +45,11 @@ function hasVariantPriceRange(p){
  return nums.length>1 && Math.max(...nums)>Math.min(...nums);
 }
 function price(p){
-  const amount=p.final_price_egp||p.display_price_egp;
-  return amount&&Number(amount)>0?
-    (hasVariantPriceRange(p)?"يبدأ من ":"")+Number(amount).toLocaleString("ar-EG")+" ج.م":
+  // Never fall back to stale import-draft pricing: only the public verified quote
+  // is safe for customer display, including when a product is held for review.
+  const amount=p?.price_status==="needs_review"?null:p?.display_price_egp;
+  return Number.isInteger(amount)&&amount>0?
+    (hasVariantPriceRange(p)?"يبدأ من ":"")+amount.toLocaleString("ar-EG")+" ج.م":
     "السعر قيد المراجعة";
 }
 function addCategoryTabs(){
