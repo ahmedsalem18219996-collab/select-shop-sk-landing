@@ -604,9 +604,9 @@ async function loadCheckoutReadiness(){
     if(!res.ok)throw Error("التحقق غير متاح");
     const data=await res.json();
     if(data.checkoutConfigured){
-      status("مفاتيح الحماية وبوابة استقبال الطلبات جاهزة على الخادم. ظهور زر الشراء للعميل يظل مشروطًا بعلم can_purchase من كتالوج صفقة.",false,id);
+      status("استقبال طلبات العملاء مفعّل: الطلب يتسجّل في صندوق الإدارة للمراجعة، بدون إرسال تلقائي للمورد. السعر يتحقق على الخادم قبل الحفظ.",false,id);
     }else{
-      status("الشراء المباشر مغلق بأمان. يلزم تفعيل Cloudflare Turnstile، واعتماد الأسعار، والتحقق من عمولة صفقة ثم فتح بوابة البيع بمعايير واضحة. لا تُرسل أي أوردرات تلقائيًا.",false,id);
+      status("خادم استقبال الطلبات غير متاح حاليًا، راجع تهيئته. لا يتم إرسال أي طلب للمورد تلقائيًا.",false,id);
     }
   }catch(e){
     status("تعذر فحص بوابة الطلبات؛ لم يتم تفعيل الطلبات تلقائيًا.",true,id);
@@ -860,13 +860,13 @@ async function openDetail(p){
   // Customer checkout and Safqa supplier POST remain disabled even after publication.
   const approval=node("div","ssPriceApproval");
   if(p.owner_verified&&p.review_state==="approved"){
-    approval.append(node("p","detailNote","السعر معتمد ويظهر للجمهور. الشراء المباشر عبر صفقة ما زال غير مفعل."));
+    approval.append(node("p","detailNote","السعر معتمد. طلب العميل من الموقع يُحفظ في صندوق الإدارة للمراجعة؛ إرسال الطلب للمورد يدوي حاليًا."));
   }else{
     approval.append(node("h3","","الاعتماد النهائي — خطوة منفصلة"));
     const approveCheck=node("input");approveCheck.type="checkbox";approveCheck.id="approve-"+p.supplier_product_id;
     const approveLabel=node("label","","راجعت تكلفة المورد الحقيقية، والعمولة، والشحن، والاختيارات؛ وأوافق على نشر السعر فقط.");
     approveLabel.prepend(approveCheck);
-    const approveButton=node("button","","اعتماد السعر ونشره للعرض (بدون فتح الشراء)");
+    const approveButton=node("button","","اعتماد سعر المنتج للإدارة (لا يرسل الطلب للمورد)");
     approveButton.type="button";approveButton.disabled=true;
     const approveStatus=node("p","feedback");approveStatus.setAttribute("role","status");
     const syncApproval=()=>{
@@ -888,7 +888,7 @@ async function openDetail(p){
         });
         if(error||!data?.ok)throw Error(data?.error||error?.message||"approval_failed");
         p.owner_verified=true;p.review_state="approved";
-        approveStatus.textContent="تم اعتماد السعر للعرض. لا يوجد Checkout لمنتجات صفقة حتى الآن.";
+        approveStatus.textContent="تم اعتماد السعر. يمكن استقبال طلبات العملاء للمراجعة في لوحة الإدارة.";
         approveCheck.checked=false;approveButton.disabled=true;
         await reload();
       }catch(e){
