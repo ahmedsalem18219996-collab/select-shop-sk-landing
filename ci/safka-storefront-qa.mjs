@@ -117,14 +117,36 @@ for (const profile of [
     const cardCheckout=page.locator("dialog.ssCoDialog[open]");
     await cardCheckout.waitFor({state:"visible",timeout:12000});
     await cardCheckout.locator(".ssCoClose").click();
+    const cardAdd=page.locator(".ssSafkaUnifiedCard button.ssSafkaCardAdd").first();
+    await cardAdd.waitFor({state:"visible",timeout:15000});
+    assert(await cardAdd.isEnabled(),"Imported product is missing enabled Add to Cart");
+    await cardAdd.click();
+    const choiceDialog=page.locator("dialog.ssBagChoice[open]");
+    if(await choiceDialog.count())await choiceDialog.locator(".ssBagPrimary").click();
+    const bag=page.locator("dialog.ssBagDialog[open]:not(.ssBagChoice)");
+    await bag.waitFor({state:"visible",timeout:15000});
+    assert(await bag.locator(".ssBagItem").count()>=1,"Supplier cart did not retain selected product");
+    assert(await page.locator("[data-safka-bag-count]").count()>=1,"Supplier cart header badge missing");
+    await bag.locator(".ssBagClose").click();
     const cleanAdUrl=base+"/?product="+sample+"#products";
     await page.goto(cleanAdUrl,{waitUntil:"domcontentloaded",timeout:60000});
     await page.locator("dialog.ssSafkaDialog[open]").waitFor({state:"visible",timeout:60000});
     assert(!new URL(page.url()).searchParams.get("product")?.includes("safka"),
       "Public product URL exposes supplier brand");
+    await page.locator("dialog.ssSafkaDialog[open] .ssSafkaAddToBag").click();
+    const sourceSelect=page.locator("dialog.ssBagChoice[open]");
+    if(await sourceSelect.count())await sourceSelect.locator(".ssBagPrimary").click();
+    const multiBag=page.locator("dialog.ssBagDialog[open]:not(.ssBagChoice)");
+    await multiBag.waitFor({state:"visible",timeout:15000});
+    assert(await multiBag.locator(".ssBagItem").count()>=1,"Product page add-to-cart failed");
+    await multiBag.locator("[data-bag-checkout]").click();
+    await multiBag.locator('[name="phone"]').waitFor({state:"visible",timeout:15000});
+    assert((await multiBag.innerText()).includes("الإجمالي شامل التوصيل"),"Cart missing inclusive total");
+    await page.screenshot({path:resultDir+"/"+profile.name+"-supplier-basket.png",fullPage:false});
+    await multiBag.locator(".ssBagClose").click();
 
     summary.push({ profile: profile.name, title, video: directVideo, overflowPx: horizontalOverflow,
-      supplierCardsInLoadedGrid: await page.locator(".ssSafkaUnifiedCard").count(), checkoutFormMocked:true, jsErrors: errors });
+      supplierCardsInLoadedGrid: await page.locator(".ssSafkaUnifiedCard").count(), checkoutFormMocked:true, multiBasketUi:true, jsErrors: errors });
   } catch (error) {
     failures.push(profile.name + ": " + (error?.stack || error));
     await page.screenshot({ path: resultDir + "/" + profile.name + "-failed.png", fullPage: false })
@@ -232,6 +254,48 @@ try {
   summary.push({profile:"live-order-backend-no-write",serverQuoteEgp:body.totalEgp,storedOrder:false,supplierOrder:false});
 }catch(error){failures.push("backend-no-write: "+(error?.stack||error));}
 
+// Real multi-line server quote validation, without saving any customer or supplier order.
+try{
+ const {randomUUID,createHash}=await import("node:crypto");
+ const requestId=randomUUID();
+ let nonce=null;
+ for(let i=0;i<1500000;i++){
+  const n=i.toString(16);
+  if(createHash("sha256").update("SELECT-SHOP-ORDER:"+requestId+":"+n).digest("hex").startsWith("0000")){nonce=n;break}
+ }
+ assert(nonce!==null);
+ const source=await fetch("https://zznqdwrohrycsjfpvkhc.supabase.co/rest/v1/rpc/ss_safka_public_catalog_v2",{
+  method:"POST",headers:{"apikey":"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa","content-type":"application/json"},
+  body:JSON.stringify({p_page:1,p_limit:1,p_category:null,p_search:"69c1db9dcc2eaa4914727bbd"})
+ });
+ const first=(await source.json()).items[0];
+ assert(first?.id);
+ const secondResult=await fetch("https://zznqdwrohrycsjfpvkhc.supabase.co/rest/v1/rpc/ss_safka_public_catalog_v2",{
+  method:"POST",headers:{"apikey":"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa","content-type":"application/json"},
+  body:JSON.stringify({p_page:1,p_limit:8,p_category:null,p_search:""})
+ });
+ const second=(await secondResult.json()).items.find(x=>x.id!==first.id&&x.variants.some(v=>v.available));
+ assert(second?.id);
+ const lines=[first,second].map(x=>({productId:x.id,
+  variantId:x.variants.find(v=>v.available).id,quantity:1}));
+ const expected=[first,second].reduce((s,x)=>s+x.variants.find(v=>v.available).display_price_egp,0);
+ const res=await fetch("https://zznqdwrohrycsjfpvkhc.supabase.co/functions/v1/safka-capture-cart",{
+  method:"POST",headers:{origin:"https://selectshopeg.com",
+   apikey:"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa","content-type":"application/json"},
+  body:JSON.stringify({requestId,items:lines,governorateId:"64879004dc16090c1858e69e",cityId:"",
+   customer:{name:"اختبار تحقق حسابي",phone:"01000000000",area:"منطقة اختبار",
+    address:"عنوان تجريبي اختبار فقط",notes:""},workNonce:nonce,website:"",validateOnly:true}),
+  signal:AbortSignal.timeout(25000)
+ });
+ const result=await res.json();
+ assert(res.ok&&result.ok&&result.validated===true,
+   "Multi-line read-only server validation failed: "+JSON.stringify({status:res.status,error:result.error}));
+ assert.equal(result.totalEgp,expected,"Server-calculated multi-product total mismatch");
+ assert.equal(result.lineCount,2);
+ assert.equal(result.orderSaved,false);
+ assert.equal(result.sentToSupplier,false);
+ summary.push({profile:"live-multi-cart-validation-no-write",lines:2,totalEgp:result.totalEgp,orderSaved:false});
+}catch(error){failures.push("cart-backend-no-write: "+(error?.stack||error))}
 await browser.close();
 await safari.close();
 await writeFile(resultDir + "/summary.json", JSON.stringify({ summary, failures }, null, 2));
