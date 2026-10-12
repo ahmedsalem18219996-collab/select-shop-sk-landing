@@ -134,7 +134,7 @@ async function runSourceCategoryMatch(){
       }
       const v=reply.data;
       assigned+=v.assigned||0;missing+=v.missing||0;failed+=v.failed||0;
-      progress.value=Math.min(100,Math.round(p*100/Math.ceil((v.total||462)/12)));
+      progress.value=Math.min(100,Math.round(p*100/Math.ceil((v.total||Number((($('allCount')?.textContent)||'464').replace(/[^0-9]/g,''))||464)/12)));
       message("تمت مطابقة "+assigned+" منتج. بانتظار تصنيف: "+missing+"، تعذر التحقق: "+failed+". الدفعة "+p+".");
       if(!v.hasMore)break;
       if(failed>=12)throw Error("أخطاء اتصال متكررة؛ وقفنا لحماية API صفقة. إعادة المحاولة آمنة.");
