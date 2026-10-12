@@ -130,7 +130,7 @@ for(const p of profiles){
       if(before===after)record(res,"warning","Quantity control requires extra taps",before);
       await bag.locator("[data-bag-continue]").click();
       await bag.waitFor({state:"hidden",timeout:9000});
-      await page.locator("[data-safka-bag-open]").click({timeout:12000});
+      await page.locator("[data-open-cart]").first().click({timeout:12000});
       await bag.waitFor({state:"visible",timeout:10000});
       const lines=await bag.locator(".ssBagItem").count();
       if(lines<2)throw Error("Continue shopping cleared bag");
@@ -148,7 +148,7 @@ for(const p of profiles){
    });
    await step(res,"Check basket survives a refresh",async()=>{
       await page.reload({waitUntil:"domcontentloaded",timeout:60000});
-      await page.locator("[data-safka-bag-open]").click({timeout:14000});
+      await page.locator("[data-open-cart]").first().click({timeout:14000});
       const bag=page.locator("dialog.ssBagDialog[open]:not(.ssBagChoice)");
       await bag.waitFor({state:"visible",timeout:14000});
       const count=await bag.locator(".ssBagItem").count();
@@ -158,6 +158,13 @@ for(const p of profiles){
    });
    await step(res,"Global navigation and competing carts",async()=>{
       const initial=await page.evaluate(inspect);
+      const supplierLauncher=page.locator("[data-safka-bag-open]");
+      if(await supplierLauncher.count()&&await supplierLauncher.isVisible())
+        throw Error("Two visible cart buttons confuse customers");
+      const unified=page.locator("[data-open-cart]").first();
+      const countBadge=await unified.locator("[data-ss-unified-count]").innerText();
+      if(!countBadge.trim()||countBadge.trim()==="0"||countBadge.trim()==="٠")
+        throw Error("Unified cart badge doesn't include supplier items");
       const unusable=initial.carts.filter(x=>x.visible&&x.rect.w<40);
       if(unusable.length)record(res,"warning","Small cart tap targets",unusable);
       return{cartButtons:initial.carts,smallTapTargets:unusable.length};
