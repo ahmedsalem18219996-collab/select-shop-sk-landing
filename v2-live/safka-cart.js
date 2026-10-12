@@ -11,6 +11,7 @@ const money=n=>Number(n).toLocaleString("ar-EG")+" ج.م";
 const clean=(v,n)=>typeof v==="string"?v.slice(0,n):"";
 const encoder=new TextEncoder();
 let items=[],selector=null,cartDialog=null,regionsCache=null,recommendationsCache=null;
+let quoteReady=false,cartRevision=0,validationTicket=0;
 const MAX_SUGGESTIONS=4;
 function funnelEvent(event,fields){
  if(window.SELECT_SHOP_TEST_MODE===true)return;
@@ -109,6 +110,7 @@ const quantity=()=>items.reduce((a,x)=>a+x.quantity,0);
 const subtotal=()=>items.reduce((a,x)=>a+x.quantity*x.unitPrice,0);
 const notify=t=>{const node=e("p","ssBagNotice",t);document.body.append(node);setTimeout(()=>node.remove(),3500)};
 function save(){
+ cartRevision++;
  try{localStorage.setItem(STORAGE,JSON.stringify(items))}catch{}
  document.querySelectorAll("[data-safka-bag-count]").forEach(el=>el.textContent=String(quantity()));
  document.querySelectorAll("[data-safka-bag-open]").forEach(el=>el.setAttribute("aria-label","سلة المنتجات، "+quantity()+" قطع"));
@@ -130,6 +132,7 @@ function addItem(product,variantId,amount=1){
    unitPrice:Number(option.display_price_egp),name:clean(product.name,350),
    variant:clean(option.name||"اختيار",220),photo:photo(product),
    categoryName:clean(product.category_name,100)});
+ quoteReady=false;
  save();
  funnelEvent("add_to_cart",{value:Number(option.display_price_egp)*amount,
    items:[{item_id:product.id,item_name:String(product.name).slice(0,100),
@@ -183,24 +186,51 @@ async function proofOfWork(id){
  throw Error("proof_unavailable");
 }
 async function refreshCart(){
- const snapshot=items.slice(),updated=[],warnings=[];
- await Promise.all(snapshot.map(async item=>{
+ // Fetch first; never replace cart items using stale or failed network responses.
+ const snapshot=items.slice(),revision=cartRevision;
+ const checked=await Promise.all(snapshot.map(async item=>{
   try{
    const result=await fetch(DB+"/rest/v1/rpc/ss_safka_public_catalog_v2",{
     method:"POST",headers:{"apikey":KEY,"content-type":"application/json"},
     body:JSON.stringify({p_page:1,p_limit:1,p_search:item.productId,p_category:null}),
-    signal:AbortSignal.timeout(13000)});
+    cache:"no-store",signal:AbortSignal.timeout(13000)});
    if(!result.ok)throw Error("refresh_failed");
    const found=(await result.json()).items?.find(x=>x.id===item.productId);
    const v=choices(found).find(x=>x.id===item.variantId);
-   if(!found||!v){warnings.push(item.name+" غير متوفر حاليًا");return}
-   if(item.unitPrice!==Number(v.display_price_egp))warnings.push("سعر "+item.name+" اتحدث.");
-   updated.push({...item,unitPrice:Number(v.display_price_egp),name:clean(found.name,350),
-     variant:clean(v.name,220),photo:photo(found),categoryName:clean(found.category_name,100)});
-  }catch{updated.push(item);warnings.push("راجع التوفر عند تأكيد الطلب: "+item.name)}
+   if(!found||!v)return{item:null,warning:item.name+" غير متوفر حاليًا",failed:true};
+   const warning=item.unitPrice!==Number(v.display_price_egp)?"سعر "+item.name+" اتحدث.":"";
+   return{item:{...item,unitPrice:Number(v.display_price_egp),name:clean(found.name,350),
+    variant:clean(v.name,220),photo:photo(found),categoryName:clean(found.category_name,100)},
+    warning,failed:false};
+  }catch{return{item,warning:"تعذر تأكيد سعر وتوفر "+item.name+"؛ حدث الأسعار قبل إتمام الطلب.",failed:true}}
  }));
- items=updated;save();
- return warnings;
+ return{revision,checked};
+}
+async function verifyCartQuote(status,retry){
+ const ticket=++validationTicket,instance=cartDialog;
+ quoteReady=false;renderBag();retry.hidden=true;
+ status.textContent="بنراجع الأسعار والتوفر...";
+ try{
+  const result=await refreshCart();
+  if(ticket!==validationTicket||cartDialog!==instance||!instance?.open)return;
+  if(result.revision!==cartRevision){
+   status.textContent="السلة اتعدلت أثناء المراجعة. اضغط تحديث الأسعار.";
+   retry.hidden=false;return;
+  }
+  items=result.checked.map(r=>r.item).filter(Boolean);
+  const problems=result.checked.filter(r=>r.failed);
+  const messages=result.checked.map(r=>r.warning).filter(Boolean);
+  save();
+  quoteReady=items.length>0&&problems.length===0;
+  renderBag();
+  retry.hidden=quoteReady;
+  status.textContent=messages.join(" ")||(quoteReady?
+   "الأسعار اتراجعت حسب آخر بيانات المتجر.":"مش قادرين نأكد الأسعار؛ حدث السلة قبل إتمام الطلب.");
+ }catch{
+  if(ticket!==validationTicket||cartDialog!==instance||!instance?.open)return;
+  quoteReady=false;renderBag();retry.hidden=false;
+  status.textContent="تعذر تحديث الأسعار. الطلب متوقف لحد ما نأكدها.";
+ }
 }
 function lineRow(item){
  const row=e("article","ssBagItem");
@@ -229,10 +259,11 @@ function renderBag(){
  if(!items.length)list.append(e("p","ssBagMuted","السلة فاضية. اختار أي منتج واضغط أضف إلى السلة."));
  else items.forEach(item=>list.append(lineRow(item)));
  cartDialog.querySelector("[data-bag-total]").textContent=money(subtotal());
- const btn=cartDialog.querySelector("[data-bag-checkout]");btn.disabled=!items.length;
+ const btn=cartDialog.querySelector("[data-bag-checkout]");btn.disabled=!items.length||!quoteReady;
 }
 async function openCheckout(){
  if(!cartDialog?.open||!items.length)return;
+ if(!quoteReady)return notify("لازم نراجع السعر والتوفر الأول. اضغط تحديث الأسعار.");
  funnelEvent("begin_checkout",{value:subtotal(),items:items.map(i=>({
   item_id:i.productId,item_variant:i.variantId,price:i.unitPrice,quantity:i.quantity
  }))});
@@ -314,6 +345,8 @@ async function openCart(){
  const close=e("button","ssBagClose","×");close.type="button";close.setAttribute("aria-label","إغلاق السلة");close.onclick=()=>cartDialog.close();head.append(close);
  const notice=e("p","ssBagMuted","تقدر تضيف أكتر من منتج وتطلبهم كلهم برقم أوردر واحد.");
  const status=e("p","ssBagStatus","");status.setAttribute("role","status");
+ const retry=actionButton("↻ تحديث الأسعار والتوفر",()=>void verifyCartQuote(status,retry));
+ retry.hidden=true;
  const list=e("section","ssBagItems");list.dataset.bagItems="";
  const total=e("strong","ssBagTotal","");total.dataset.bagTotal="";
  const btn=e("button","ssBagPrimary","إتمام الطلب");btn.type="button";btn.dataset.bagCheckout="";
@@ -321,7 +354,7 @@ async function openCart(){
  const continueButton=actionButton("＋ أضف منتج آخر",keepShopping);
  continueButton.dataset.bagContinue="";
  const buttons=e("div","ssBagActions");
- buttons.append(continueButton,btn);
+ buttons.append(continueButton,retry,btn);
  const suggestions=e("section","ssBagSuggestions");suggestions.dataset.bagRecommendations="";
  suggestions.setAttribute("aria-label","منتجات مقترحة لإكمال الطلب");suggestions.hidden=true;
  const shoeNote=e("p","ssBagMuted","ملحوظة: الأحذية الأصلية لها سلة وطلب منفصلين حاليًا، علشان الطلبات متتخلطش.");
@@ -336,10 +369,9 @@ async function openCart(){
    openedCart.remove();
    if(cartDialog===openedCart)cartDialog=null;
  };
- document.body.append(cartDialog);cartDialog.showModal();renderBag();
+ document.body.append(cartDialog);cartDialog.showModal();quoteReady=false;renderBag();
  void showRecommendations();
- const warnings=await refreshCart();
- if(cartDialog?.open){renderBag();status.textContent=warnings.join(" ")||"الأسعار اتراجعت حسب آخر بيانات المتجر."}
+ await verifyCartQuote(status,retry);
 }
 function init(){
  const original=document.querySelector("[data-open-cart]");
