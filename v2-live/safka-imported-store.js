@@ -429,14 +429,37 @@ function openProduct(p,trigger){
       if(photos.length)video.poster=photos[0];
       video.src=item.url;stage.append(video);
     }else if(/^https:\/\/drive\.google\.com\/file\/d\/[A-Za-z0-9_-]{15,}\/preview$/.test(item.url)){
-      const embed=node("iframe","ssSafkaDriveVideo");
-      embed.src=item.url;embed.title="فيديو المنتج "+p.name;
-      embed.loading="lazy";embed.allow="autoplay; fullscreen; picture-in-picture";
-      embed.setAttribute("allowfullscreen","");
-      stage.append(embed);
-      const fallback=node("a","ssSafkaVideoFallback","فتح الفيديو في Google Drive ↗");
-      fallback.href=item.url;fallback.rel="noopener noreferrer";fallback.target="_blank";
-      stage.append(fallback);
+      // Drive preview iframes fail in iOS/In-App browsers when third-party cookies are blocked.
+      // Always offer a direct first-party Google Drive viewer. Never claim embed playback succeeded.
+      const viewer=item.url.replace(/\/preview$/,"/view");
+      const choice=node("div","ssSafkaDriveChoice");
+      choice.append(node("span","ssSafkaVideoPlayMark","▶"));
+      choice.append(node("strong","","فيديو المنتج من صفقة"));
+      const primary=node("a","ssSafkaDrivePrimary","▶ تشغيل الفيديو");
+      primary.href=viewer;primary.target="_blank";primary.rel="noopener noreferrer";
+      primary.setAttribute("aria-label","فتح فيديو "+p.name+" في Google Drive");
+      choice.append(primary);
+      const secondary=node("button","ssSafkaDriveInline","جرّب التشغيل داخل الموقع");
+      secondary.type="button";
+      const player=node("div","ssSafkaDriveInlinePanel");
+      player.hidden=true;
+      secondary.addEventListener("click",()=>{
+        if(!player.hidden){
+          player.replaceChildren();player.hidden=true;secondary.textContent="جرّب التشغيل داخل الموقع";return;
+        }
+        const embed=node("iframe","ssSafkaDriveVideo");
+        embed.src=item.url;embed.title="معاينة فيديو المورد "+p.name;
+        embed.loading="eager";embed.referrerPolicy="strict-origin-when-cross-origin";
+        embed.allow="autoplay; fullscreen; picture-in-picture";
+        embed.setAttribute("allowfullscreen","");
+        player.append(embed);
+        player.hidden=false;
+        secondary.textContent="إغلاق المشغّل الداخلي";
+      });
+      choice.append(secondary,player);
+      choice.append(node("small","ssSafkaDriveDisclaimer",
+        "لو المشغّل الداخلي مش بيشتغل عندك، اضغط تشغيل الفيديو فوق. بعض فيديوهات Drive تحتاج صلاحية مشاهدة أو تمنعها إعدادات المتصفح."));
+      stage.append(choice);
     }else{
       const link=node("a","","شاهد فيديو المنتج");
       link.href=item.url;link.target="_blank";link.rel="noopener noreferrer";
@@ -545,7 +568,7 @@ function openProduct(p,trigger){
   action.append(share);
   if(videos.some(url=>url.startsWith("https://drive.google.com/"))){
     action.append(node("p","ssSafkaSourceMediaNote",
-      "فيديوهات من روابط المورد على Google Drive، وقد يتطلب تشغيلها صلاحية وصول. نراجع التشغيل قبل الإعلانات."));
+      "فيديوهات المورد تُفتح مباشرة في Google Drive بضغطة واحدة. بعض الملفات قد تتطلب سماح بالمشاهدة من صاحب الملف. التشغيل داخل الموقع اختياري."));
   }
   const approved=Number.isSafeInteger(Number(p.final_price_egp))&&
     Number(p.final_price_egp)>0&&Array.isArray(p.variants)&&
