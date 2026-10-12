@@ -107,3 +107,8 @@ footer{text-align:center;padding:22px;border-top:1px solid var(--border);color:#
 .ssCampaignOwnerLink strong{color:#f7dda5;font-size:12px}
 .ssCampaignOwnerLink input{width:100%;min-width:0;direction:ltr;text-align:left;background:#142319;color:#f6f5e8;border:1px solid #78916c;border-radius:7px;padding:9px;font-size:12px}
 .ssCampaignOwnerLink button{min-height:42px;background:#efbf84;color:#18251a;border-radius:8px;font-weight:750}
+
+.ssSafqaBundleHeading{display:block;color:#e9cf9d;margin-block:10px 5px}
+.ssSafqaBundleLines{background:#19271f;border:1px solid #78916f;border-radius:10px;padding:9px 11px;margin:8px 0;display:grid;gap:7px}
+.ssSafqaBundleLines p{margin:0;line-height:1.6;color:#f8f4dc}
+.ssSafqaBundleLines small{display:block;color:#bfcfba;overflow-wrap:anywhere}
