@@ -563,6 +563,15 @@ function openProduct(p,trigger){
   });
   technical.append(codes);body.append(technical);
   const action=node("div","ssSafkaDetailAction");
+  if(videos.length){
+    const first=videos[0];
+    const drive=/^https:\/\/drive\.google\.com\/file\/d\/[A-Za-z0-9_-]{15,}\/preview$/.test(first);
+    const watch=node("a","ssSafkaWatchProductVideo","▶ شاهد فيديو المنتج");
+    watch.href=drive?first.replace(/\/preview$/,"/view"):first;
+    watch.rel="noopener noreferrer";watch.target="_blank";
+    watch.setAttribute("aria-label","شاهد فيديو المنتج "+p.name);
+    action.append(watch);
+  }
   const share=node("button","ssSafkaCopyLink ssSafkaDetailShare","نسخ رابط المنتج للإعلان");
   share.type="button";share.addEventListener("click",()=>copyProductLink(p.id,share));
   action.append(share);
