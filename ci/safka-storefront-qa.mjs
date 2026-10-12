@@ -55,9 +55,13 @@ for (const profile of [
     assert(playerHref.endsWith("/view"), "Gallery primary video opens a preview iframe instead of Drive viewer");
     assert(await productDialog.locator(".ssSafkaDriveInline").count() > 0,
       "Missing optional in-page player for compatible browsers");
+    const productText = await productDialog.innerText();
+    assert(!/(?:سعر صفقة|كود صفقة|رابط المنتج للإعلان|نسخ رابط المنتج|\\+\\s*٩٠\\s*ج)/.test(productText),
+      "Private supplier name, shipping cost breakdown or ad link leaked to customer");
+    assert(!productDialog.locator(".ssSafkaTechnical").count || await productDialog.locator(".ssSafkaTechnical").count() === 0,
+      "Supplier technical codes visible publicly");
     const supplierPurchase = productDialog.locator("button.ssSafkaPurchase");
-    assert(await supplierPurchase.count() === 0,
-      "Supplier checkout must stay locked until owner-approved launch");
+    assert.equal(await supplierPurchase.count(),1,"Missing customer order button");
 
     const horizontalOverflow = await page.evaluate(() => {
       const root = document.documentElement;
@@ -67,14 +71,48 @@ for (const profile of [
       "Unexpected horizontal page overflow at " + profile.viewport.width + " px: " + horizontalOverflow);
 
     await page.screenshot({ path: resultDir + "/" + profile.name + "-product.png", fullPage: false });
-    await productDialog.locator(".ssSafkaClose").click();
+    await supplierPurchase.click();
+    const orderForm = page.locator("dialog.ssCoDialog[open]");
+    await orderForm.waitFor({ state:"visible",timeout:15000 });
+    assert.equal(await orderForm.locator('select[name="variant"] option').count(),1,
+      "Product options missing in checkout");
+    await orderForm.locator('button.ssCoSubmit').waitFor({state:"visible"});
+    await page.screenshot({path:resultDir+"/"+profile.name+"-checkout.png",fullPage:false});
+    assert(!(await orderForm.innerText()).includes("صفقة"),
+      "Supplier identity leaked into customer checkout");
+    assert(!(await orderForm.innerText()).includes("90 جنيه"),
+      "Shipping amount exposed in checkout");
+    // Mock only the capture POST. This tests the customer's full form UI but saves NO real order.
+    let testedCapture=false;
+    await page.route("**/functions/v1/safka-capture-order",async route=>{
+      const payload=route.request().postDataJSON();
+      assert.equal(payload.productId,sample,"Wrong supplier product in captured order");
+      assert.equal(payload.quantity,1,"Unexpected checkout quantity");
+      assert(payload.governorateId && /^01[0125][0-9]{8}$/.test(payload.customer.phone),
+        "Order customer details missing or invalid");
+      assert(/^[0-9a-f]+$/.test(payload.workNonce),"Missing proof-of-work");
+      testedCapture=true;
+      await route.fulfill({status:201,contentType:"application/json",
+        body:JSON.stringify({ok:true,orderCode:"SK-TEST-NO-WRITE",totalEgp:1290,status:"review",sentToSupplier:false})});
+    });
+    await orderForm.locator('input[name="name"]').fill("اختبار الواجهة فقط");
+    await orderForm.locator('input[name="phone"]').fill("01012345678");
+    await orderForm.locator('input[name="area"]').fill("مدينة نصر");
+    await orderForm.locator('input[name="address"]').fill("عنوان تجريبي للاختبار لا يرسل للخادم");
+    await orderForm.locator('select[name="governorate"]').selectOption({index:1});
+    await orderForm.locator('button.ssCoSubmit').waitFor({state:"visible"});
+    await orderForm.locator('button.ssCoSubmit').click({timeout:45000});
+    await orderForm.getByText("اتسجّل طلبك بنجاح").waitFor({state:"visible",timeout:15000});
+    assert(testedCapture,"Expected checkout capture network route was not exercised");
+    await page.unroute("**/functions/v1/safka-capture-order");
+    await orderForm.locator(".ssCoClose").click();
     const card = page.locator(".ssSafkaUnifiedCard").first();
     await card.waitFor({ state: "visible", timeout: 30000 });
     assert(await page.locator(".ssSafkaUnifiedCard a.ssSafkaCardVideoDirect").count() > 0,
       "No direct video buttons on supplier product cards");
 
     summary.push({ profile: profile.name, title, video: directVideo, overflowPx: horizontalOverflow,
-      supplierCardsInLoadedGrid: await page.locator(".ssSafkaUnifiedCard").count(), jsErrors: errors });
+      supplierCardsInLoadedGrid: await page.locator(".ssSafkaUnifiedCard").count(), checkoutFormMocked:true, jsErrors: errors });
   } catch (error) {
     failures.push(profile.name + ": " + (error?.stack || error));
     await page.screenshot({ path: resultDir + "/" + profile.name + "-failed.png", fullPage: false })
