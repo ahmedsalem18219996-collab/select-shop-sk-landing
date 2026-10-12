@@ -127,3 +127,30 @@
 @media(prefers-reduced-motion:reduce){
  .shoeCardsGrid.unifiedCardsGrid .ssSafkaUnifiedCard{transition:none!important}
 }
+
+/* Large-catalog fast discovery rail, without inventing supplier categories. */
+.ssQuickDiscovery{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:11px 0 13px;padding:2px 0}
+.ssQuickDiscoveryLabel{font-size:12px;font-weight:750;color:#d6e7d4;margin-inline-end:2px}
+.ssQuickDiscovery button{
+  border-radius:999px;border:1px solid #617b5d;background:#25362c;color:#f5eacb;
+  font:inherit;font-weight:700;font-size:11px;min-height:36px;cursor:pointer;
+  padding:6px 13px;transition:background .14s,border-color .14s;
+}
+.ssQuickDiscovery button:hover,.ssQuickDiscovery button:focus-visible{
+  background:#35553c;border-color:#dbbf83;outline-offset:3px
+}
+.tiltedGridHero #heroTitle{font-size:clamp(31px,5vw,66px)!important;letter-spacing:-.015em!important}
+.tiltedGridHero #heroTitle .titleRevealSecondary{
+  display:block;color:#e6f4d8!important;font-size:clamp(25px,3.8vw,51px)!important;
+  font-weight:800!important;line-height:1.3!important
+}
+.tiltedGridHero .heroLead{font-size:clamp(12px,1.28vw,15px)!important;line-height:1.8!important}
+@media(max-width:680px){
+  .ssQuickDiscovery{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;
+    -webkit-overflow-scrolling:touch;padding:6px 1px 10px;scrollbar-width:thin}
+  .ssQuickDiscoveryLabel{white-space:nowrap;flex:none}
+  .ssQuickDiscovery button{flex:none;white-space:nowrap;scroll-snap-align:start;min-height:38px}
+  .tiltedGridHero #heroTitle{font-size:clamp(30px,7vw,42px)!important}
+  .tiltedGridHero #heroTitle .titleRevealSecondary{font-size:clamp(24px,6vw,35px)!important}
+  .tiltedGridHero .heroLead{padding-inline:14px!important}
+}
