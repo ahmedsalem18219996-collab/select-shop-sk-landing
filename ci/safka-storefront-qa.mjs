@@ -52,9 +52,11 @@ for (const profile of [
     const playerCta = productDialog.locator("a.ssSafkaDrivePrimary");
     await playerCta.waitFor({ state: "visible", timeout: 8000 });
     const playerHref = await playerCta.getAttribute("href");
-    assert(playerHref.endsWith("/view"), "Gallery primary video opens a preview iframe instead of Drive viewer");
-    assert(await productDialog.locator(".ssSafkaDriveInline").count() > 0,
-      "Missing optional in-page player for compatible browsers");
+    assert(playerHref.endsWith("/view"), "Product video fallback must open a direct Google Drive viewer");
+    const embedded=productDialog.locator(".ssSafkaInStoreVideo iframe.ssSafkaDriveVideo");
+    assert.equal(await embedded.count(),1,"Product videos must play INSIDE the product gallery");
+    assert((await embedded.getAttribute("src"))?.endsWith("/preview"),
+      "Product embedded video should use safe Google Drive preview URL");
     const productText = await productDialog.innerText();
     assert(!/(?:سعر صفقة|كود صفقة|رابط المنتج للإعلان|نسخ رابط المنتج|\\+\\s*٩٠\\s*ج)/.test(productText),
       "Private supplier name, shipping cost breakdown or ad link leaked to customer");
@@ -109,7 +111,14 @@ for (const profile of [
     const card = page.locator(".ssSafkaUnifiedCard").first();
     await card.waitFor({ state: "visible", timeout: 30000 });
     assert(await page.locator(".ssSafkaUnifiedCard a.ssSafkaCardVideoDirect").count() > 0,
-      "No direct video buttons on supplier product cards");
+      "Video button missing from catalog media overlay");
+    const mediaCard=page.locator(".ssSafkaUnifiedCard").filter({has:page.locator("a.ssSafkaCardVideoDirect")}).first();
+    await mediaCard.locator("a.ssSafkaCardVideoDirect").click();
+    const mediaDialog=page.locator("dialog.ssSafkaDialog[open]");
+    await mediaDialog.waitFor({state:"visible",timeout:9000});
+    await mediaDialog.locator(".ssSafkaInStoreVideo iframe.ssSafkaDriveVideo").waitFor({state:"attached",timeout:9000});
+    assert(!page.url().startsWith("https://drive.google.com"),"Card video must stay on SELECT SHOP");
+    await mediaDialog.locator(".ssSafkaClose").click();
     const cardBuy = page.locator(".ssSafkaUnifiedCard button.ssSafkaCardBuy").first();
     await cardBuy.waitFor({state:"visible"});
     assert(await cardBuy.isEnabled(),"Customer cannot order from product card");
