@@ -93,3 +93,9 @@
  .ssSafkaStage .ssSafkaDrivePrimary{width:100%;min-width:0}
  .ssSafkaDriveInlinePanel iframe{min-height:175px}
 }
+
+.ssSafkaDetailAction .ssSafkaWatchProductVideo{display:grid;place-items:center;text-decoration:none;text-align:center;
+ min-height:48px;border-radius:10px;background:#f0bf78;color:#18261c;font-weight:850;
+ padding:11px 17px;border:1px solid #ffdaa2;line-height:1.5;margin-block:5px}
+.ssSafkaWatchProductVideo:hover,.ssSafkaWatchProductVideo:focus-visible{
+ background:#ffd49c;outline:2px solid #f3efb2;outline-offset:2px}
