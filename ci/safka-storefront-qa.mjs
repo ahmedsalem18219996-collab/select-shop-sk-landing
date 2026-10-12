@@ -235,18 +235,21 @@ try {
   assert.equal(all.length, expected, "Pagination omitted supplier products");
   const seen = new Set();
   let variants = 0, withVideos = 0, videoUrls = 0, withoutVideo = 0;
-  let missingImages = 0, withoutDirectVideos = 0;
+  let missingImages = 0, withoutDirectVideos = 0, verifiedForSale=0,blockedPrice=0;
   for (const p of all) {
     assert(/^[a-f0-9]{24}$/i.test(p.id), "Invalid supplier product ID");
     assert(!seen.has(p.id), "Duplicate supplier product ID " + p.id);
     seen.add(p.id);
     assert(p.can_purchase === false, "Unapproved supplier checkout unexpectedly opened: " + p.id);
     assert(["approved", "indicative","needs_review"].includes(p.price_status), "Missing price status " + p.id);
-    if(p.price_status==="needs_review")
+    if(p.price_status==="needs_review"){
+      blockedPrice++;
       assert.equal(p.display_price_egp,null,"Unverified supplier retail price leaked to customer "+p.id);
-    else
+    }else{
+      verifiedForSale++;
       assert(Number.isInteger(p.display_price_egp) && p.display_price_egp > 0,
         "Verified retail-note +90 price missing for " + p.id);
+    }
     assert(Array.isArray(p.images) && p.images.length > 0, "Missing supplier product photos " + p.id);
     if (!p.images?.length) missingImages++;
     assert(Array.isArray(p.variants) && p.variants.length > 0, "No supplier options for " + p.id);
@@ -270,11 +273,13 @@ try {
         "Supplier video not a verified Drive file preview URL: " + p.id);
     }
   }
-  assert(variants>=505,"Supplier option count unexpectedly shrank");
+  assert.equal(verifiedForSale+blockedPrice,expected,"Every SKU must be verified or blocked");
+  assert(blockedPrice>0,"Expected a review queue for unverified supplier retail prices");
+    assert(variants>=505,"Supplier option count unexpectedly shrank");
   assert(withVideos>=411,"Supplier media coverage regressed");
   assert.equal(withVideos+withoutVideo,expected,"Video coverage did not include all imported products");
   assert(videoUrls>=2678,"Supplier media links regressed");
-  summary.push({ profile: "full-catalog-read-only", products: all.length, variants,
+  summary.push({ profile: "full-catalog-read-only", verifiedForSale,blockedPrice,products: all.length, variants,
     productsWithSupplierVideos: withVideos, productsWithoutSupplierVideos: withoutVideo,
     linkedVideoUrls: videoUrls, missingImages, supplierCheckoutEnabled: false });
 } catch (error) {
