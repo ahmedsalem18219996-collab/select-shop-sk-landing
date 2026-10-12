@@ -18,7 +18,7 @@ async function stage(mode,page){
   method:"POST",headers:{"origin":"https://selectshopeg.com",
    "apikey":"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa",
    "content-type":"application/json","x-select-shop-oidc":token},
-  body:JSON.stringify(mode==="products"?{mode,page}:{mode}),
+  body:JSON.stringify(mode==="products"||mode==="audit"?{mode,page}:{mode}),
   signal:AbortSignal.timeout(32000)
  });
  const body=await response.json().catch(()=>({error:"unexpected_response"}));
@@ -26,6 +26,32 @@ async function stage(mode,page){
   throw Error("Sync "+mode+" page "+page+" failed: HTTP "+response.status+
     " "+String(body.error||"unavailable").slice(0,130));
  return body;
+}
+// GitHub push to this script performs a read-only independent source audit.
+// Scheduled and owner-triggered runs retain the daily catalog synchronization.
+if(env.GITHUB_EVENT_NAME==="push"){
+ const totals={count:0,categoryPresent:0,missingCategory:0,withNote:0,
+  noteSuggestedParsed:0,suggestedAboveSale:0,suggestedEqualsSale:0,suggestedBelowSale:0};
+ const samples=[];
+ let checked=0,totalPages=null;
+ for(let page=1;page<=50;page+=3){
+  const batch=await Promise.all(Array.from({length:Math.min(3,(totalPages||50)-page+1)},
+    (_,i)=>stage("audit",page+i)));
+  for(const response of batch){
+   checked+=1;totalPages=response.sourceTotalPages??totalPages;
+   for(const key of Object.keys(totals))totals[key]+=Number(response[key]||0);
+   samples.push(...(response.sampleDifferences||[]).slice(0,3));
+  }
+  if(totalPages!==null&&checked>=totalPages)break;
+  if(!totalPages&&batch.some(x=>x.received<30))break;
+ }
+ if(totalPages!==null&&checked<totalPages)throw Error("Audit not exhaustive");
+ console.log("SAFKA_READ_ONLY_SOURCE_AUDIT_RESULT="+JSON.stringify({
+  checkedAt:new Date().toISOString(),pages:checked,reportedPages:totalPages,
+  ...totals,sampleSuggestedPriceDifferences:samples.slice(0,16),
+  savedChanges:0,ordersSent:0
+ }));
+ process.exit(0);
 }
 const shipped=await stage("shipping");
 console.log("Shipping regions synced:",shipped.saved);
