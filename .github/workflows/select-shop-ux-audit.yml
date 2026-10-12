@@ -1,0 +1,42 @@
+name: SELECT SHOP customer experience audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ci/ux-customer-journey.mjs'
+      - '.github/workflows/select-shop-ux-audit.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: select-shop-customer-journey
+  cancel-in-progress: true
+
+jobs:
+  browser-customer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - name: Check out temporary store repository
+        uses: actions/checkout@v4
+      - name: Install Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install isolated Chromium and WebKit
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium webkit
+      - name: Walk through real desktop and mobile shopping journeys
+        run: node ci/ux-customer-journey.mjs
+      - name: Save full-page evidence and annotated test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: select-shop-ux-customer-audit
+          path: test-results/customer-journey/
+          if-no-files-found: error
+          retention-days: 14
