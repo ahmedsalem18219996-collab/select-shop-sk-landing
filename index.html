@@ -33,7 +33,7 @@
 <link rel="stylesheet" href="/v2-live/safka-catalog-polish-v8.css?v=20261012-add-safka-cart-v1">
 <link rel="stylesheet" href="/v2-live/safka-checkout.css?v=20261012-working-orders-v2">
 <link rel="stylesheet" href="/v2-live/safka-cart.css?v=20261012-multi-cart-v1">
-<link rel="stylesheet" href="/v2-live/catalog-scale-v9.css?v=20261012-premium-catalog-v9">
+<link rel="stylesheet" href="/v2-live/catalog-scale-v9.css?v=20261012-scroll-and-search-v11">
 <script id="sk-legacy-ad-landing-route">
 (function () {
   try {
@@ -85,7 +85,7 @@
 <script defer src="/v2-live/tilted-grid-hero.js?v=multicategory-20261012"></script>
 <script defer src="/v2-live/safka-checkout.js?v=20261012-working-orders-v2"></script>
 <script defer src="/v2-live/safka-cart.js?v=20261012-multi-cart-v1"></script>
-<script defer src="/v2-live/safka-imported-store.js?v=20261012-inline-video-v10"></script>
+<script defer src="/v2-live/safka-imported-store.js?v=20261012-scroll-and-search-v11"></script>
 
 </head>
 <body>
@@ -149,6 +149,15 @@
  <div class="toolbar">
   <div class="tabs" role="group" aria-label="فلتر المنتجات"><button type="button" class="tab active" data-filter="all" aria-pressed="true">الكل</button><button type="button" class="tab" data-filter="shoes" aria-pressed="false">أحذية</button></div>
   <div class="searchWrap"><label for="searchInput" class="visuallyHidden">ابحث عن منتج</label><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="ابحث عن موديل أو منتج..." autocomplete="off"></div>
+ </div>
+ <div class="ssQuickDiscovery" role="group" aria-label="بحث سريع في المتجر">
+  <span class="ssQuickDiscoveryLabel">بتدوّر على إيه؟</span>
+  <button type="button" data-quick-search="تنظيف">تنظيف</button>
+  <button type="button" data-quick-search="كوتشي">كوتشي</button>
+  <button type="button" data-quick-search="سيارة">للعربية</button>
+  <button type="button" data-quick-search="شعر">عناية بالشعر</button>
+  <button type="button" data-quick-search="أطفال">للأطفال</button>
+  <button type="button" data-quick-search="موبايل">إلكترونيات</button>
  </div>
  <div class="merchCountLabel">عدد المنتجات: <strong id="resultsCount">4</strong> منتجات</div>
  <div class="productGrid" id="productGrid" aria-live="polite"></div>
