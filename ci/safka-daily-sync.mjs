@@ -51,14 +51,17 @@ if(env.GITHUB_EVENT_NAME==="push"){
   ...totals,sampleSuggestedPriceDifferences:samples.slice(0,16),
   savedChanges:0,ordersSent:0
  }));
- process.exit(0);
+ // Continue into the normal sync: the audit and price correction use the same signed source.
 }
 const shipped=await stage("shipping");
 console.log("Shipping regions synced:",shipped.saved);
-let completed=false,sourceRows=0,productsSaved=0,pageCount=0,confirmedPages=null;
+let completed=false,sourceRows=0,productsSaved=0,pageCount=0,confirmedPages=null,verified=0,manual=0,variantReview=0;
 for(let page=1;page<=50;page++){
  const result=await stage("products",page);
  pageCount++;sourceRows+=result.received;productsSaved+=result.saved;
+ verified+=Number(result.verifiedSuggestedRetailCount||0);
+ manual+=Number(result.manualPriceReviewCount||0);
+ variantReview+=Number(result.variantPriceReviewCount||0);
  confirmedPages=result.sourceTotalPages??confirmedPages;
  console.log("Supplier page "+page+": "+result.received+" read, "+result.saved+" saved, total pages "+confirmedPages);
  if(!result.hasMore){completed=true;break}
@@ -66,4 +69,6 @@ for(let page=1;page<=50;page++){
 if(!completed)throw Error("Supplier pages exceeded safe limit of 50. Snapshot incomplete.");
 console.log("SELECT SHOP temporary Safqa sync complete:",
  JSON.stringify({sourceRows,productsSaved,pageCount,confirmedPages,shippingRegions:shipped.saved,
-  storedAs:"private_temp_catalog",supplierOrdersSent:0}));
+  storedAs:"private_temp_catalog",verifiedRetailNote:verified,manualPriceReview:manual,variantPriceReview:variantReview,supplierOrdersSent:0}));
+
+if(verified+manual+variantReview!==productsSaved)throw Error("Pricing classification incomplete");
