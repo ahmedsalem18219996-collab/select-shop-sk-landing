@@ -36,10 +36,10 @@ for (const profile of [
     const title = await productDialog.locator(".ssSafkaDialogShortTitle").innerText();
     assert(title.includes("البخار"), "Wrong supplier product landed");
     const body = await productDialog.innerText();
-    assert(body.includes(new Intl.NumberFormat("ar-EG").format(1290)),
-      "Expected Safqa suggested retail 1200 + shipping 90 = 1290 EGP");
-    assert(body.includes("٩٠") || body.includes("90"),
-      "Explanation of Safqa plus-90 shipping missing");
+    assert(body.includes(new Intl.NumberFormat("ar-EG").format(1790)),
+      "Expected supplier note recommended retail 1700 + inclusive average delivery 90 = 1790 EGP");
+    assert(!/شحن\s*\+?\s*[٩٠90]{2}|سعر صفقة/i.test(body),
+      "Customer-facing page exposed supplier identity or itemized internal shipping");
 
     const videoLink = productDialog.locator("a.ssSafkaWatchProductVideo");
     await videoLink.waitFor({ state: "visible", timeout: 8000 });
@@ -95,7 +95,7 @@ for (const profile of [
       assert(/^[0-9a-f]+$/.test(payload.workNonce),"Missing proof-of-work");
       testedCapture=true;
       await route.fulfill({status:201,contentType:"application/json",
-        body:JSON.stringify({ok:true,orderCode:"SK-TEST-NO-WRITE",totalEgp:1290,status:"review",sentToSupplier:false})});
+        body:JSON.stringify({ok:true,orderCode:"SK-TEST-NO-WRITE",totalEgp:1790,status:"review",sentToSupplier:false})});
     });
     await orderForm.locator('input[name="name"]').fill("اختبار الواجهة فقط");
     await orderForm.locator('input[name="phone"]').fill("01012345678");
@@ -119,14 +119,14 @@ for (const profile of [
     await mediaDialog.locator(".ssSafkaInStoreVideo iframe.ssSafkaDriveVideo").waitFor({state:"attached",timeout:9000});
     assert(!page.url().startsWith("https://drive.google.com"),"Card video must stay on SELECT SHOP");
     await mediaDialog.locator(".ssSafkaClose").click();
-    const cardBuy = page.locator(".ssSafkaUnifiedCard button.ssSafkaCardBuy").first();
+    const cardBuy = page.locator(".ssSafkaUnifiedCard button.ssSafkaCardBuy:not([disabled])").first();
     await cardBuy.waitFor({state:"visible"});
     assert(await cardBuy.isEnabled(),"Customer cannot order from product card");
     await cardBuy.click();
     const cardCheckout=page.locator("dialog.ssCoDialog[open]");
     await cardCheckout.waitFor({state:"visible",timeout:12000});
     await cardCheckout.locator(".ssCoClose").click();
-    const cardAdd=page.locator(".ssSafkaUnifiedCard button.ssSafkaCardAdd").first();
+    const cardAdd=page.locator(".ssSafkaUnifiedCard button.ssSafkaCardAdd:not([disabled])").first();
     await cardAdd.waitFor({state:"visible",timeout:15000});
     assert(await cardAdd.isEnabled(),"Imported product is missing enabled Add to Cart");
     await cardAdd.click();
@@ -241,19 +241,25 @@ try {
     assert(!seen.has(p.id), "Duplicate supplier product ID " + p.id);
     seen.add(p.id);
     assert(p.can_purchase === false, "Unapproved supplier checkout unexpectedly opened: " + p.id);
-    assert(["approved", "indicative"].includes(p.price_status), "Missing price status " + p.id);
-    assert(Number.isInteger(p.display_price_egp) && p.display_price_egp > 0,
-      "Missing visible indicative price for " + p.id);
+    assert(["approved", "indicative","needs_review"].includes(p.price_status), "Missing price status " + p.id);
+    if(p.price_status==="needs_review")
+      assert.equal(p.display_price_egp,null,"Unverified supplier retail price leaked to customer "+p.id);
+    else
+      assert(Number.isInteger(p.display_price_egp) && p.display_price_egp > 0,
+        "Verified retail-note +90 price missing for " + p.id);
     assert(Array.isArray(p.images) && p.images.length > 0, "Missing supplier product photos " + p.id);
     if (!p.images?.length) missingImages++;
     assert(Array.isArray(p.variants) && p.variants.length > 0, "No supplier options for " + p.id);
     variants += p.variants.length;
     for (const v of p.variants) {
       assert(/^[a-f0-9]{24}$/i.test(v.id), "Invalid supplier option ID " + p.id);
-      assert(Number.isInteger(v.display_price_egp) && v.display_price_egp > 0,
-        "Supplier variant without independent displayed price " + p.id);
+      if(p.price_status==="needs_review")
+        assert.equal(v.display_price_egp,null,"Unverified option price leaked "+p.id);
+      else
+        assert(Number.isInteger(v.display_price_egp) && v.display_price_egp > 0,
+          "Verified option without displayed note-retail price "+p.id);
     }
-    const prices = p.variants.filter(v => v.available).map(v => Number(v.display_price_egp));
+    const prices = p.variants.filter(v=>v.available&&Number(v.display_price_egp)>0).map(v => Number(v.display_price_egp));
     if (prices.length) assert.equal(p.display_price_egp, Math.min(...prices),
       "Card does not show cheapest available price of supplier options: " + p.id);
     const videos = Array.isArray(p.videos) ? p.videos : [];
@@ -305,7 +311,7 @@ try {
   const body=await response.json();
   assert(response.ok&&body.ok&&body.validated===true,
     "Real order validation API did not accept the sample: "+JSON.stringify({status:response.status,error:body.error}));
-  assert.equal(body.totalEgp,1290,"Wrong server-computed order price");
+  assert.equal(body.totalEgp,1790,"Wrong confirmed supplier note-retail + 90 server quote");
   assert.equal(body.orderSaved,false,"Validation mode unexpectedly created an order");
   assert.equal(body.sentToSupplier,false,"Validation mode unexpectedly contacted supplier");
   summary.push({profile:"live-order-backend-no-write",serverQuoteEgp:body.totalEgp,storedOrder:false,supplierOrder:false});
