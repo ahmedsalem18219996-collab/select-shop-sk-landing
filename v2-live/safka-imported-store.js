@@ -591,7 +591,8 @@ function openProduct(p,trigger){
     const unavailable=node("button","ssSafkaDisabled","غير متوفر حاليًا");
     unavailable.type="button";unavailable.disabled=true;action.prepend(unavailable);
   }
-  body.append(action);
+  // Place the customer order CTA immediately after the total price, before long descriptions.
+  body.insertBefore(action,body.children[3]||null);
   layout.append(media,body);
   d.append(header,layout);
   d.showModal();
