@@ -141,7 +141,7 @@ for (const profile of [
     assert((await continueShopping.innerText()).includes("أضف منتج آخر"),"Smart cart must offer another product");
     await continueShopping.click();
     await bag.waitFor({state:"hidden",timeout:10000});
-    await page.locator("[data-safka-bag-open]").click();
+    await page.locator("[data-open-cart]").first().click();
     await bag.waitFor({state:"visible",timeout:11000});
     assert(await bag.locator(".ssBagItem").count()>=1,"Continue-shopping lost the selected item");
     const suggestions=bag.locator("[data-bag-recommendations] .ssBagSuggestion");
