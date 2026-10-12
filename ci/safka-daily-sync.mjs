@@ -1,5 +1,6 @@
 // SELECT SHOP temporary: GitHub Actions OIDC-authenticated upstream Safqa sync.
 // Provider credentials never enter GitHub; only Supabase Edge reads them.
+// Refresh request: reconcile the expanded ~490-item upstream catalog against live staging.
 const env=process.env;
 if(!env.ACTIONS_ID_TOKEN_REQUEST_URL||!env.ACTIONS_ID_TOKEN_REQUEST_TOKEN)
  throw Error("GitHub Actions OIDC is not available. This job cannot use any fallback credentials.");
