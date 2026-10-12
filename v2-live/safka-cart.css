@@ -44,3 +44,36 @@
  .ssBagInput{font-size:16px}.ssBagImg{width:65px;height:65px}
  .ssBagItems{max-height:40dvh}
 }
+
+/* 2026-10 - Complete your order: visible "Add another product" + relevant suggestions. */
+.ssBagActions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);
+ gap:9px;align-items:stretch;margin:4px 0 6px}
+.ssBagSecondary{border:1px solid #b5c6a1;background:#294437;color:#f6e9ce;
+ padding:10px 12px;border-radius:12px;font:inherit;font-size:14px;font-weight:800;
+ cursor:pointer;min-height:50px;line-height:1.5}
+.ssBagSecondary:hover,.ssBagSecondary:focus-visible{border-color:#f0c785;background:#365945}
+.ssBagActions .ssBagPrimary{width:100%;min-height:50px;font-size:14px}
+.ssBagSuggestions{border-top:1px solid #47624d;padding-top:12px;margin-top:2px;
+ display:grid;gap:10px;min-width:0}
+.ssBagSuggestions[hidden]{display:none!important}
+.ssBagSuggestionsTitle{margin:0;color:#f6e0b6;font-size:14px;font-weight:850}
+.ssBagSuggestionsRail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(140px,45%);
+ gap:9px;overflow-x:auto;overscroll-behavior-inline:contain;padding:3px 1px 12px;
+ scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+.ssBagSuggestion{display:flex;flex-direction:column;align-items:stretch;gap:7px;
+ border:1px solid #58745c;background:#21372a;border-radius:13px;
+ padding:8px;scroll-snap-align:start;min-width:0}
+.ssBagSuggestionPhoto{width:100%;height:96px;object-fit:contain;background:#eef0e8;
+ border-radius:9px}
+.ssBagSuggestion strong{font-size:11px;color:#faf4e8;line-height:1.5;min-height:33px;
+ display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ssBagSuggestionPrice{font-size:11px;font-weight:800;color:#f7d69b}
+.ssBagSuggestionAdd{border:1px solid #f7d594;background:#e8ba77;color:#142a1b;
+ border-radius:9px;padding:9px 5px;min-height:40px;font:inherit;
+ font-size:11px;font-weight:850;cursor:pointer;margin-top:auto}
+.ssBagSuggestionAdd:hover,.ssBagSuggestionAdd:focus-visible{background:#ffe0ab}
+@media(max-width:680px){
+ .ssBagActions{grid-template-columns:1fr 1fr;gap:7px}
+ .ssBagActions .ssBagPrimary,.ssBagSecondary{min-height:49px;padding:10px 5px;font-size:12px}
+ .ssBagSuggestionsRail{grid-auto-columns:minmax(125px,66%)}
+}
