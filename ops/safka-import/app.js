@@ -423,7 +423,7 @@ async function exportPriceReviewCsv(){
       if((data||[]).length<100)break;
     }
     if(!all.length)throw Error("قائمة الأسعار فارغة");
-    const headers=["كود صفقة","باركود","اسم المنتج","القسم","القسم مؤكد من المورد","سعر صفقة المرجعي","أعلى سعر اختيار متاح","سعر بيع SELECT SHOP المقترح شامل الشحن","فرق السعر عن المرجع","احتياطي الشحن الأقصى","حالة النشر","ملاحظات"];
+    const headers=["كود صفقة","باركود","اسم المنتج","القسم","القسم مؤكد من المورد","سعر صفقة المقترح","أعلى سعر اختيار متاح","سعر بيع SELECT SHOP المقترح شامل الشحن","فرق السعر عن المرجع","متوسط الشحن المضاف","حالة النشر","ملاحظات"];
     const csvValue=x=>{
       let val=String(x??"");
       // Defuse spreadsheet formula injection when exporting supplier-provided strings.
@@ -443,7 +443,7 @@ async function exportPriceReviewCsv(){
       if(original>0&&price>original*3)notes.push("مناسب لعرض متعدد أكثر من إعلان قطعة");
       if(!price)notes.push("لم يُسعَّر");
       return [p.supplier_product_id,p.barcode,p.name,p.category_name,p.source_category_confirmed?"نعم":"لا",
-        original,reference,price,price-original,110,p.review_state==="approved"&&p.owner_verified?"معتمد":"مسودة غير منشورة",notes.join("؛ ")].map(csvValue).join(",");
+        original,reference,price,price-original,90,p.review_state==="approved"&&p.owner_verified?"معتمد":"مسودة غير منشورة",notes.join("؛ ")].map(csvValue).join(",");
     });
     const content="\uFEFF"+[headers.map(csvValue).join(","),...records].join("\r\n");
     const file=new Blob([content],{type:"text/csv;charset=utf-8"});
@@ -491,10 +491,10 @@ async function loadPricingAudit(){
       if(!p.source_category_confirmed)issues.push("القسم يحتاج مراجعة");
       if(base>0&&quote>base*3)issues.push("أنسب لعروض الباقات");
       if(!quote)issues.push("غير مسعّر");
-      const balance=quote-high-110;
-      if(balance<90)issues.push("فرق ضيق بعد احتياطي الشحن");
+      const balance=quote-high-90;
+      if(balance<0)issues.push("راجع فروق أسعار الاختيارات قبل الاعتماد");
       priorities.push({p,issues,balance,base,quote,high,differing,
-        priority:(differing?100:0)+(!p.source_category_confirmed?18:0)+(balance<90?50:0)+(base>0&&quote>base*3?16:0)});
+        priority:(differing?100:0)+(!p.source_category_confirmed?18:0)+(balance<0?50:0)+(base>0&&quote>base*3?16:0)});
     }
     $("auditVariants").textContent=String(variantCount);
     $("auditCategory").textContent=String(categoryCount);
@@ -511,8 +511,8 @@ async function loadPricingAudit(){
     for(const rec of picked){
       const item=node("div","mediaQueueItem");
       item.append(node("strong","",rec.p.name));
-      item.append(node("small","","مرجع صفقة: "+money(rec.base)+" | سعرنا المبدئي: "+money(rec.quote)));
-      item.append(node("small","","فرق السعر بعد حجز 110 ج للشحن: "+money(rec.balance)+" (مش صافي ربح)"));
+      item.append(node("small","","سعر صفقة المقترح: "+money(rec.base)+" | سعرنا المبدئي: "+money(rec.quote)));
+      item.append(node("small","","الفرق عن أعلى اختيار + 90 شحن: "+money(rec.balance)+" (مش صافي ربح)"));
       item.append(node("small","",rec.issues.join(" • ")));
       const jump=node("button","","افتح المنتج وراجع سعره");
       jump.type="button";
@@ -808,8 +808,8 @@ async function openDetail(p){
       const label=audit.pricing_segment==="paid_ad_candidate"?"مرشح لاختبار إعلان بميزانية محدودة":
         audit.pricing_segment==="manual_price_check"?"اختيارات تحتاج مراجعة يدوية":
         "أنسب للبيع الطبيعي أو الباقات؛ لا إعلان منفرد دون اختبار";
-      pricing.append(node("p","detailNote",label+" | باقي تقديري بعد احتياطيات الشحن والإعلان والمرتجعات: "+
-        money(audit.projected_contribution_egp)+". هذا ليس صافي ربح."));
+      pricing.append(node("p","detailNote","قاعدة التسعير الحالية: سعر صفقة المقترح + 90 جنيه شحن. "+label+
+        "؛ هامش الربح الحقيقي غير معروف من البيانات دي."));
     }
   }catch{}
   pricing.append(node("p","detailNote","أدخل سعر البيع النهائي شامل التوصيل بعد حساب تكلفة المورد والشحن والإعلانات والمرتجعات. الحفظ لا ينشر المنتج ولا يفتح الطلبات."));
@@ -824,35 +824,21 @@ async function openDetail(p){
   saveButton.type="submit";
   const feedback=node("p","feedback");
   feedback.setAttribute("role","status");
-  // Explanatory margin preview only. Safqa's reference price is NOT an independently verified product cost.
-  const estimateBox=node("div","ssPriceEstimate");
-  const estimatesTitle=node("strong","","تقدير مالي للمراجعة فقط");
-  const expenseRow=node("div","ssEstimateRow");
-  const adLabel=node("label","","ميزانية الإعلان المتوقعة لكل طلب (ج)");
-  const adInput=node("input");adInput.type="number";adInput.min="0";adInput.max="5000";adInput.step="5";adInput.value="80";
-  const returnLabel=node("label","","مخصص مرتجعات / مخاطر للطلب (ج)");
-  const returnInput=node("input");returnInput.type="number";returnInput.min="0";returnInput.max="5000";returnInput.step="5";returnInput.value="35";
-  adLabel.append(adInput);returnLabel.append(returnInput);expenseRow.append(adLabel,returnLabel);
-  const estimateText=node("p","detailNote");
-  const variantsPrices=(Array.isArray(p.variants)?p.variants:[]).filter(x=>x.is_available&&Number(x.suggested_price)>0).map(x=>Number(x.suggested_price));
-  const referencePrice=Math.max(Number(p.suggested_sale_price_egp)||0,...variantsPrices);
-  const recalculate=()=>{
-    const listed=Number(priceInput.value)||0;
-    const ads=Math.max(0,Number(adInput.value)||0),risk=Math.max(0,Number(returnInput.value)||0);
-    const worst=listed-referencePrice-110-ads-risk;
-    const cairo=listed-referencePrice-85-ads-risk;
-    estimateText.textContent="المرجع من صفقة: "+money(referencePrice)+
-      " | باقي نظري بعد شحن 85 ج: "+money(cairo)+
-      " | بعد شحن 110 ج: "+money(worst)+
-      ". ده مش صافي ربح مؤكّد؛ لازم تتحقق من تكلفة المورد والعمولة الفعلية.";
-    estimateText.classList.toggle("error",worst<0);
+  // Safqa suggested SALE price is not supplier cost. Avoid displaying invented net profit.
+  const priceExplainer=node("p","ssPriceHistory");
+  const supplierQuote=Number(p.suggested_sale_price_egp)||0;
+  const expectedPrice=supplierQuote+90;
+  const updateExplainer=()=>{
+    const candidate=Number(priceInput.value)||0;
+    priceExplainer.textContent="سعر البيع المقترح من صفقة: "+money(supplierQuote)+
+      " + شحن متوسط 90 جنيه = "+money(expectedPrice)+
+      ". السعر الحالي: "+money(candidate)+". الفرق عن القاعدة: "+money(candidate-expectedPrice)+
+      ". أسعار الاختيارات المختلفة موجودة تحت؛ لا نفترض تكلفة شراء أو صافي ربح.";
   };
-  priceInput.addEventListener("input",recalculate);
-  adInput.addEventListener("input",recalculate);
-  returnInput.addEventListener("input",recalculate);
-  estimateBox.append(estimatesTitle,expenseRow,estimateText);
-  form.append(label,saveButton,feedback);pricing.append(form,estimateBox);right.append(pricing);
-  recalculate();
+  priceInput.addEventListener("input",updateExplainer);
+  form.append(label,saveButton,feedback);
+  pricing.append(priceExplainer,form);right.append(pricing);
+  updateExplainer();
   // Public price publication requires an explicit separate owner acknowledgement.
   // Customer checkout and Safqa supplier POST remain disabled even after publication.
   const approval=node("div","ssPriceApproval");
