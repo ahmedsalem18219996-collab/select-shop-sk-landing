@@ -1,0 +1,33 @@
+name: SELECT SHOP Safqa daily catalog sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/safka-daily-sync.yml'
+      - 'ci/safka-daily-sync.mjs'
+  schedule:
+    - cron: '25 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: temp-safka-daily-sync
+  cancel-in-progress: false
+
+jobs:
+  safka-snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout SELECT SHOP temporary repo
+        uses: actions/checkout@v4
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify GitHub OIDC and sync Safqa products
+        run: node ci/safka-daily-sync.mjs
