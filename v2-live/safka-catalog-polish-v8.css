@@ -68,3 +68,28 @@
 .ssSafkaPriceInfo{min-width:0}
 .ssSafkaPriceInfo span{line-height:1.6}
 @media(max-width:640px){.ssSafkaUnifiedCard .ssSafkaPricePreview{font-size:10px}.ssSafkaVariantPrice{font-size:10px;white-space:normal}}
+
+/* Supplier Drive video playback: reliable external watch CTA, optional inline fallback. */
+.ssSafkaStage:has(.ssSafkaDriveChoice){overflow:auto;align-items:stretch;justify-items:stretch}
+.ssSafkaDriveChoice{width:100%;min-width:0;min-height:100%;padding:clamp(12px,3vw,22px);
+ display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+ background:linear-gradient(135deg,#17231c,#2c382b);text-align:center;color:#f4f5e7}
+.ssSafkaDriveChoice strong{font-size:clamp(14px,2vw,18px);line-height:1.4}
+.ssSafkaVideoPlayMark{display:grid;place-items:center;background:#ffd08a;color:#182d20;border-radius:50%;
+ width:62px;height:62px;font-size:26px;padding-inline-start:4px}
+.ssSafkaStage .ssSafkaDrivePrimary{display:grid;place-items:center;min-width:min(100%,240px);
+ border-radius:12px;border:2px solid #fee0a5;background:#f0bf78;color:#202b20;
+ font-size:16px;font-weight:800;min-height:53px;padding:12px 18px;text-decoration:none}
+.ssSafkaDriveChoice .ssSafkaDriveInline{border:1px solid #91a58b;background:#273a2b;color:#e6f5de;
+ border-radius:10px;min-height:44px;padding:8px 15px;font:inherit;font-size:12px;cursor:pointer}
+.ssSafkaDriveDisclaimer{line-height:1.65;font-size:11px;color:#d7dfcc;max-width:390px}
+.ssSafkaDriveInlinePanel{width:100%;max-width:520px}
+.ssSafkaDriveInlinePanel[hidden]{display:none!important}
+.ssSafkaDriveInlinePanel iframe{width:100%;height:auto;aspect-ratio:16/9;min-height:180px;
+ border:1px solid #7d9374;border-radius:10px;background:#000}
+@media(max-width:680px){
+ .ssSafkaStage:has(.ssSafkaDriveChoice){aspect-ratio:auto;max-height:none;min-height:310px}
+ .ssSafkaDriveChoice{padding:16px 12px;min-height:310px;gap:10px}
+ .ssSafkaStage .ssSafkaDrivePrimary{width:100%;min-width:0}
+ .ssSafkaDriveInlinePanel iframe{min-height:175px}
+}
