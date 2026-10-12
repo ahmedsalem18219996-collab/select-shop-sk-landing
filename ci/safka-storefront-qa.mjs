@@ -153,6 +153,27 @@ for (const profile of [
     assert((await multiBag.innerText()).includes("الإجمالي شامل التوصيل"),"Cart missing inclusive total");
     await page.screenshot({path:resultDir+"/"+profile.name+"-supplier-basket.png",fullPage:false});
     await multiBag.locator(".ssBagClose").click();
+    if(profile.name==="desktop"){
+      await page.goto(base,{waitUntil:"domcontentloaded",timeout:60000});
+      await page.locator(".ssSafkaUnifiedCard").first().waitFor({state:"visible",timeout:40000});
+      await page.locator(".ssSafkaUnifiedActions").scrollIntoViewIfNeeded();
+      await page.waitForTimeout(900);
+      let loaded=await page.locator(".ssSafkaUnifiedCard").count();
+      if(loaded<48){
+        await page.locator(".ssSafkaUnifiedMore").click();
+        await page.waitForFunction(()=>document.querySelectorAll(".ssSafkaUnifiedCard").length>=48,null,{timeout:18000});
+        loaded=await page.locator(".ssSafkaUnifiedCard").count();
+      }
+      assert(loaded>=48,"Catalog does not load past first 24 items");
+      await page.locator('[data-quick-search="تنظيف"]').click();
+      await page.waitForFunction(()=>{
+        const cards=document.querySelectorAll(".ssSafkaUnifiedCard");
+        return cards.length>0&&[...cards].some(x=>x.innerText.includes("تنظيف"));
+      },null,{timeout:20000});
+      assert((await page.locator("#searchInput").inputValue())==="تنظيف","Quick search did not update catalog search");
+      await page.screenshot({path:resultDir+"/desktop-expanded-catalog.png",fullPage:false});
+      summary.push({profile:"desktop-large-catalog-navigation",loadedCards:loaded,quickSearch:"تنظيف"});
+    }
 
     summary.push({ profile: profile.name, title, video: directVideo, overflowPx: horizontalOverflow,
       supplierCardsInLoadedGrid: await page.locator(".ssSafkaUnifiedCard").count(), checkoutFormMocked:true, multiBasketUi:true, jsErrors: errors });
