@@ -184,6 +184,42 @@ try {
   failures.push("catalog-audit: " + (error?.stack || error));
 }
 
+// Exercise actual Supabase order backend without inserting any order or contacting a supplier.
+// All customer details below are synthetic and validateOnly keeps them out of the DB.
+try {
+  const { randomUUID, createHash } = await import("node:crypto");
+  const requestId=randomUUID();
+  let nonce=null;
+  for(let i=0;i<1500000;i++){
+    const trial=i.toString(16);
+    const digest=createHash("sha256").update("SELECT-SHOP-ORDER:"+requestId+":"+trial).digest("hex");
+    if(digest.startsWith("0000")){nonce=trial;break}
+  }
+  assert(nonce!==null,"Unable to compute anti-spam proof for the test");
+  const payload={
+    requestId,productId:"69c1db9dcc2eaa4914727bbd",
+    variantId:"69c1db9dcc2eaa4914727bbe",quantity:1,
+    governorateId:"64879004dc16090c1858e69e",cityId:"",
+    customer:{name:"اختبار حساب السعر فقط",phone:"01000000000",
+      area:"اختبار داخلي",address:"عنوان اختبار لمراجعة سعر المنتج فقط",notes:""},
+    workNonce:nonce,website:"",validateOnly:true
+  };
+  const response=await fetch("https://zznqdwrohrycsjfpvkhc.supabase.co/functions/v1/safka-capture-order",{
+    method:"POST",
+    headers:{"origin":"https://selectshopeg.com",
+      "apikey":"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa",
+      "content-type":"application/json"},
+    body:JSON.stringify(payload),signal:AbortSignal.timeout(20000)
+  });
+  const body=await response.json();
+  assert(response.ok&&body.ok&&body.validated===true,
+    "Real order validation API did not accept the sample: "+JSON.stringify({status:response.status,error:body.error}));
+  assert.equal(body.totalEgp,1290,"Wrong server-computed order price");
+  assert.equal(body.orderSaved,false,"Validation mode unexpectedly created an order");
+  assert.equal(body.sentToSupplier,false,"Validation mode unexpectedly contacted supplier");
+  summary.push({profile:"live-order-backend-no-write",serverQuoteEgp:body.totalEgp,storedOrder:false,supplierOrder:false});
+}catch(error){failures.push("backend-no-write: "+(error?.stack||error));}
+
 await browser.close();
 await safari.close();
 await writeFile(resultDir + "/summary.json", JSON.stringify({ summary, failures }, null, 2));
