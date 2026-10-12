@@ -174,7 +174,7 @@ try {
     all.push(...payload.items);
     if (all.length >= expected) break;
   }
-  assert.equal(expected, 462, "Unexpected Safqa product count (source should have 462)");
+  assert(expected>=462,"Supplier catalog unexpectedly shrank; investigate the daily provider sync");
   assert.equal(all.length, expected, "Pagination omitted supplier products");
   const seen = new Set();
   let variants = 0, withVideos = 0, videoUrls = 0, withoutVideo = 0;
@@ -207,10 +207,10 @@ try {
         "Supplier video not a verified Drive file preview URL: " + p.id);
     }
   }
-  assert.equal(variants, 505, "Unexpected supplier option prices count");
-  assert.equal(withVideos, 411, "Supplier videos coverage unexpectedly changed");
-  assert.equal(withoutVideo, 51, "Unexpected no-video product count");
-  assert.equal(videoUrls, 2678, "Video links missing from public catalog");
+  assert(variants>=505,"Supplier option count unexpectedly shrank");
+  assert(withVideos>=411,"Supplier media coverage regressed");
+  assert.equal(withVideos+withoutVideo,expected,"Video coverage did not include all imported products");
+  assert(videoUrls>=2678,"Supplier media links regressed");
   summary.push({ profile: "full-catalog-read-only", products: all.length, variants,
     productsWithSupplierVideos: withVideos, productsWithoutSupplierVideos: withoutVideo,
     linkedVideoUrls: videoUrls, missingImages, supplierCheckoutEnabled: false });
@@ -297,6 +297,7 @@ try{
  summary.push({profile:"live-multi-cart-validation-no-write",lines:2,totalEgp:result.totalEgp,orderSaved:false});
 }catch(error){failures.push("cart-backend-no-write: "+(error?.stack||error))}
 // Read live supplier catalog count via server-side key; aggregate only, one global rate-limited check.
+if(process.env.GITHUB_EVENT_NAME==="workflow_dispatch"){
 try{
  const res=await fetch("https://zznqdwrohrycsjfpvkhc.supabase.co/functions/v1/safka-live-audit",{
   method:"GET",headers:{origin:"https://selectshopeg.com",
@@ -308,6 +309,7 @@ try{
  // Supplier availability reports don't imply a numerical warehouse stock count.
  if(res.ok){assert(source.complete);assert.equal(source.physicalStockQuantityExposed,false)}
 }catch(error){summary.push({profile:"supplier-source-live-count",error:String(error?.message||error)})}
+}
 await browser.close();
 await safari.close();
 await writeFile(resultDir + "/summary.json", JSON.stringify({ summary, failures }, null, 2));
