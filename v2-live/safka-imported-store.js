@@ -326,7 +326,7 @@ function ensureDialog(){
   dialog.addEventListener("close",()=>{
     dialog.replaceChildren();
     const u=new URL(location.href),param=u.searchParams.get("product")||"";
-    if(param.startsWith("safka-")){
+    if(param.startsWith("safka-")||validId(param)){
       u.searchParams.delete("product");
       history.replaceState(null,"",u.pathname+u.search+u.hash);
     }
@@ -356,7 +356,7 @@ function choiceName(s){
   return v;
 }
 function productLink(id){
-  return location.origin+"/?product=safka-"+encodeURIComponent(id)+"#products";
+  return location.origin+"/?product="+encodeURIComponent(id)+"#products";
 }
 async function copyProductLink(id,button){
   if(!validId(id))return;
@@ -392,7 +392,7 @@ function openProduct(p,trigger){
   lastFocus=trigger||document.activeElement;
   for(const existing of document.querySelectorAll("dialog[open]"))if(existing!==d)existing.close();
   const u=new URL(location.href);
-  u.searchParams.set("product","safka-"+p.id);
+  u.searchParams.set("product",p.id);
   history.replaceState(null,"",u.pathname+u.search+u.hash);
   d.replaceChildren();
 
@@ -651,7 +651,7 @@ async function boot(){
     addCategoryTabs();
     if(window.SELECT_SHOP_COLLECTION_STATE)onCollectionRendered(window.SELECT_SHOP_COLLECTION_STATE);
     const param=new URLSearchParams(location.search).get("product")||"";
-    const id=param.startsWith("safka-")?param.slice(6):"";
+    const id=param.startsWith("safka-")?param.slice(6):(validId(param)?param:"");
     if(validId(id)){
       const found=await rpc("ss_safka_public_catalog_v2",{p_page:1,p_limit:1,p_search:id});
       const product=found?.items?.find(x=>x.id.toLowerCase()===id.toLowerCase());
