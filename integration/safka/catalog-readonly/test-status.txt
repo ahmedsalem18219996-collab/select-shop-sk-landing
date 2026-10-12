@@ -1,0 +1,3 @@
+status=PASS
+type=SYNTHETIC_ONLY
+real_safka_requests=0
