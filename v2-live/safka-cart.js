@@ -311,7 +311,7 @@ async function openCheckout(){
  const status=e("p","ssBagStatus","بنجهز الطلب...");
  status.setAttribute("role","status");status.setAttribute("aria-live","polite");
  orderForm.append(name.root,phone.root,governor,cityIdRow,city.root,address.root,notes.root,total,
-   e("small","ssBagMuted","الدفع عند الاستلام بعد التأكيد. السعر المعروض شامل التوصيل."),
+   e("small","ssBagMuted","بتوافق على مشاركة بيانات التوصيل مع شريك التجهيز والتأكيد لتسجيل وشحن الطلب. الدفع عند الاستلام بعد التأكيد، والسعر شامل التوصيل."),
    website,submit,status);
  c.append(back,intro,orderForm);
  const requestId=crypto.randomUUID();let nonce="",busy=false;
