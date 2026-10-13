@@ -418,14 +418,15 @@ async function copyProductLink(id,button){
   setTimeout(()=>{if(button.isConnected)button.textContent=previous},2400);
 }
 function openProduct(p,trigger,showVideo=false){
-  if(window.SELECT_SHOP_TEST_MODE!==true&&typeof window.gtag==="function")
+  if(validId(p?.id)&&p.price_status!=="needs_review"&&Number(p.display_price_egp)>0&&window.SELECT_SHOP_TEST_MODE!==true&&typeof window.gtag==="function")
     try{window.gtag("event","view_item",{currency:"EGP",
       value:Number(p.display_price_egp)||0,
       items:[{item_id:p.id,item_name:String(p.name).slice(0,100),
         price:Number(p.display_price_egp)||0,quantity:1}]})}catch{}
 
   if(!validId(p?.id))return;
-  try{window.SELECT_SHOP_META?.safkaView?.(p)}catch{}
+  if(p.price_status!=="needs_review"&&Number(p.display_price_egp)>0)
+    try{window.SELECT_SHOP_META?.safkaView?.(p)}catch{}
   const d=ensureDialog();
   lastFocus=trigger||document.activeElement;
   for(const existing of document.querySelectorAll("dialog[open]"))if(existing!==d)existing.close();
@@ -542,7 +543,7 @@ function openProduct(p,trigger,showVideo=false){
   const body=node("div","ssSafkaDetailBody");
   const eyebrow=node("div","ssSafkaDetailEyebrow");
   eyebrow.append(node("span","ssSafkaTag",categoryName(p.category_name)),
-    node("span","ssSafkaAvailability","متاح لطلب مراجعة"));
+    node("span","ssSafkaAvailability",p.price_status==="needs_review"?"السعر تحت المراجعة":"متاح لتسجيل طلب للتأكيد"));
   body.append(eyebrow,node("h2","",p.name));
   const info=node("div","ssSafkaPriceInfo");
   info.append(node("span","","السعر شامل التوصيل"),node("strong","",price(p)));
@@ -589,7 +590,7 @@ function openProduct(p,trigger,showVideo=false){
       if(v.display_price_egp&&v.available!==false)
         option.append(node("small","ssSafkaVariantPrice"," · "+Number(v.display_price_egp).toLocaleString("ar-EG")+" ج"));
       option.classList.toggle("is-unavailable",v.available===false);
-      option.title=v.available===false?"غير متوفر حاليًا":"متوفر";
+      option.title=p.price_status==="needs_review"?"السعر قيد المراجعة":v.available===false?"غير متوفر حاليًا":"متاح حسب بيانات المورد";
       options.append(option);
     });
     variants.append(options);
