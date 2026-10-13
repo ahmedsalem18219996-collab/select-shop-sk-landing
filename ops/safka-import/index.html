@@ -66,6 +66,28 @@
   <button id="exportVariantPricingCsv" type="button">تنزيل أسعار كل الاختيارات (CSV)</button>
   <p id="priceExportMessage" class="feedback" role="status" aria-live="polite"></p>
  </section>
+ <section class="panel commercialReview" aria-labelledby="commercialReviewHeading">
+  <span class="eyebrow">PRODUCT SHORTLIST · OWNER ONLY · NO AUTOMATIC ADS</span>
+  <h2 id="commercialReviewHeading">اختيار منتجات للإعلانات — تحليل مبدئي</h2>
+  <p>رتّب المنتجات وفق سعر البيع المقترح من صفقة، ومرجع سعر المورد، واحتياطي شحن 110 جنيه، وتغطية الفيديو والتصنيف. فرق السعر ليس صافي ربح؛ لن نفعّل إعلانًا أو نعتمد شراءً أو نعرض أرباحًا مضمونة من هنا.</p>
+  <div class="syncControls">
+    <label>تكلفة الإعلان لكل طلب مؤكد (جنيه)
+      <input type="number" id="commercialCpa" min="0" max="10000" step="1" inputmode="numeric" value="0">
+    </label>
+    <label>متوسط خسارة إلغاء/مرتجع لكل طلب (جنيه)
+      <input type="number" id="commercialReturns" min="0" max="10000" step="1" inputmode="numeric" value="0">
+    </label>
+    <label>عمولة/رسوم إضافية لكل طلب (جنيه)
+      <input type="number" id="commercialFees" min="0" max="10000" step="1" inputmode="numeric" value="0">
+    </label>
+  </div>
+  <div class="syncControls">
+    <button type="button" id="runCommercialReview">حلل المنتجات واختار أفضل 20 للمراجعة</button>
+    <button type="button" id="downloadCommercialCsv" disabled>تنزيل المرشحين للقرار الإعلاني (CSV)</button>
+  </div>
+  <p class="feedback" id="commercialReviewMessage" role="status" aria-live="polite">الأرقام تبدأ بصفر لأنها غير مثبتة؛ أدخل التكاليف الفعلية قبل أي قرار إعلاني. مصدر فيديو المنتج وجود رابط فقط ولا يثبت التشغيل عند كل عميل.</p>
+  <div id="commercialShortlist" class="mediaWorkQueue"></div>
+ </section>
  <section class="panel safkaOrderInbox" aria-labelledby="safkaOrdersHeading">
   <span class="eyebrow">SAFKA ORDERS · PRIVATE INBOX</span>
   <div class="syncControls">
