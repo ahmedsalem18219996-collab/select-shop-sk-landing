@@ -161,7 +161,7 @@ async function open(product){
       status.textContent="راجع رقم الموبايل المصري (11 رقم).";phone.el.focus();return;
     }
     if(!gov.value){status.textContent="اختار المحافظة.";return;}
-    processing=true;submit.disabled=true;status.textContent="جاري تسجيل الطلب...";
+    processing=true;submit.disabled=true;status.textContent="بنراجع السعر والتوفر وبنسجل طلبك للتجهيز...";
     const payload={
       requestId,productId:product.id,variantId:variant.value,quantity:Number(quantity.value),
       governorateId:gov.value,cityId:cityCode.value==="__other__"?"":cityCode.value,
@@ -172,7 +172,7 @@ async function open(product){
     try{
       const res=await fetch(BASE+"/functions/v1/safka-capture-order",{
         method:"POST",headers:{apikey:KEY,"content-type":"application/json"},
-        body:JSON.stringify(payload),cache:"no-store",signal:AbortSignal.timeout(24000)
+        body:JSON.stringify(payload),cache:"no-store",signal:AbortSignal.timeout(74000)
       });
       const data=await res.json();
       if(!res.ok||!data.ok)throw Error(data.error||"order_save_failed");
@@ -188,7 +188,9 @@ async function open(product){
       form.append(make("h3","","اتسجّل طلبك بنجاح"),
         make("p","ssCoSuccess","رقم الطلب: "+data.orderCode),
         make("p","ssCoTotal","الإجمالي شامل التوصيل: "+money(data.totalEgp)),
-        make("p","ssCoInfo","ده طلب للمراجعة مش شحنة مؤكدة؛ هنتواصل معاك لتأكيده قبل التجهيز."),
+        make("p","ssCoInfo",data.sentToSupplier===true?
+ "تم تحويل الطلب لشريك التجهيز، وفريق التأكيد هيتواصل معاك قبل الشحن. التحويل مش معناه إن الشحنة خرجت بالفعل.":
+ "اتسجل طلبك في SELECT SHOP لكن لسه محتاج متابعة من فريقنا قبل ما يتبعت لشريك التجهيز. ما تعملش طلب تاني بنفس البيانات."),
         make("p","ssCoDisclaimer","احتفظ برقم الطلب للمتابعة."));
     }catch(err){
       const errors={
