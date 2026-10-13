@@ -23,10 +23,13 @@ for (const profile of [
     hasTouch: profile.hasTouch, deviceScaleFactor: 1,
     locale: "ar-EG", timezoneId: "Africa/Cairo",
   });
+  // No real analytics from synthetic browser visits, cart actions or order mocks.
+  await context.route(/^https:\/\/(?:[^/]+\.)?(?:facebook\.com|facebook\.net|google-analytics\.com|googletagmanager\.com)\//i,
+    route=>route.abort());
   const page = await context.newPage();
   const errors = [];
   page.on("pageerror", e => errors.push(String(e.message || e).slice(0, 250)));
-  const link = base + "/?product=safka-" + sample;
+  const link = base + "/?shop_test=1&product=safka-" + sample;
   try {
     const response = await page.goto(link, { waitUntil: "domcontentloaded", timeout: 60000 });
     assert(response && response.status() === 200, "Product landing URL did not return HTTP 200");
