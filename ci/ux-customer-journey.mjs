@@ -107,7 +107,7 @@ for(const p of profiles){
       }
       await page.screenshot({path:out+"/"+p.name+"-04-detail.png"});
       await modal.locator(".ssSafkaClose").click();
-      if(/سعر صفقة|كود صفقة|90 جنيه/.test(price))throw Error("Supplier or shipping note exposed");
+      if(/سعر صفقة|كود صفقة|90 جنيه|110 جنيه/.test(price))throw Error("Supplier or shipping note exposed");
       return{videoOptions:videos,inlineEmbed:!!embed,excerpt:price.slice(0,180)};
    });
    await step(res,"Add a product to shopping bag",async()=>{
