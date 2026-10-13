@@ -292,6 +292,28 @@ try {
   failures.push("catalog-audit: " + (error?.stack || error));
 }
 
+// Read-only checkout geography check: customers must be able to pick the
+// provider's exact numeric city ID without supplier secret exposure.
+try{
+ const response=await fetch("https://zznqdwrohrycsjfpvkhc.supabase.co/rest/v1/rpc/ss_safka_checkout_regions",{
+   method:"POST",
+   headers:{"apikey":"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa","content-type":"application/json"},
+   body:"{}",signal:AbortSignal.timeout(20000)
+ });
+ assert(response.ok,"Checkout regions endpoint unavailable");
+ const regionRows=await response.json();
+ assert(Array.isArray(regionRows)&&regionRows.length>=20,"Checkout governorate list missing");
+ const sample=regionRows.find(r=>r.id==="64879004dc16090c1858e69e");
+ assert(sample&&Array.isArray(sample.cities)&&sample.cities.some(c=>c.id==="383"),
+   "Sohag supplier city 383 missing from secure public delivery options");
+ const linked=regionRows.reduce((sum,r)=>sum+(Array.isArray(r.cities)?r.cities.length:0),0);
+ assert(linked>=400,"Source city mapping regressed");
+ assert(regionRows.every(r=>!Object.hasOwn(r,"shipping_egp")&&!Object.hasOwn(r,"supplier_cost")),
+   "Internal supplier freight exposed in public checkout");
+ summary.push({profile:"source-city-checkout",regions:regionRows.length,linkedCities:linked,
+   sourceCityVerified:true,includesSupplierInternalCosts:false});
+}catch(error){failures.push("source-city-checkout: "+(error?.stack||error));}
+
 // Exercise actual Supabase order backend without inserting any order or contacting a supplier.
 // All customer details below are synthetic and validateOnly keeps them out of the DB.
 try {
@@ -307,7 +329,7 @@ try {
   const payload={
     requestId,productId:"69c1db9dcc2eaa4914727bbd",
     variantId:"69c1db9dcc2eaa4914727bbe",quantity:1,
-    governorateId:"64879004dc16090c1858e69e",cityId:"",
+    governorateId:"64879004dc16090c1858e69e",cityId:"383",
     customer:{name:"اختبار حساب السعر فقط",phone:"01000000000",
       area:"اختبار داخلي",address:"عنوان اختبار لمراجعة سعر المنتج فقط",notes:""},
     workNonce:nonce,website:"",validateOnly:true
@@ -356,7 +378,7 @@ try{
  const res=await fetch("https://zznqdwrohrycsjfpvkhc.supabase.co/functions/v1/safka-capture-cart",{
   method:"POST",headers:{origin:"https://selectshopeg.com",
    apikey:"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa","content-type":"application/json"},
-  body:JSON.stringify({requestId,items:lines,governorateId:"64879004dc16090c1858e69e",cityId:"",
+  body:JSON.stringify({requestId,items:lines,governorateId:"64879004dc16090c1858e69e",cityId:"383",
    customer:{name:"اختبار تحقق حسابي",phone:"01000000000",area:"منطقة اختبار",
     address:"عنوان تجريبي اختبار فقط",notes:""},workNonce:nonce,website:"",validateOnly:true}),
   signal:AbortSignal.timeout(25000)
