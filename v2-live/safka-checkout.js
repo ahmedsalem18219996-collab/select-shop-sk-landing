@@ -89,6 +89,26 @@ async function open(product){
   const govRow=make("label","ssCoLabel","المحافظة");
   const gov=make("select","ssCoInput");gov.required=true;gov.name="governorate";
   const placeholder=make("option","","جاري تحميل المحافظات");placeholder.value="";gov.append(placeholder);govRow.append(gov);
+  const cityCodeRow=make("label","ssCoLabel","المدينة حسب تقسيم التوصيل");
+  const cityCode=make("select","ssCoInput");cityCode.name="cityId";cityCode.disabled=true;
+  cityCodeRow.append(cityCode);
+  let citiesByGovernorate=new Map();
+  function updateDeliveryCities(){
+    const list=citiesByGovernorate.get(gov.value)||[];
+    cityCode.replaceChildren();
+    const firstCity=make("option","",list.length?"اختار المدينة":"اكتب المدينة في خانة المنطقة أدناه");
+    firstCity.value="";cityCode.append(firstCity);
+    cityCode.required=list.length>0;cityCode.disabled=list.length===0;
+    for(const c of list){
+      if(!/^\\d{1,8}$/.test(String(c?.id||""))||typeof c?.name!=="string")continue;
+      const option=make("option","",c.name);option.value=c.id;cityCode.append(option);
+    }
+    if(list.length){
+      const other=make("option","","مدينتي مش موجودة — هكتبها بالتفصيل");
+      other.value="__other__";cityCode.append(other);
+    }
+  }
+  gov.addEventListener("change",updateDeliveryCities);
   const total=make("p","ssCoTotal");
   const calc=()=>{
     const v=choices.find(x=>x.id===variant.value)||choices[0];
@@ -104,7 +124,7 @@ async function open(product){
   const website=make("input","ssCoHoney");
   website.name="website";website.autocomplete="off";website.tabIndex=-1;
   website.setAttribute("aria-hidden","true");website.type="text";
-  form.append(choiceRow,quantityRow,name.wrapper,phone.wrapper,govRow,city.wrapper,address.wrapper,
+  form.append(choiceRow,quantityRow,name.wrapper,phone.wrapper,govRow,cityCodeRow,city.wrapper,address.wrapper,
     notes.wrapper,total,terms,website,submit,status);
   outer.append(close,h,summary,note,form);dialog.append(outer);
   dialog.addEventListener("click",e=>{if(e.target===dialog)dialog.close()});
@@ -124,6 +144,9 @@ async function open(product){
       if(!idOk(place.id)||!place.name)continue;
       const option=make("option","",place.name);option.value=place.id;gov.append(option);
     }
+    citiesByGovernorate=new Map(regionsList.filter(r=>idOk(r.id))
+      .map(r=>[r.id,Array.isArray(r.cities)?r.cities:[]]));
+    updateDeliveryCities();
     proof=nonce;ready=true;submit.disabled=false;
     status.textContent="جاهز لتسجيل طلبك.";
   }catch{
@@ -141,7 +164,7 @@ async function open(product){
     processing=true;submit.disabled=true;status.textContent="جاري تسجيل الطلب...";
     const payload={
       requestId,productId:product.id,variantId:variant.value,quantity:Number(quantity.value),
-      governorateId:gov.value,cityId:"",
+      governorateId:gov.value,cityId:cityCode.value==="__other__"?"":cityCode.value,
       customer:{name:name.el.value.trim(),phone:number,area:city.el.value.trim(),
         address:address.el.value.trim(),notes:notes.el.value.trim()},
       workNonce:proof,website:website.value
