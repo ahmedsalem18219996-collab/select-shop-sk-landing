@@ -36,6 +36,9 @@ for(const p of profiles){
  const context=await browser.newContext({viewport:{width:p.width,height:p.height},
    deviceScaleFactor:1,isMobile:p.isMobile,hasTouch:p.hasTouch,
    locale:"ar-EG",timezoneId:"Africa/Cairo"});
+  // No real analytics from synthetic browser visits, cart actions or order mocks.
+  await context.route(/^https:\/\/(?:[^/]+\.)?(?:facebook\.com|facebook\.net|google-analytics\.com|googletagmanager\.com)\//i,
+    route=>route.abort());
  const page=await context.newPage();
  const res={device:p.name,events:[],jsErrors:[],failedRequests:[],headlines:[],snapshots:[]};
  RESULTS.push(res);
