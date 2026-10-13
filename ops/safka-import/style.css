@@ -177,3 +177,12 @@ footer{text-align:center;padding:22px;border-top:1px solid var(--border);color:#
  .ssCuratedFindResults button{align-self:flex-end}
  .ssCuratedFind .syncControls>*{flex-basis:100%}
 }
+
+/* Safka direct-order emergency pause — authenticated owner dashboard only. */
+.ssSafkaAutoTransferControl{display:grid;gap:9px;width:100%;padding:14px;margin:8px 0;
+ border-radius:12px;background:rgba(109,70,135,.12);border:1px solid #9374ad}
+.ssSafkaAutoTransferControl strong{font-size:13px}
+.ssSafkaAutoTransferControl strong span{color:#ffdfa5}
+.ssSafkaAutoTransferControl small{font-size:12px;line-height:1.65;color:inherit}
+.ssSafkaAutoTransferControl button{min-height:44px;max-width:340px}
+.ssSafkaAutoTransferControl .feedback{margin:0}
