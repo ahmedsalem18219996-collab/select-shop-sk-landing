@@ -8,6 +8,7 @@ on:
       - 'meta-pixel.js'
       - 'v2-live/safka-*'
       - 'ci/safka-storefront-qa.mjs'
+      - 'ci/order-intake-readiness.mjs'
       - 'ci/safka-daily-sync.mjs'
       - 'ops/safka-import/index.html'
       - 'ops/safka-import/app.js'
@@ -41,6 +42,7 @@ jobs:
           node --check v2-live/safka-cart.js
           node --check v2-live/safka-checkout.js
           node --input-type=module --check < ops/safka-import/app.js
+          node ci/order-intake-readiness.mjs
           node --check ci/safka-daily-sync.mjs
           node --input-type=module --check < ops/safka-import/edge-functions/safka-github-sync/index.ts
           node --check ops/safka-import/edge-functions/safka-github-sync/normalize.mjs
