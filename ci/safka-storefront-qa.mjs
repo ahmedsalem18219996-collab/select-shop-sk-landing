@@ -36,8 +36,8 @@ for (const profile of [
     const title = await productDialog.locator(".ssSafkaDialogShortTitle").innerText();
     assert(title.includes("البخار"), "Wrong supplier product landed");
     const body = await productDialog.innerText();
-    assert(body.includes(new Intl.NumberFormat("ar-EG").format(1790)),
-      "Expected supplier note recommended retail 1700 + inclusive average delivery 90 = 1790 EGP");
+    assert(body.includes(new Intl.NumberFormat("ar-EG").format(1810)),
+      "Expected supplier note recommended retail 1700 + inclusive average delivery 110 = 1810 EGP");
     assert(!/شحن\s*\+?\s*[٩٠90]{2}|سعر صفقة/i.test(body),
       "Customer-facing page exposed supplier identity or itemized internal shipping");
 
@@ -82,7 +82,7 @@ for (const profile of [
     await page.screenshot({path:resultDir+"/"+profile.name+"-checkout.png",fullPage:false});
     assert(!(await orderForm.innerText()).includes("صفقة"),
       "Supplier identity leaked into customer checkout");
-    assert(!(await orderForm.innerText()).includes("90 جنيه"),
+    assert(!(await orderForm.innerText()).includes("110 جنيه"),
       "Shipping amount exposed in checkout");
     // Mock only the capture POST. This tests the customer's full form UI but saves NO real order.
     let testedCapture=false;
@@ -95,7 +95,7 @@ for (const profile of [
       assert(/^[0-9a-f]+$/.test(payload.workNonce),"Missing proof-of-work");
       testedCapture=true;
       await route.fulfill({status:201,contentType:"application/json",
-        body:JSON.stringify({ok:true,orderCode:"SK-TEST-NO-WRITE",totalEgp:1790,status:"review",sentToSupplier:false})});
+        body:JSON.stringify({ok:true,orderCode:"SK-TEST-NO-WRITE",totalEgp:1810,status:"review",sentToSupplier:false})});
     });
     await orderForm.locator('input[name="name"]').fill("اختبار الواجهة فقط");
     await orderForm.locator('input[name="phone"]').fill("01012345678");
@@ -248,7 +248,7 @@ try {
     }else{
       verifiedForSale++;
       assert(Number.isInteger(p.display_price_egp) && p.display_price_egp > 0,
-        "Verified retail-note +90 price missing for " + p.id);
+        "Verified retail-note +110 price missing for " + p.id);
     }
     assert(Array.isArray(p.images) && p.images.length > 0, "Missing supplier product photos " + p.id);
     if (!p.images?.length) missingImages++;
@@ -316,7 +316,7 @@ try {
   const body=await response.json();
   assert(response.ok&&body.ok&&body.validated===true,
     "Real order validation API did not accept the sample: "+JSON.stringify({status:response.status,error:body.error}));
-  assert.equal(body.totalEgp,1790,"Wrong confirmed supplier note-retail + 90 server quote");
+  assert.equal(body.totalEgp,1810,"Wrong confirmed supplier note-retail + 110 server quote");
   assert.equal(body.orderSaved,false,"Validation mode unexpectedly created an order");
   assert.equal(body.sentToSupplier,false,"Validation mode unexpectedly contacted supplier");
   summary.push({profile:"live-order-backend-no-write",serverQuoteEgp:body.totalEgp,storedOrder:false,supplierOrder:false});
