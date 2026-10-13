@@ -1,5 +1,5 @@
-// SELECT SHOP TEMP ONLY: verified guest Safqa order capture. NEVER sends orders to Safqa.
-// Service role and CAPTCHA secret remain on server. No order unless owner-approved price.
+// SELECT SHOP TEMP ONLY: verified guest Safqa orders; one-shot dispatch after durable local save.
+// Service role and CAPTCHA secret remain on server. Only source-verified pricing is eligible; automatic dispatch has extra profit and abuse gates.
 import {createClient} from "npm:@supabase/supabase-js@2.79.0";
 const ORIGINS=new Set(["https://selectshopeg.com","https://www.selectshopeg.com"]);
 const json=(status,body,origin)=>new Response(JSON.stringify(body),{status,headers:{
@@ -54,7 +54,7 @@ Deno.serve(async req=>{
  if(Number(req.headers.get("content-length")||0)>16000)return json(413,{error:"request_too_large"},origin);
  const url=Deno.env.get("SUPABASE_URL");
  const service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
- // Orders are saved to a private owner-review inbox ONLY, never dispatched to supplier.
+ // Orders are saved to the private owner inbox before protected one-shot supplier dispatch.
  // A valid owner-approved commercial fulfillment is still a separate operation.
  const hashKey=Deno.env.get("ORDER_HASH_SECRET")||service;
  if(!url||!service)return json(503,{error:"checkout_not_configured"},origin);
@@ -88,7 +88,7 @@ Deno.serve(async req=>{
       status:prior.data.status,supplierStatus:prior.data.supplier_status,sentToSupplier:prior.data.supplier_status==="sent"},origin);
  }
  // A short, inexpensive hashcash challenge deters casual form spam when no CAPTCHA
- // integration is configured. The private inbox is rate-limited and never sends to Safqa.
+ // integration is configured. The private inbox and supplier dispatch are independently rate-limited.
  if(trimmed(input.website,100))return json(422,{error:"invalid_order_details"},origin);
  const nonce=trimmed(input.workNonce,24);
  if(!/^[0-9a-f]{1,24}$/i.test(nonce))
