@@ -1,0 +1,19 @@
+/* Compact candidate spotlight: self-hide if public price/stock validation fails. */
+.ssFeaturedSection{margin-block:16px 26px;padding:18px;border-radius:23px;background:linear-gradient(115deg,#201329,#34203f 52%,#1e172b);border:1px solid rgba(226,149,225,.32);color:#fff;box-shadow:0 16px 36px rgba(24,8,28,.12)}
+.ssFeaturedSection[hidden]{display:none}
+.ssFeaturedSection .ssFeaturedHead{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:14px}
+.ssFeaturedHead h2{font-size:clamp(18px,2.4vw,26px);color:#fff;margin:0}
+.ssFeaturedHead p{font-size:12px;color:#e2c9e5;max-width:390px;margin:0}
+.ssFeaturedGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.ssFeaturedCard{display:flex;gap:14px;min-width:0;align-items:center;border-radius:16px;padding:10px;text-decoration:none;color:#fff;background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.14);transition:transform .18s ease,border-color .18s ease}
+.ssFeaturedCard:hover,.ssFeaturedCard:focus-visible{transform:translateY(-2px);border-color:#e99cce}
+.ssFeaturedCard:focus-visible{outline:3px solid #e99cce;outline-offset:2px}
+.ssFeaturedImage{width:126px;height:126px;flex:0 0 126px;object-fit:contain;border-radius:12px;background:#f2eff3}
+.ssFeaturedBody{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0}
+.ssFeaturedEyebrow{font:700 10px/1.3 Manrope,Arial,sans-serif;letter-spacing:.02em;color:#ffbce6}
+.ssFeaturedName{font:750 16px/1.6 Alexandria,Arial,sans-serif;color:#fff}
+.ssFeaturedValue{font-size:14px;font-weight:750;color:#ffe2ab}
+.ssFeaturedAction{font-size:12px;font-weight:700;color:#ffbce6}
+@media(max-width:900px){.ssFeaturedGrid{grid-template-columns:1fr}.ssFeaturedSection .ssFeaturedHead{align-items:flex-start;flex-direction:column}}
+@media(max-width:450px){.ssFeaturedSection{padding:13px;border-radius:16px}.ssFeaturedCard{gap:10px}.ssFeaturedImage{width:102px;height:115px;flex-basis:102px}.ssFeaturedName{font-size:13px}.ssFeaturedValue{font-size:12px}.ssFeaturedAction{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.ssFeaturedCard{transition:none}.ssFeaturedCard:hover{transform:none}}
