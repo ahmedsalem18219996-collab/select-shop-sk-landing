@@ -100,7 +100,7 @@ async function open(product){
     firstCity.value="";cityCode.append(firstCity);
     cityCode.required=list.length>0;cityCode.disabled=list.length===0;
     for(const c of list){
-      if(!/^\\d{1,8}$/.test(String(c?.id||""))||typeof c?.name!=="string")continue;
+      if(!/^\d{1,8}$/.test(String(c?.id||""))||typeof c?.name!=="string")continue;
       const option=make("option","",c.name);option.value=c.id;cityCode.append(option);
     }
     if(list.length){
