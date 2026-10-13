@@ -425,6 +425,7 @@ function openProduct(p,trigger,showVideo=false){
         price:Number(p.display_price_egp)||0,quantity:1}]})}catch{}
 
   if(!validId(p?.id))return;
+  try{window.SELECT_SHOP_META?.safkaView?.(p)}catch{}
   const d=ensureDialog();
   lastFocus=trigger||document.activeElement;
   for(const existing of document.querySelectorAll("dialog[open]"))if(existing!==d)existing.close();
