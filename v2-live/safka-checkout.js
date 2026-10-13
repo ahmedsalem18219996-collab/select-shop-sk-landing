@@ -69,9 +69,9 @@ async function open(product){
   const outer=make("div","ssCoContent");
   const close=make("button","ssCoClose","×");close.type="button";
   close.setAttribute("aria-label","إغلاق");close.addEventListener("click",()=>dialog.close());
-  const h=make("h2","","إتمام الطلب");
+  const h=make("h2","","تسجيل طلبك");
   const summary=make("p","ssCoProduct",product.name);
-  const note=make("p","ssCoInfo","اختار المقاس أو اللون وكمّل بيانات التوصيل. هنتواصل معاك لتأكيد الأوردر.");
+  const note=make("p","ssCoInfo","اختار المقاس أو اللون وسيب بياناتك. الطلب بيتسجل للمراجعة، وهنكلمك لتأكيد التوفر والسعر قبل تجهيز أي شحنة.");
   const form=make("form","ssCoForm");
   const choiceRow=make("label","ssCoLabel","اللون / المقاس / الاختيار");
   const variant=make("select","ssCoInput");variant.name="variant";variant.required=true;
@@ -97,9 +97,9 @@ async function open(product){
   variant.addEventListener("change",calc);quantity.addEventListener("change",calc);calc();
   const status=make("p","ssCoStatus","جاري تجهيز نموذج الطلب");
   status.setAttribute("role","status");status.setAttribute("aria-live","polite");
-  const submit=make("button","ssCoSubmit","تأكيد الطلب");
+  const submit=make("button","ssCoSubmit","سجّل طلبي للتأكيد");
   submit.type="submit";submit.disabled=true;
-  const terms=make("small","ssCoDisclaimer","الدفع عند الاستلام بعد تأكيد الطلب. لن نطلب بيانات بطاقة بنكية.");
+  const terms=make("small","ssCoDisclaimer","مش هنشحن أي منتج قبل تأكيد الطلب معاك. الدفع عند الاستلام؛ مش بنطلب بيانات بطاقة بنكية.");
   // A decoy field helps avoid automated bot submissions; it is never shown to customers.
   const website=make("input","ssCoHoney");
   website.name="website";website.autocomplete="off";website.tabIndex=-1;
@@ -165,7 +165,7 @@ async function open(product){
       form.append(make("h3","","اتسجّل طلبك بنجاح"),
         make("p","ssCoSuccess","رقم الطلب: "+data.orderCode),
         make("p","ssCoTotal","الإجمالي شامل التوصيل: "+money(data.totalEgp)),
-        make("p","ssCoInfo","هنراجع الأوردر ونتواصل معاك لتأكيده قبل التجهيز."),
+        make("p","ssCoInfo","ده طلب للمراجعة مش شحنة مؤكدة؛ هنتواصل معاك لتأكيده قبل التجهيز."),
         make("p","ssCoDisclaimer","احتفظ برقم الطلب للمتابعة."));
     }catch(err){
       const errors={
