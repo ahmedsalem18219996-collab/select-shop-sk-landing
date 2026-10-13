@@ -13,7 +13,7 @@
  // Exclusively custom-designed SELECT SHOP visuals: no supplier product photos,
  // logos, phone numbers, pricing claims or supplier branding in the rotating hero.
  const images=[
-  {src:"/assets/hero-select-fashion.svg",name:"SELECT SHOP fashion and style",contain:false},
+  // Footwear artwork archived with the catalog; curated storefront highlights home and gift essentials.
   {src:"/assets/hero-select-home.svg",name:"SELECT SHOP curated home",contain:false},
   {src:"/assets/hero-select-gifts.svg",name:"SELECT SHOP gifts and everyday essentials",contain:false}
  ];
