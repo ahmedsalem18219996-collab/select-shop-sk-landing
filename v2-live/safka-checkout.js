@@ -171,6 +171,7 @@ async function open(product){
       const errors={
         invalid_order_details:"راجع الاسم ورقم الموبايل والعنوان.",
         unknown_governorate:"المحافظة مش متاحة حاليًا.",
+        shipping_rate_exceeds_included_allowance:"تكلفة الشحن للمحافظة دي اتغيرت؛ مش هنأكد الطلب بسعر غير صحيح. تواصل معانا للمراجعة.",
         rate_limit_exceeded:"في طلبات كثيرة، تواصل مع خدمة العملاء.",
         variant_not_available:"الاختيار المطلوب مش متوفر حاليًا.",
         product_not_ready:"المنتج مش متاح للطلب حاليًا.",
