@@ -1,0 +1,11 @@
+/* SELECT SHOP temporary curated merchandising. Archive the shoe catalog and
+   old supplier listings from customer browsing; never delete their data. */
+[data-filter="shoes"],[data-nav-filter="shoes"],[data-quick-search="كوتشي"],
+.ssMobileDepartmentItem[data-category="shoes"]{display:none!important}
+.productsSection .sectionHead h2{font-size:clamp(22px,4vw,43px)}
+.ssCuratedExplainer{margin:10px 0 18px;padding:11px 15px;border-radius:12px;
+ border:1px solid rgba(136,99,161,.25);background:rgba(100,55,127,.06);
+ color:inherit;font-size:13px;line-height:1.85}
+.ssCuratedExplainer strong{color:#9948a7}
+.ssCuratedExplainer p{margin:3px 0}
+@media(max-width:480px){.ssCuratedExplainer{padding:10px 12px}}
