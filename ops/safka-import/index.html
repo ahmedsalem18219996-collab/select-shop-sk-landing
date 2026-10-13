@@ -141,6 +141,12 @@
     <div class="stat"><span>إجمالي الطلبات المسجلة بالموقع</span><strong id="allOrderSourcesTotal">—</strong></div>
   </div>
   <div class="ssOrderOpsControls">
+    <div class="ssSafkaAutoTransferControl">
+      <strong>إرسال الطلبات إلى صفقة تلقائيًا: <span id="safkaAutoTransferState">جاري الفحص</span></strong>
+      <button type="button" id="safkaAutoTransferToggle" disabled>تبديل وضع الإرسال</button>
+      <small>يُرسل الطلب بعد حفظه والتحقق من السعر والتوفر والمدينة. سقف أمان 20 محاولة خلال 24 ساعة؛ لا تتم إعادة إرسال الطلب المجهول تلقائيًا.</small>
+      <p id="safkaAutoTransferMessage" class="feedback" role="status" aria-live="polite"></p>
+    </div>
     <label>فلترة طلبات صفقة
       <select id="safkaInboxFilter">
         <option value="active">تحتاج إجراء (مراجعة أو إرسال)</option>
