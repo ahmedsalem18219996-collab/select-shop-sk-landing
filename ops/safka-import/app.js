@@ -45,7 +45,8 @@ $("loginForm").addEventListener("submit",async event=>{
 $("logout").addEventListener("click",async()=>{
   if(busy)return;
   await db.auth.signOut();
-  user=null;$("ownerConsole").hidden=true;$("signIn").hidden=false;
+  user=null;inboxMonitorBooted=false;lastInboxIds=new Set();document.title=ownerTitle;
+  $("ownerConsole").hidden=true;$("signIn").hidden=false;
   $("productGrid").replaceChildren();
 });
 function formatError(error){
@@ -422,6 +423,7 @@ async function reload(){
     else $("safkaLastSync").textContent="وقت آخر مزامنة غير متاح؛ استخدم زر استيراد كل المنتجات عند الحاجة.";
     await loadProducts();
     await loadMediaCoverage();
+    await Promise.all([loadSafqaOrderInbox(),loadCheckoutReadiness()]);
   }catch(err){status(err.message,true,"catalogMessage")}
 }
 // Export only after owner auth. Contains supplier prices and private pricing drafts.
@@ -790,16 +792,25 @@ async function loadCheckoutReadiness(){
 }
 
 // Owner-only Safqa guest-order inbox. NEVER calls Safqa supplier order API.
-async function loadSafqaOrderInbox(){
-  if(!user)return;
+let inboxLoading=false,inboxMonitorBooted=false,lastInboxIds=new Set(),ownerTitle=document.title;
+async function loadSafqaOrderInbox(options={}){
+  if(!user||inboxLoading)return;
+  inboxLoading=true;
   const button=$("reloadSafkaInbox");
   if(button)button.disabled=true;
-  status("جاري تحميل طلبات الموقع...",false,"safkaInboxMessage");
+  if(!options.silent)status("جاري تحميل طلبات الموقع...",false,"safkaInboxMessage");
   try{
-    const {data,error}=await db.from("ss_safka_checkout_requests")
-      .select("id,order_code,product_title,variant_title,quantity,unit_price_egp,total_egp,customer_name,phone,governorate_name,area,address,notes,status,supplier_status,supplier_order_ref,created_at")
-      .order("created_at",{ascending:false}).limit(100);
-    if(error)throw Error("تعذر قراءة أوردرات صفقة الخاصة.");
+    const [safkaResult,shoeResult]=await Promise.all([
+      db.from("ss_safka_checkout_requests")
+        .select("id,order_code,supplier_product_id,supplier_variant_id,product_title,variant_title,quantity,unit_price_egp,total_egp,customer_name,phone,governorate_id,governorate_name,city_id,area,address,notes,status,supplier_status,supplier_order_ref,created_at",{count:"exact"})
+        .order("created_at",{ascending:false}).limit(100),
+      db.from("ss_orders")
+        .select("id,order_code,status,created_at",{count:"exact"})
+        .order("created_at",{ascending:false}).limit(100)
+    ]);
+    const {data,error,count:totalSafka}=safkaResult;
+    const {data:shoeOrders,error:shoeError,count:totalShoes}=shoeResult;
+    if(error||shoeError)throw Error("تعذر قراءة أحد صندوقَي طلبات المتجر؛ راجع صلاحية مدير المتجر أو الاتصال بقاعدة البيانات.");
     const cartLines=new Map();
     if(data?.length){
       const {data:lines,error:lineError}=await db.from("ss_safka_checkout_cart_items")
@@ -810,11 +821,43 @@ async function loadSafqaOrderInbox(){
         const group=cartLines.get(line.order_id)||[];group.push(line);cartLines.set(line.order_id,group);
       }
     }
-    const root=$("safkaInboxList");root.replaceChildren();
-    if(!data?.length){
-      root.append(node("p","detailNote","لسه مفيش طلبات منتجات صفقة مسجلة على الموقع."));
+    // IDs and counts only in the tab alert; no customer PII enters browser notifications.
+    const ids=new Set([...(data||[]).map(x=>"safka:"+x.id),
+      ...(shoeOrders||[]).map(x=>"shoe:"+x.id)]);
+    const newlyArrived=inboxMonitorBooted?[...ids].filter(id=>!lastInboxIds.has(id)):[];
+    lastInboxIds=ids;inboxMonitorBooted=true;
+    const pendingSafka=(data||[]).filter(x=>x.status==="review").length;
+    const confirmedAwaitingSupplier=(data||[]).filter(x=>x.status==="confirmed"&&x.supplier_status==="not_sent").length;
+    const pendingShoes=(shoeOrders||[]).filter(x=>["new","review","shipping_quote"].includes(x.status)).length;
+    const pendingTotal=pendingSafka+confirmedAwaitingSupplier+pendingShoes;
+    $("safkaPendingOrders").textContent=String(pendingSafka);
+    $("safkaConfirmedOrders").textContent=String(confirmedAwaitingSupplier);
+    $("shoePendingOrders").textContent=String(pendingShoes);
+    $("allOrderSourcesTotal").textContent=String((totalSafka||0)+(totalShoes||0));
+    document.title=pendingTotal?"("+pendingTotal+" بحاجة لإجراء) "+ownerTitle:ownerTitle;
+    const liveAlert=$("ownerNewOrdersAlert");
+    if(newlyArrived.length){
+      liveAlert.hidden=false;
+      liveAlert.textContent="وصل "+newlyArrived.length+
+        " طلب جديد في أحد صناديق المتجر. راجع الطلبات هنا أو في لوحة الأحذية الأصلية.";
+    }else if(pendingTotal===0){
+      liveAlert.hidden=true;liveAlert.textContent="";
     }
-    for(const item of data||[]){
+    const filter=$("safkaInboxFilter").value;
+    const visible=(data||[]).filter(item=>
+      filter==="all"||
+      filter==="review"&&item.status==="review"||
+      filter==="confirmed"&&item.status==="confirmed"&&item.supplier_status==="not_sent"||
+      filter==="sent"&&item.supplier_status==="sent"||
+      filter==="active"&&(item.status==="review"||
+        item.status==="confirmed"&&item.supplier_status==="not_sent"));
+    const root=$("safkaInboxList");root.replaceChildren();
+    if(!visible.length){
+      root.append(node("p","detailNote",
+        (totalSafka||0)===0?"لسه مفيش طلبات منتجات صفقة مسجلة على الموقع.":
+          "مفيش طلبات مطابقة للفلتر الحالي؛ جرّب «كل الحالات»."));
+    }
+    for(const item of visible){
       const article=node("article","mediaQueueItem ssSafqaOrderCard");
       const label=item.status==="review"?"بانتظار المراجعة":item.status==="confirmed"?"تم التأكيد داخل الموقع":"ملغي";
       article.append(node("strong","",item.order_code+" · "+label));
@@ -859,12 +902,23 @@ async function loadSafqaOrderInbox(){
       }
       root.append(article);
     }
-    status("إجمالي الطلبات المعروضة: "+(data||[]).length+
-      " — بيانات خاصة بالمدير. مراجعة الطلب لا تنشئ طلبًا عند صفقة.",false,"safkaInboxMessage");
-  }catch(e){status(String(e?.message||e).slice(0,140),true,"safkaInboxMessage")}
-  finally{if(button)button.disabled=false}
+    status("طلبات صفقة: "+(totalSafka||0)+" (المعروض "+visible.length+" من أحدث 100). "+
+      "طلبات الأحذية: "+(totalShoes||0)+". مراجعة الطلب لا ترسله للمورد. "+
+      "آخر تحديث "+new Date().toLocaleTimeString("ar-EG",{timeZone:"Africa/Cairo"})+".",
+      false,"safkaInboxMessage");
+  }catch(e){status(String(e?.message||e).slice(0,170),true,"safkaInboxMessage")}
+  finally{inboxLoading=false;if(button)button.disabled=false}
 }
-$("reloadSafkaInbox").addEventListener("click",loadSafqaOrderInbox);
+$("reloadSafkaInbox").addEventListener("click",()=>void loadSafqaOrderInbox());
+$("safkaInboxFilter").addEventListener("change",()=>void loadSafqaOrderInbox());
+setInterval(()=>{
+  if(user&&!document.hidden&&!$("ownerConsole").hidden&&!busy)
+    void loadSafqaOrderInbox({silent:true});
+},60000);
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden&&user&&!$("ownerConsole").hidden&&!busy)
+    void loadSafqaOrderInbox({silent:true});
+});
 
 function safeImageUrl(value){
   if(typeof value!=="string")return null;
