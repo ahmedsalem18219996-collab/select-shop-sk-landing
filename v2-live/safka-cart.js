@@ -331,7 +331,7 @@ async function openCheckout(){
   event.preventDefault();if(!nonce||busy||!orderForm.reportValidity())return;
   const msisdn=phone.input.value.trim().replace(/[\s-]/g,"");
   if(!/^01[0125][0-9]{8}$/.test(msisdn)){status.textContent="رقم الموبايل لازم 11 رقم مصري.";return}
-  busy=true;submit.disabled=true;status.textContent="جاري مراجعة الأسعار وحفظ الطلب...";
+  busy=true;submit.disabled=true;status.textContent="بنراجع الأسعار وبنسجل الأوردر عند شريك التجهيز...";
   const order={
    requestId,items:items.map(i=>({productId:i.productId,variantId:i.variantId,quantity:i.quantity})),
    governorateId:gov.value,cityId:cityId.value==="__other__"?"":cityId.value,
@@ -342,7 +342,7 @@ async function openCheckout(){
   try{
    const response=await fetch(DB+"/functions/v1/safka-capture-cart",{
     method:"POST",headers:{"apikey":KEY,"content-type":"application/json"},
-    body:JSON.stringify(order),signal:AbortSignal.timeout(25000)});
+    body:JSON.stringify(order),signal:AbortSignal.timeout(74000)});
    const result=await response.json();
    if(!response.ok||!result.ok)throw Error(result.error||"order_failed");
    funnelEvent("generate_lead",{value:result.totalEgp,lead_type:"order_received_for_review"});
@@ -351,7 +351,9 @@ async function openCheckout(){
    c.append(e("h3","ssBagSuccess","تم تسجيل طلبك بنجاح"),
      e("p","", "رقم الطلب: "+result.orderCode),
      e("p","ssBagTotal","الإجمالي شامل التوصيل: "+money(result.totalEgp)),
-     e("p","ssBagMuted","ده طلب للمراجعة مش شحنة مؤكدة. هنكلمك لتأكيده قبل التجهيز؛ احتفظ برقم الطلب."));
+     e("p","ssBagMuted",result.sentToSupplier===true?
+ "الأوردر اتحوّل لشريك التجهيز، وفريق التأكيد هيتواصل معاك قبل الشحن. احتفظ برقم الطلب.":
+ "الأوردر محفوظ عندنا لكنه محتاج متابعة قبل التحويل لشريك التجهيز. ماتكررش نفس الطلب؛ احتفظ برقمه."));
   }catch(err){
    const labels={product_unavailable:"في منتج بقى غير متوفر. راجع السلة.",
     variant_unavailable:"في اختيار اتغير توفره. راجع السلة.",
