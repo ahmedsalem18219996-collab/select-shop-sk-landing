@@ -112,3 +112,14 @@ footer{text-align:center;padding:22px;border-top:1px solid var(--border);color:#
 .ssSafqaBundleLines{background:#19271f;border:1px solid #78916f;border-radius:10px;padding:9px 11px;margin:8px 0;display:grid;gap:7px}
 .ssSafqaBundleLines p{margin:0;line-height:1.6;color:#f8f4dc}
 .ssSafqaBundleLines small{display:block;color:#bfcfba;overflow-wrap:anywhere}
+
+/* Owner marketing shortlist — mobile-first, no public margins or supplier data. */
+.commercialReview .syncControls{align-items:flex-end}
+.commercialReview .syncControls label{display:flex;flex:1 1 185px;min-width:0;flex-direction:column;gap:8px;line-height:1.6;font-size:12px;color:#dae9cf;font-weight:650}
+.commercialReview .syncControls input[type=number]{width:100%;min-width:0;min-height:44px;padding:9px 12px;background:#16251a;color:#f0f8e5;border:1px solid #859a83;border-radius:8px;direction:ltr;text-align:right;font:inherit}
+.commercialReview .syncControls button{min-height:44px;white-space:normal;flex:1 1 230px}
+.commercialReview .syncControls button:disabled{opacity:.55;cursor:not-allowed}
+.commercialReview .mediaQueueItem{gap:9px}
+.commercialReview .mediaQueueItem button{min-height:40px}
+.commercialReview .mediaQueueItem a{overflow-wrap:anywhere}
+@media(max-width:640px){.commercialReview .syncControls label,.commercialReview .syncControls button{flex-basis:100%}}
