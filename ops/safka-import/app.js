@@ -367,6 +367,120 @@ async function loadMediaCoverage(){
   }catch(e){status(e.message||"تعذر قراءة بيانات الوسائط",true,"mediaCoverageMessage")}
 }
 
+// Owner's reversible storefront merchandising list: supplier inventory and
+// prices are never changed. The RPC atomically replaces only the ordered IDs.
+let pendingCuratedIds=[],curatedKnown=new Map(),curatedDirty=false,curatedBusy=false;
+const curatedIdPattern=/^[a-f0-9]{24}$/i;
+function curatedSetDirty(){
+ curatedDirty=true;
+ $("curatedSave").disabled=curatedBusy||pendingCuratedIds.length<1||pendingCuratedIds.length>20;
+ $("curatedOwnerCount").textContent=pendingCuratedIds.length+" / 20";
+ status("التغييرات دي مسودة عندك؛ اضغط «حفظ ونشر اختياراتي» لتظهر على الموقع.",false,"curatedManagerStatus");
+}
+function curatedDraw(){
+ const list=$("curatedOwnerList");list.replaceChildren();
+ pendingCuratedIds.forEach((id,i)=>{
+  const p=curatedKnown.get(id)||{};
+  const row=node("div","ssCuratedManageItem");
+  const name=node("div","ssCuratedProductText");
+  name.append(node("strong","",(i+1)+". "+(p.name||id)),
+    node("small","","السعر شامل التوصيل: "+money(p.final_price_egp)+
+      " | "+(p.is_available&&p.retail_price_verification==="verified_note"?
+       "حسب المورد متاح للتجربة":"يحتاج مراجعة توفر/سعر")));
+  const tools=node("div","ssCuratedActions");
+  for(const [label,shift] of [["↑",-1],["↓",1]]){
+   const btn=node("button","",label);btn.type="button";
+   btn.disabled=i+shift<0||i+shift>=pendingCuratedIds.length;
+   btn.setAttribute("aria-label",label==="↑"?"تقديم المنتج":"تأخير المنتج");
+   btn.onclick=()=>{
+    const next=i+shift;[pendingCuratedIds[i],pendingCuratedIds[next]]=
+      [pendingCuratedIds[next],pendingCuratedIds[i]];
+    curatedSetDirty();curatedDraw();
+   };tools.append(btn);
+  }
+  const remove=node("button","ssCuratedRemove","إخفاء");remove.type="button";
+  remove.onclick=()=>{
+    pendingCuratedIds.splice(i,1);curatedSetDirty();curatedDraw();
+  };tools.append(remove);
+  row.append(name,tools);list.append(row);
+ });
+ $("curatedOwnerCount").textContent=pendingCuratedIds.length+" / 20";
+ if(!pendingCuratedIds.length)list.append(node("p","","ما ينفعش تحفظ معرض فاضي. اختار منتجًا واحدًا على الأقل."));
+}
+async function loadCuratedOwner(){
+ if(!user||curatedBusy)return;
+ try{
+  const {data:ids,error}=await db.from("ss_safka_curated_selection")
+    .select("supplier_product_id,sort_order").order("sort_order").limit(20);
+  if(error)throw Error("تعذر قراءة مختارات المتجر؛ راجع صلاحيات المالك.");
+  const selected=(ids||[]).map(v=>v.supplier_product_id);
+  const {data:detail,error:detailError}=selected.length?
+    await db.from("ss_safka_import_products")
+     .select("supplier_product_id,name,is_available,final_price_egp,retail_price_verification")
+     .in("supplier_product_id",selected):{data:[],error:null};
+  if(detailError)throw Error("تعذر قراءة أسماء منتجات المختارات.");
+  curatedKnown=new Map((detail||[]).map(p=>[p.supplier_product_id,p]));
+  pendingCuratedIds=selected;curatedDirty=false;
+  $("curatedSave").disabled=true;
+  const {count}=await db.from("ss_safka_import_products")
+    .select("supplier_product_id",{count:"exact",head:true});
+  $("curatedOwnerArchived").textContent=(Math.max(0,Number(count||0)-selected.length))+
+    " منتج صفقة + 4 مجموعات أحذية";
+  curatedDraw();
+  status("القائمة الحالية محفوظة. تقدر تغيّر ترتيبها أو تخفي وتضيف من كتالوج صفقة الكامل.",false,"curatedManagerStatus");
+ }catch(e){status(String(e?.message||e),true,"curatedManagerStatus")}
+}
+async function curatedFind(){
+ if(!user||curatedBusy)return;
+ const q=$("curatedFindProduct").value.trim().slice(0,80).replace(/[%(),]/g,"");
+ const list=$("curatedFindResults");list.replaceChildren();
+ if(q.length<2){status("اكتب حرفين على الأقل من اسم المنتج أو كوده.",true,"curatedManagerStatus");return}
+ const query=db.from("ss_safka_import_products")
+   .select("supplier_product_id,name,final_price_egp,retail_price_verification,is_available,variants")
+   .order("name").limit(12);
+ const {data,error}=curatedIdPattern.test(q)?
+   await query.eq("supplier_product_id",q):await query.ilike("name","%"+q+"%");
+ if(error){status("البحث في الكتالوج المحفوظ فشل.",true,"curatedManagerStatus");return}
+ for(const p of data||[]){
+  curatedKnown.set(p.supplier_product_id,p);
+  const row=node("div","ssCuratedManageItem");
+  const safe=p.is_available===true&&p.retail_price_verification==="verified_note"&&
+    Number(p.final_price_egp)>110&&
+    Array.isArray(p.variants)&&p.variants.some(v=>v.is_available===true);
+  row.append(node("div","ssCuratedProductText",p.name+" — "+
+    money(p.final_price_egp)+(safe?"":" | موقوف مؤقتًا")));
+  const add=node("button","","أضف للمختارات");add.type="button";
+  add.disabled=!safe||pendingCuratedIds.includes(p.supplier_product_id)||pendingCuratedIds.length>=20;
+  add.onclick=()=>{
+   if(pendingCuratedIds.length>=20||pendingCuratedIds.includes(p.supplier_product_id))return;
+   pendingCuratedIds.push(p.supplier_product_id);curatedSetDirty();curatedDraw();add.disabled=true;
+  };
+  row.append(add);list.append(row);
+ }
+ if(!data?.length)list.append(node("p","","مافيش منتج بالبحث ده. جرّب اسم تاني."));
+}
+$("curatedFindButton").addEventListener("click",()=>void curatedFind());
+$("curatedFindProduct").addEventListener("keydown",e=>{
+ if(e.key==="Enter"){e.preventDefault();void curatedFind();}
+});
+$("curatedRefresh").addEventListener("click",()=>{
+ if(curatedDirty&&!window.confirm("هتلغي التعديلات اللي لسه ما حفظتهاش. موافق؟"))return;
+ void loadCuratedOwner();
+});
+$("curatedSave").addEventListener("click",async()=>{
+ if(!user||!curatedDirty||curatedBusy||pendingCuratedIds.length<1||pendingCuratedIds.length>20)return;
+ if(!window.confirm("حفظ "+pendingCuratedIds.length+" منتج مختار للظهور في المتجر؟ باقي المنتجات هتفضل محفوظة ومخفية."))return;
+ curatedBusy=true;$("curatedSave").disabled=true;
+ status("بنحفظ ونراجع شرط التوفر والأسعار...",false,"curatedManagerStatus");
+ try{
+  const {data,error}=await db.rpc("ss_safka_owner_set_curated_v1",{p_ids:[...pendingCuratedIds]});
+  if(error||!data?.ok)throw Error(error?.message||"تعذر حفظ القائمة");
+  curatedDirty=false;await loadCuratedOwner();
+  status("تم نشر "+data.saved+" منتج على المتجر. باقي المنتجات محفوظة، وهيظهر الاختيار الجديد عند تحديث صفحة العميل.",false,"curatedManagerStatus");
+ }catch(e){status("تعذر النشر: "+String(e?.message||e).slice(0,160),true,"curatedManagerStatus");}
+ finally{curatedBusy=false;$("curatedSave").disabled=!curatedDirty;}
+});
+
 async function reload(){
   if(!user)return;
   try{
@@ -423,7 +537,7 @@ async function reload(){
     else $("safkaLastSync").textContent="وقت آخر مزامنة غير متاح؛ استخدم زر استيراد كل المنتجات عند الحاجة.";
     await loadProducts();
     await loadMediaCoverage();
-    await Promise.all([loadSafqaOrderInbox(),loadCheckoutReadiness(),loadOperatorPicks()]);
+    await Promise.all([loadSafqaOrderInbox(),loadCheckoutReadiness(),loadOperatorPicks(),loadCuratedOwner()]);
   }catch(err){status(err.message,true,"catalogMessage")}
 }
 // Export only after owner auth. Contains supplier prices and private pricing drafts.
