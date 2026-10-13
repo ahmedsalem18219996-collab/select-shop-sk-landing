@@ -148,7 +148,7 @@ function addCategoryTabs(){
       closeMobileDepartments();
       if(shoeTab)shoeTab.click();
     });
-    choices.append(shoeItem);
+    if(window.SELECT_SHOP_CURATED_MODE!==true)choices.append(shoeItem);
     for(const c of verified){
       const item=node("button","ssMobileDepartmentItem");
       item.type="button";
@@ -174,7 +174,7 @@ function addCategoryTabs(){
       choices.append(item);
     }
     panel.append(top,choices);
-    panel.append(node("p","ssMobileDepartmentHint","كل المنتجات متاحة أيضًا من زر «الكل» والبحث."));
+    panel.append(node("p","ssMobileDepartmentHint","اتصفح المنتجات المختارة من زر «الكل» والبحث."));
     const searchWrap=$(".searchWrap",toolbar);
     toolbar.insertBefore(wrap,searchWrap);
     toolbar.insertBefore(panel,searchWrap);
@@ -647,7 +647,7 @@ function openProduct(p,trigger,showVideo=false){
 
 function stateSnapshot(s){
   return {filter:String(s?.filter||"all"),search:String(s?.search||"").slice(0,80),
-    shoeCount:Number.isInteger(s?.shoeCount)?s.shoeCount:4};
+    shoeCount:window.SELECT_SHOP_CURATED_MODE===true?0:(Number.isInteger(s?.shoeCount)?s.shoeCount:4)};
 }
 async function loadPage(append=false){
   const version=token,stage=ensureStage();if(!stage)return;
@@ -657,7 +657,7 @@ async function loadPage(append=false){
   loading=true;stage.more.disabled=true;
   if(!append){stage.status.textContent="جاري تحميل المنتجات...";stage.actions.hidden=true}
   try{
-    const data=await rpc("ss_safka_public_catalog_v2",{
+    const data=await rpc("ss_safka_curated_catalog_v1",{
       p_page:page,p_limit:24,p_category:categoryFilter(current.filter),p_search:current.search
     });
     if(version!==token)return;
@@ -692,8 +692,10 @@ function onCollectionRendered(s){
 }
 async function boot(){
   try{
-    const source=await rpc("ss_safka_public_categories",{});
-    if(Array.isArray(source))categories=source;
+    const source=await rpc("ss_safka_curated_catalog_v1",{
+      p_page:1,p_limit:24,p_category:null,p_search:""
+    });
+    if(Array.isArray(source?.categories))categories=source.categories;
     addCategoryTabs();
     if(window.SELECT_SHOP_COLLECTION_STATE)onCollectionRendered(window.SELECT_SHOP_COLLECTION_STATE);
     const param=new URLSearchParams(location.search).get("product")||"";
