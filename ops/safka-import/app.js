@@ -423,7 +423,7 @@ async function reload(){
     else $("safkaLastSync").textContent="وقت آخر مزامنة غير متاح؛ استخدم زر استيراد كل المنتجات عند الحاجة.";
     await loadProducts();
     await loadMediaCoverage();
-    await Promise.all([loadSafqaOrderInbox(),loadCheckoutReadiness()]);
+    await Promise.all([loadSafqaOrderInbox(),loadCheckoutReadiness(),loadOperatorPicks()]);
   }catch(err){status(err.message,true,"catalogMessage")}
 }
 // Export only after owner auth. Contains supplier prices and private pricing drafts.
@@ -574,6 +574,98 @@ async function loadPricingAudit(){
   status("تعذر فحص الأسعار: "+String(err?.message||err).slice(0,140),true,"priceAuditMessage");
  }finally{button.disabled=false}
 }
+// Operator-signed market pilot, visible to authenticated admins only.
+// Competitor observations dated 13 October 2026; never assert profits from
+// generic Safqa source quotes or advertise before cost/pixel validation.
+const operatorPicks=[
+ {id:"6a71f70b4d956cf608604baa",name:"منفاخ TirePro 12V",
+  marketPrice:880,marketUrl:"https://opendar.com/p/tirepro-mnfakh-alitarat-almhmwl",
+  campaign:"ss_tirepro_oct2026_test",message:"ضغط الكاوتش قل في مشوار؟ 🚗\\nمنفاخ TirePro يشتغل من ولاعة العربية مباشرة، ومعاه عداد ضغط يساعدك تتابع النفخ. حل عملي تخليه في شنطة العربية.\\nسعره شامل التوصيل — اطلب للمراجعة والتأكيد قبل التجهيز."},
+ {id:"6abac80af2dfbd30480af5ee",name:"كشاف الطوارئ وراديو 5×1",
+  marketPrice:1072,marketUrl:"https://opendar.com/p/kshaf-indhar-wradyw-mtadd-alwzayf-5-fy-1",
+  campaign:"ss_emergency_radio_oct2026_test",message:"كشاف وراديو وإنذار في جهاز واحد 🔦📻\\nجهاز الطوارئ 5×1 فيه كشاف LED وراديو FM وذراع للشحن اليدوي، ومناسب للبيت والعربية والرحلات.\\nاعرف التفاصيل والسعر شامل التوصيل، وسيب بياناتك للتأكيد."}
+];
+let operatorCatalog=[];
+const optionalMoney=n=>Number.isFinite(Number(n))?money(n):"غير مؤكد";
+function pilotValues(){
+ const values=["pilotReturnReserve","pilotExtraReserve","pilotProfitGoal"].map(id=>Number($(id).value));
+ if(values.some(v=>!Number.isSafeInteger(v)||v<0||v>10000))
+  throw Error("أدخل افتراضات صحيحة غير سالبة للمرتجعات والرسوم والهدف.");
+ return values;
+}
+function operatorLandingLink(p){
+ const url=new URL("https://selectshopeg.com/");
+ url.searchParams.set("product",p.id);
+ url.searchParams.set("utm_source","facebook");
+ url.searchParams.set("utm_medium","paid_social");
+ url.searchParams.set("utm_campaign",p.campaign);
+ url.searchParams.set("utm_content","supplier_verified_static_v1");
+ return url.href;
+}
+function renderOperatorPicks(){
+ if(!user)return;
+ const target=$("pilotProducts");target.replaceChildren();
+ let reserve;
+ try{reserve=pilotValues()}catch(e){
+   status(String(e?.message||e),true,"pilotReviewStatus");return;
+ }
+ let validated=0;
+ for(const def of operatorPicks){
+  const p=operatorCatalog.find(x=>x.supplier_product_id===def.id);
+  const safe=Boolean(p?.is_available&&p.retail_price_verification==="verified_note"&&
+    Number(p.final_price_egp)===Number(p.retail_note_suggested_egp)+110&&
+    Number(p.final_price_egp)>110&&p.review_state!=="rejected"&&
+    Array.isArray(p.variants)&&p.variants.some(x=>x.is_available===true));
+  const card=node("article","mediaQueueItem ssOperatorPick");
+  card.append(node("strong","",def.name+(safe?" · السعر المبدئي متحقق":" · موقوف عن التجربة")));
+  if(!safe){
+    card.append(node("p","detailNote","المورد أو السعر غير متاح الآن. لا تنشر إعلانًا أو تعرض سعرًا قديمًا لهذا المنتج."));
+    target.append(card);continue;
+  }
+  validated++;
+  const buffer=Number(p.retail_note_suggested_egp)-Number(p.suggested_sale_price_egp);
+  const maxCpa=buffer-reserve.reduce((sum,n)=>sum+n,0);
+  card.append(node("small","","سعر العميل شامل الشحن: "+money(p.final_price_egp)+
+    " | عرض مشابه رُصد بتاريخ 13 أكتوبر: "+money(def.marketPrice)));
+  card.append(node("small","","فرق مرجعي بعد احتياطي شحن 110: "+money(buffer)+
+    " (ليس ربحًا معتمدًا)"));
+  card.append(node("small","","أقصى تكلفة اكتساب نظرية للطلب المُسلَّم مع الافتراضات دي: "+
+    money(maxCpa)+" — قبل إثبات تكلفة المورد ومعدل رفض الأوردرات"));
+  card.append(node("p","detailNote","السعر المنافس قد يتغير، وقد تختلف المواصفات والشحن والضمان. لا توجد موافقة على تفعيل الإعلانات."));
+  const controls=node("div","ssSafqaOrderActions");
+  const landing=node("a","ssOrdersJump","صفحة المنتج");
+  landing.href=operatorLandingLink(def);landing.target="_blank";landing.rel="noopener noreferrer";
+  const competitor=node("a","ssOrdersJump","افحص سعر المنافس");
+  competitor.href=def.marketUrl;competitor.target="_blank";competitor.rel="noopener noreferrer";
+  const copy=node("button","","نسخ نص الإعلان التجريبي");copy.type="button";
+  copy.addEventListener("click",async()=>{
+    const brief=def.message+"\\nالسعر الحالي شامل الشحن: "+
+      Number(p.final_price_egp).toLocaleString("ar-EG")+" جنيه."+
+      "\\n"+operatorLandingLink(def);
+    try{await navigator.clipboard.writeText(brief);copy.textContent="النص اتنسخ";}
+    catch{copy.textContent="النسخ غير متاح؛ افتح صفحة المنتج"; }
+  });
+  controls.append(landing,competitor,copy);card.append(controls);
+  target.append(card);
+ }
+ if(!validated)target.append(node("p","detailNote","المرشحون الاتنين مش جاهزين حاليًا. لا تنشر إعلانات."));
+ status("تمت مراجعة "+validated+" من 2 منتج في كتالوج صفقة؛ الحساب سيناريو افتراضي، ولا يثبت ربحًا. الإعلانات متوقفة حتى تحقق التكاليف والـPixel.",validated<2,"pilotReviewStatus");
+}
+async function loadOperatorPicks(){
+ if(!user)return;
+ const {data,error}=await db.from("ss_safka_import_products")
+  .select("supplier_product_id,name,is_available,review_state,owner_verified,variants,retail_price_verification,retail_note_suggested_egp,suggested_sale_price_egp,final_price_egp")
+  .in("supplier_product_id",operatorPicks.map(p=>p.id));
+ if(error){
+  status("تعذر فحص المرشحين: "+String(error.message).slice(0,120),true,"pilotReviewStatus");
+  return;
+ }
+ operatorCatalog=data||[];
+ renderOperatorPicks();
+}
+for(const id of ["pilotReturnReserve","pilotExtraReserve","pilotProfitGoal"])
+ $(id).addEventListener("input",renderOperatorPicks);
+
 // Owner-only commercial shortlisting. No supplier orders, no ads, no claims
 // of confirmed real margins, stock units or live video playback.
 let commercialRows=[];
