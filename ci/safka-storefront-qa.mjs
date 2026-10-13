@@ -176,6 +176,19 @@ for (const profile of [
     await multiBag.locator(".ssBagClose").click();
     if(profile.name==="desktop"){
       await page.goto(base,{waitUntil:"domcontentloaded",timeout:60000});
+      // Featured landing candidates only use current public catalog quotes.
+      await page.locator("#ssOwnerPicks .ssFeaturedCard").first().waitFor({state:"visible",timeout:28000});
+      const featured=page.locator("#ssOwnerPicks .ssFeaturedCard");
+      assert(await featured.count()>=1&&await featured.count()<=2,"Featured picks count not source-filtered");
+      for(const pick of await featured.all()){
+        const href=await pick.getAttribute("href");
+        const u=new URL(href,base);
+        assert(/^[a-f0-9]{24}$/i.test(u.searchParams.get("product")||""),"Featured URL is not a supplier-neutral product ID");
+        assert(!(await pick.innerText()).includes("صفقة"),"Supplier identity leaked in featured card");
+        assert((await pick.innerText()).includes("شامل التوصيل"),"Featured price is not visibly shipping-inclusive");
+      }
+      assert(await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)<=4,
+        "Featured picks overflowed the desktop viewport");
       const heroText=await page.locator("#heroTitle").innerText();
       assert(heroText.includes("DISCOVER")&&heroText.includes("YOUR NEXT."),
         "The owner's original hero headline was changed");
