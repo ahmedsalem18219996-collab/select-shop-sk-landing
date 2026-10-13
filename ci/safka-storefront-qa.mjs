@@ -205,15 +205,15 @@ for (const profile of [
       assert(heroSource.includes("/assets/hero-select-"),
         "Rotating hero carousel is still using supplier images");
       await page.locator(".ssSafkaUnifiedCard").first().waitFor({state:"visible",timeout:40000});
-      await page.locator(".ssSafkaUnifiedActions").scrollIntoViewIfNeeded();
-      await page.waitForTimeout(900);
-      let loaded=await page.locator(".ssSafkaUnifiedCard").count();
-      if(loaded<48){
-        await page.locator(".ssSafkaUnifiedMore").click();
-        await page.waitForFunction(()=>document.querySelectorAll(".ssSafkaUnifiedCard").length>=48,null,{timeout:18000});
-        loaded=await page.locator(".ssSafkaUnifiedCard").count();
-      }
-      assert(loaded>=48,"Catalog does not load past first 24 items");
+      await page.waitForFunction(()=>document.querySelectorAll(".ssSafkaUnifiedCard").length===20,null,{timeout:25000});
+      const loaded=await page.locator(".ssSafkaUnifiedCard").count();
+      assert.equal(loaded,20,"Only the selected 20 supplier items should be listed");
+      assert.equal(await page.locator(".productCard[data-product-id='sk']").count(),0,
+        "Original footwear must be unlisted, not destroyed");
+      assert.equal(await page.locator('.productsSection [data-filter="shoes"]').isVisible(),false,
+        "Archived footwear browsing tab unexpectedly visible");
+      assert.equal(await page.locator(".ssSafkaUnifiedMore").isVisible(),false,
+        "There should be no more-than-20 button on the customer collection");
       await page.locator('[data-quick-search="تنظيف"]').click();
       await page.waitForFunction(()=>{
         const cards=document.querySelectorAll(".ssSafkaUnifiedCard");
@@ -221,7 +221,7 @@ for (const profile of [
       },null,{timeout:20000});
       assert((await page.locator("#searchInput").inputValue())==="تنظيف","Quick search did not update catalog search");
       await page.screenshot({path:resultDir+"/desktop-expanded-catalog.png",fullPage:false});
-      summary.push({profile:"desktop-large-catalog-navigation",loadedCards:loaded,quickSearch:"تنظيف",customHeroImages:3,originalHeadline:true});
+      summary.push({profile:"desktop-curated-20-navigation",loadedCards:loaded,quickSearch:"تنظيف",customHeroImages:3,originalHeadline:true,hiddenFootwear:true});
     }
 
     summary.push({ profile: profile.name, title, video: directVideo, overflowPx: horizontalOverflow,
@@ -234,6 +234,38 @@ for (const profile of [
     await context.close();
   }
 }
+// The public storefront is curated; the original read-only supplier RPC stays
+// intact for audit, admin, old ad URLs and future reactivation.
+try{
+  const rsp=await fetch("https://zznqdwrohrycsjfpvkhc.supabase.co/rest/v1/rpc/ss_safka_curated_catalog_v1",{
+    method:"POST",
+    headers:{apikey:"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa","content-type":"application/json"},
+    body:JSON.stringify({p_page:1,p_limit:24,p_category:null,p_search:""}),
+    signal:AbortSignal.timeout(30000)
+  });
+  assert(rsp.ok,"Selected public 20-product catalog unavailable");
+  const result=await rsp.json();
+  assert.equal(result.curated_mode,true);
+  assert.equal(result.total,20);
+  assert.equal(result.items.length,20);
+  assert.equal(new Set(result.items.map(p=>p.id)).size,20);
+  assert(result.items.every(p=>p.price_status!=="needs_review"&&
+    p.display_price_egp>110&&p.variants.some(v=>v.available&&v.display_price_egp>0)),
+      "A held-price or unavailable product leaked into curated collection");
+  const categoryTotal=result.categories.reduce((n,c)=>n+Number(c.count),0);
+  assert.equal(categoryTotal,20,"Department counts do not match the curated listing");
+  const forbidden=await fetch("https://zznqdwrohrycsjfpvkhc.supabase.co/rest/v1/rpc/ss_safka_curated_catalog_v1",{
+    method:"POST",headers:{apikey:"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa","content-type":"application/json"},
+    body:JSON.stringify({p_page:1,p_limit:24,p_category:null,p_search:"69c1db9dcc2eaa4914727bbd"}),
+    signal:AbortSignal.timeout(30000)
+  });
+  assert(forbidden.ok);
+  assert.equal((await forbidden.json()).total,0,
+    "A source product outside the 20-item shortlist appeared in public search");
+  summary.push({profile:"public-curated-20-only",visible:20,hiddenShoeTypes:4,
+    sourceCatalogStillIntact:true,categoryGroups:result.categories.length});
+}catch(error){failures.push("curated-public-contract: "+(error?.stack||error))}
+
 // Read-only catalog-wide contract check. No order endpoints called.
 try {
   const anonKey = "sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa";
