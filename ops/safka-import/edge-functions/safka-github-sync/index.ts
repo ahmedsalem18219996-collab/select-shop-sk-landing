@@ -97,7 +97,7 @@ Deno.serve(async(req)=>{
     const expected=Number(input?.expectedImported);
     const pagesDone=Number(input?.confirmedPages);
     const now=Date.now();
-    if(!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/.test(since)||
+    if(!/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[.][0-9]{3}Z$/.test(since)||
       !Number.isFinite(started)||started>now||now-started>20*60*1000||
       !Number.isInteger(expected)||expected<100||expected>20000||
       !Number.isInteger(pagesDone)||pagesDone<1||pagesDone>50)
