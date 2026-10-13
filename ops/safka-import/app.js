@@ -775,7 +775,7 @@ async function loadProducts(){
   if(!user)return;
   const limit=Number($("pageSize").value)||24;
   let q=db.from("ss_safka_import_products")
-    .select("supplier_product_id,barcode,name,description,category_key,category_name,source_category_latest_present,suggested_sale_price_egp,retail_note_suggested_egp,retail_price_verification,variants,images,videos,review_state,final_price_egp,owner_verified,source_category_confirmed",{count:"exact"})
+    .select("supplier_product_id,barcode,name,description,category_key,category_name,source_category_latest_present,suggested_sale_price_egp,retail_note_suggested_egp,retail_price_verification,variants,images,videos,is_available,review_state,final_price_egp,owner_verified,source_category_confirmed",{count:"exact"})
     .order("name",{ascending:true}).range(page*limit,(page+1)*limit-1);
   const cat=$("category").value;if(cat)q=q.eq("category_key",cat);
   const search=$("search").value.trim().slice(0,80);
@@ -876,11 +876,25 @@ async function openDetail(p){
     "القسم ورد في أحدث بيانات صفقة.":
     "تنبيه: واجهة API الحالية لا تؤكد القسم؛ التصنيف المحفوظ قديم أو غير معروف.");
   right.append(cat);
+  const supplierChoices=Array.isArray(p.variants)?p.variants:[];
+  const currentlyOffered=supplierChoices.filter(v=>v.is_available===true).length;
+  right.append(node("p","detailNote","حالة المورد في آخر مزامنة: "+
+    (p.is_available===true?"المنتج متاح حسب API":"المنتج غير متاح حسب API")+
+    "؛ اختيارات معلّمة متاحة "+currentlyOffered+" من "+supplierChoices.length+
+    ". أعداد القطع الفعلية غير مؤكدة؛ يجري فحص مباشر قبل استقبال طلب العميل."));
   const price=node("p","detailNote","sale_price للمورد: "+money(p.suggested_sale_price_egp)+
     " — سعر البيع المقترح في الملاحظات: "+
     (p.retail_note_suggested_egp?money(p.retail_note_suggested_egp):"غير مؤكد")+
     " — سعر SELECT SHOP: "+(p.retail_price_verification==="verified_note"?money(p.final_price_egp):"موقوف مؤقتًا"));
   right.append(price);
+  if(p.retail_price_verification==="verified_note"&&Number(p.suggested_sale_price_egp)>0){
+    const supplierReference=Number(p.suggested_sale_price_egp);
+    const referenceSpread=Number(p.final_price_egp)-supplierReference-110;
+    right.append(node("p","detailNote",
+      "فرق مرجعي بعد أعلى شحن حالي: "+money(referenceSpread)+
+      " (ليس ربحًا صافيًا؛ مرجع المورد غير معتمد كتكلفة فعلية، والإعلانات والعمولات والمرتجعات خارج الحساب)."+
+      (referenceSpread<150?" لا تبدأ إعلانًا ممولًا قبل مراجعة تفصيلية.":"")));
+  }
   const pricing=node("section","priceDraftBox");
   pricing.append(node("h3","","تسعير SELECT SHOP — مسودة خاصة"));
   try{
@@ -897,7 +911,7 @@ async function openDetail(p){
         "؛ هامش الربح الحقيقي غير معروف من البيانات دي."));
     }
   }catch{}
-  pricing.append(node("p","detailNote","قاعدة أسعار المنتجات المؤكدة: سعر البيع المقترح من ملاحظة صفقة +110 جنيه كمتوسط شحن؛ الطلبات تُراجع يدويًا ولا تُرسل للمورد تلقائيًا."));
+  pricing.append(node("p","detailNote","قاعدة أسعار المنتجات المؤكدة: سعر البيع المقترح من ملاحظة صفقة +110 جنيه كاحتياطي يغطي أعلى شحن حالي؛ الطلبات تُراجع يدويًا ولا تُرسل للمورد تلقائيًا."));
   const form=node("form","ssDraftPriceForm");
   const label=node("label","","سعر البيع النهائي (جنيه)");
   const priceInput=node("input");
@@ -916,7 +930,7 @@ async function openDetail(p){
   const updateExplainer=()=>{
     const candidate=Number(priceInput.value)||0;
     priceExplainer.textContent="سعر البيع المقترح من صفقة: "+money(supplierQuote)+
-      " + شحن متوسط 90 جنيه = "+money(expectedPrice)+
+      " + احتياطي شحن 110 جنيه (أعلى تكلفة محافظة حاليًا) = "+money(expectedPrice)+
       ". السعر الحالي: "+money(candidate)+". الفرق عن القاعدة: "+money(candidate-expectedPrice)+
       ". أسعار الاختيارات المختلفة موجودة تحت؛ لا نفترض تكلفة شراء أو صافي ربح.";
   };
