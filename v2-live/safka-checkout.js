@@ -57,6 +57,10 @@ async function open(product){
   const choices=(Array.isArray(product.variants)?product.variants:[])
     .filter(v=>v.available===true&&idOk(v.id)&&int(v.display_price_egp)>0);
   if(!choices.length)return;
+  try{window.SELECT_SHOP_META?.safkaCheckout?.([{
+    productId:product.id,variantId:choices[0].id,quantity:1,
+    unitPrice:Number(choices[0].display_price_egp)
+  }],Number(choices[0].display_price_egp))}catch{}
   funnelEvent("begin_checkout",{value:Number(product.display_price_egp)||0,
    items:[{item_id:product.id,item_name:String(product.name).slice(0,100),quantity:1,
     price:Number(product.display_price_egp)||0}]});
@@ -150,6 +154,13 @@ async function open(product){
       const data=await res.json();
       if(!res.ok||!data.ok)throw Error(data.error||"order_save_failed");
       funnelEvent("generate_lead",{value:data.totalEgp,lead_type:"order_received_for_review"});
+      try{
+        const choice=choices.find(x=>x.id===variant.value);
+        window.SELECT_SHOP_META?.safkaLead?.(data.orderCode,data.totalEgp,[{
+          productId:product.id,variantId:variant.value,
+          quantity:Number(quantity.value),unitPrice:Number(choice?.display_price_egp)||0
+        }]);
+      }catch{}
       form.replaceChildren();
       form.append(make("h3","","اتسجّل طلبك بنجاح"),
         make("p","ssCoSuccess","رقم الطلب: "+data.orderCode),
