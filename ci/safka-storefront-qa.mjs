@@ -369,6 +369,45 @@ try {
   summary.push({profile:"live-order-backend-no-write",serverQuoteEgp:body.totalEgp,storedOrder:false,supplierOrder:false});
 }catch(error){failures.push("backend-no-write: "+(error?.stack||error));}
 
+// Current campaign candidates must be accepted by the LIVE source-checking
+// order server. This is read-only: no database insert and no supplier order.
+for(const candidate of [
+  {id:"6a71f70b4d956cf608604baa",variant:"6a71f70b4d956cf608604bab",price:810},
+  {id:"6abac80af2dfbd30480af5ee",variant:"6abac80af2dfbd30480af5ef",price:1010}
+]){
+ try{
+  const {randomUUID,createHash}=await import("node:crypto");
+  const requestId=randomUUID();
+  let nonce=null;
+  for(let i=0;i<1500000;i++){
+   const n=i.toString(16);
+   if(createHash("sha256").update("SELECT-SHOP-ORDER:"+requestId+":"+n).digest("hex").startsWith("0000")){
+     nonce=n;break;
+   }
+  }
+  assert(nonce!==null,"Could not solve source-check nonce");
+  const result=await fetch("https://zznqdwrohrycsjfpvkhc.supabase.co/functions/v1/safka-capture-order",{
+    method:"POST",headers:{origin:"https://selectshopeg.com",
+      apikey:"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa",
+      "content-type":"application/json"},
+    body:JSON.stringify({requestId,productId:candidate.id,variantId:candidate.variant,
+      quantity:1,governorateId:"64879004dc16090c1858e69e",cityId:"383",
+      customer:{name:"اختبار منتج مختار",phone:"01000000000",area:"اختبار داخلي",
+        address:"عنوان وهمي للتحقق بدون حفظ",notes:""},
+      workNonce:nonce,website:"",validateOnly:true}),
+    signal:AbortSignal.timeout(25000)
+  });
+  const quote=await result.json();
+  assert(result.ok&&quote.ok&&quote.validated===true,
+   "Live candidate quote failed: "+JSON.stringify({status:result.status,error:quote.error}));
+  assert.equal(quote.totalEgp,candidate.price,"Candidate supplier quote changed; pause paid ads");
+  assert.equal(quote.orderSaved,false);
+  assert.equal(quote.sentToSupplier,false);
+  summary.push({profile:"source-verified-ad-candidate-no-write",id:candidate.id,
+    price:quote.totalEgp,validated:true,orderSaved:false});
+ }catch(error){failures.push("candidate-readonly-"+candidate.id+": "+(error?.stack||error))}
+}
+
 // Real multi-line server quote validation, without saving any customer or supplier order.
 try{
  const {randomUUID,createHash}=await import("node:crypto");
