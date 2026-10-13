@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'meta-pixel.js'
       - 'v2-live/safka-*'
       - 'ci/safka-storefront-qa.mjs'
       - 'ci/safka-daily-sync.mjs'
@@ -35,6 +36,10 @@ jobs:
           node-version: '22'
       - name: Validate owner pricing / marketing and signed sync JavaScript
         run: |
+          node --check meta-pixel.js
+          node --check v2-live/safka-imported-store.js
+          node --check v2-live/safka-cart.js
+          node --check v2-live/safka-checkout.js
           node --input-type=module --check < ops/safka-import/app.js
           node --check ci/safka-daily-sync.mjs
           node --input-type=module --check < ops/safka-import/edge-functions/safka-github-sync/index.ts
