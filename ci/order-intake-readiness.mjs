@@ -50,6 +50,37 @@ const anonymousReview=await fetch(base+"/functions/v1/safka-review-order",{
 assert.equal(anonymousReview.status,401,
   "Owner-only supplier handoff action must reject anonymous requests");
 
+// CRITICAL: Only the trusted server-to-server path may submit to the
+// upstream provider. An ordinary browser / publishable API key can never call it.
+const anonymousDispatch=await fetch(base+"/functions/v1/safka-dispatch-order",{
+ method:"POST",headers:{apikey,"content-type":"application/json"},
+ body:JSON.stringify({orderCode:"SK-20261013-00000000"}),
+ signal:AbortSignal.timeout(20000)
+});
+assert.equal(anonymousDispatch.status,403,
+ "CRITICAL: public browsers can invoke supplier purchasing endpoint");
+
+const singletonSource=await readFile("ops/safka-import/edge-functions/safka-capture-order/index.ts","utf8");
+const cartSource=await readFile("ops/safka-import/edge-functions/safka-capture-cart/index.ts","utf8");
+const dispatchSource=await readFile("ops/safka-import/edge-functions/safka-dispatch-order/index.ts","utf8");
+for(const [label,source] of [["single",singletonSource],["cart",cartSource]]){
+ assert(source.includes("forwardSavedToSafka"),"Missing direct supplier handoff from "+label);
+ assert(source.includes("if(data.validateOnly===true)")||
+        source.includes("if(input.validateOnly===true)"),"No-write test guard absent from "+label);
+ assert(source.indexOf("validateOnly===true")<source.lastIndexOf("forwardSavedToSafka("),
+   "No-write check must execute before provider send for "+label);
+}
+for(const marker of [
+ "ss_safka_claim_supplier_dispatch_v1",
+ "ss_safka_finalize_supplier_dispatch_v1",
+ "https://api.safka-eg.com/api/v1/public/orders",
+ "network_or_timeout_unknown",
+ "commission,total",
+ "api-safka-key"
+])assert(dispatchSource.includes(marker),"Missing supplier dispatch safety: "+marker);
+assert(!/spk_[a-z0-9]{10,}/i.test(dispatchSource),
+ "Supplier API secret must not enter public repository");
+
 const anonymousOrders=await fetch(base+"/rest/v1/ss_safka_checkout_requests?select=id,phone&limit=1",{
  headers:{apikey},signal:AbortSignal.timeout(20000)
 });
@@ -63,6 +94,7 @@ console.log("SELECT_SHOP_TEMP_ORDER_INTAKE_NO_WRITE_OK",JSON.stringify({
   sourceRegions:list.length,
   supplierCities:list.reduce((n,x)=>n+(Array.isArray(x.cities)?x.cities.length:0),0),
   anonymousOwnerAction:"rejected",
+  anonymousSupplierSubmission:"rejected",
   customerDataAnonymous:"blocked",
   customerOrdersWritten:0,
   supplierOrdersCreated:0
