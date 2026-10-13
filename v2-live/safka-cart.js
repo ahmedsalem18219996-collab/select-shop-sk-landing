@@ -134,6 +134,7 @@ function addItem(product,variantId,amount=1){
    categoryName:clean(product.category_name,100)});
  quoteReady=false;
  save();
+ try{window.SELECT_SHOP_META?.safkaAdd?.(product,option,amount)}catch{}
  funnelEvent("add_to_cart",{value:Number(option.display_price_egp)*amount,
    items:[{item_id:product.id,item_name:String(product.name).slice(0,100),
      item_variant:variantId,price:Number(option.display_price_egp),quantity:amount}]});
@@ -264,6 +265,7 @@ function renderBag(){
 async function openCheckout(){
  if(!cartDialog?.open||!items.length)return;
  if(!quoteReady)return notify("لازم نراجع السعر والتوفر الأول. اضغط تحديث الأسعار.");
+ try{window.SELECT_SHOP_META?.safkaCheckout?.(items,subtotal())}catch{}
  funnelEvent("begin_checkout",{value:subtotal(),items:items.map(i=>({
   item_id:i.productId,item_variant:i.variantId,price:i.unitPrice,quantity:i.quantity
  }))});
@@ -320,6 +322,7 @@ async function openCheckout(){
    const result=await response.json();
    if(!response.ok||!result.ok)throw Error(result.error||"order_failed");
    funnelEvent("generate_lead",{value:result.totalEgp,lead_type:"order_received_for_review"});
+   try{window.SELECT_SHOP_META?.safkaLead?.(result.orderCode,result.totalEgp,items)}catch{}
    items=[];save();c.replaceChildren();
    c.append(e("h3","ssBagSuccess","تم تسجيل طلبك بنجاح"),
      e("p","", "رقم الطلب: "+result.orderCode),
