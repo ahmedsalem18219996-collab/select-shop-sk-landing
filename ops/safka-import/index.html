@@ -67,6 +67,19 @@
   <button id="exportVariantPricingCsv" type="button">تنزيل أسعار كل الاختيارات (CSV)</button>
   <p id="priceExportMessage" class="feedback" role="status" aria-live="polite"></p>
  </section>
+ <section class="panel ssAdPilotPanel" aria-labelledby="adPilotTitle">
+  <span class="eyebrow">SELECT SHOP · OWNER COMMERCIAL DECISION</span>
+  <h2 id="adPilotTitle">أول تجربتين مقترحتين — بعد فحص سوق مصر</h2>
+  <p>القرار مش بناءً على فرق سعر صفقة وحده. اخترنا منتجات بتحل مشكلة ولها صور وفيديوهات مرتبطة، وعروض منافسة للمقارنة. لا إعلان مدفوع قبل تأكيد التكلفة النهائية، سياسة العمولة والاسترجاع، حالة المخزون، والـPixel.</p>
+  <div class="syncControls">
+    <label>مخصص خسارة المرتجعات لكل طلب (افتراضي) <input id="pilotReturnReserve" type="number" min="0" max="10000" step="1" value="75" inputmode="numeric"></label>
+    <label>رسوم وعمولات إضافية لكل طلب (افتراضي) <input id="pilotExtraReserve" type="number" min="0" max="10000" step="1" value="25" inputmode="numeric"></label>
+    <label>هدف مساهمة صافية بعد الإعلان لكل طلب (افتراضي) <input id="pilotProfitGoal" type="number" min="0" max="10000" step="1" value="100" inputmode="numeric"></label>
+  </div>
+  <p class="feedback">دي أرقام سيناريو اختبار فقط، وليست تكاليف مثبتة. السعر المرجعي بالمورد مش تكلفة شراء معتمدة. إذا مفيش إثبات للتكاليف، الحملة تفضل متوقفة.</p>
+  <div id="pilotProducts" class="mediaWorkQueue"><p>جاري التحقق من أسعار المرشحين...</p></div>
+  <p id="pilotReviewStatus" class="feedback" role="status" aria-live="polite">بنفحص الكتالوج الخاص قبل أي قرار إعلاني.</p>
+ </section>
  <section class="panel commercialReview" aria-labelledby="commercialReviewHeading">
   <span class="eyebrow">PRODUCT SHORTLIST · OWNER ONLY · NO AUTOMATIC ADS</span>
   <h2 id="commercialReviewHeading">اختيار منتجات للإعلانات — تحليل مبدئي</h2>
