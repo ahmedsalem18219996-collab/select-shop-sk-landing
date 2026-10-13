@@ -296,7 +296,7 @@ async function openCheckout(){
    first.value="";cityId.append(first);
    cityId.required=list.length>0;cityId.disabled=list.length===0;
    for(const city of list){
-     if(!/^\\d{1,8}$/.test(String(city?.id||""))||typeof city?.name!=="string")continue;
+     if(!/^\d{1,8}$/.test(String(city?.id||""))||typeof city?.name!=="string")continue;
      const op=e("option","",city.name);op.value=city.id;cityId.append(op);
    }
    if(list.length){
