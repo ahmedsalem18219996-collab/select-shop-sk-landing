@@ -569,6 +569,132 @@ async function loadPricingAudit(){
   status("تعذر فحص الأسعار: "+String(err?.message||err).slice(0,140),true,"priceAuditMessage");
  }finally{button.disabled=false}
 }
+// Owner-only commercial shortlisting. No supplier orders, no ads, no claims
+// of confirmed real margins, stock units or live video playback.
+let commercialRows=[];
+function commercialCost(id){
+ const el=$(id),value=Number(el?.value);
+ if(!el||!el.value.trim()||!Number.isSafeInteger(value)||value<0||value>10000)
+   throw Error("راجع قيم تكلفة الإعلان والمرتجعات والعمولات؛ لازم أرقام صحيحة من 0 إلى 10000.");
+ return value;
+}
+async function supplierMediaCoverageIds(){
+ const covered=new Set();
+ for(let page=1;page<=20;page++){
+  const {data,error}=await db.rpc("ss_safka_public_catalog_v2",{
+    p_page:page,p_limit:48,p_category:null,p_search:""
+  });
+  if(error||!data||!Array.isArray(data.items))
+   throw Error("تعذر التأكد من ربط الفيديوهات بمنتجات المورد.");
+  for(const p of data.items){
+    if(Array.isArray(p.videos)&&p.videos.length>0)covered.add(p.id);
+  }
+  if(page*48>=Number(data.total)||data.items.length===0)break;
+ }
+ return covered;
+}
+function openCommercialProduct(p){
+ $("search").value=p.id;
+ $("category").value="";
+ page=0;
+ void loadProducts().then(()=>{
+   $(".catalog")?.scrollIntoView({block:"start",behavior:"smooth"});
+ });
+}
+async function runCommercialReview(){
+ if(!user)return;
+ const btn=$("runCommercialReview"),exportBtn=$("downloadCommercialCsv");
+ btn.disabled=true;exportBtn.disabled=true;commercialRows=[];
+ status("بنراجع أسعار المورد وحالة التوفر وربط الفيديوهات…",false,"commercialReviewMessage");
+ try{
+   const cpa=commercialCost("commercialCpa"),returns=commercialCost("commercialReturns"),fees=commercialCost("commercialFees");
+   const all=[];
+   for(let offset=0;offset<5000;offset+=500){
+     const {data,error}=await db.from("ss_safka_import_products")
+       .select("supplier_product_id,name,category_name,source_category_confirmed,is_available,retail_price_verification,retail_note_suggested_egp,suggested_sale_price_egp,final_price_egp,owner_verified,review_state,variants")
+       .order("supplier_product_id").range(offset,offset+499);
+     if(error)throw Error("تعذرت قراءة الأسعار الخاصة من لوحة الإدارة.");
+     all.push(...(data||[]));
+     if((data||[]).length<500)break;
+   }
+   const videoIds=await supplierMediaCoverageIds();
+   const candidates=all.filter(p=>p.is_available===true&&
+     p.retail_price_verification==="verified_note"&&
+     Number(p.final_price_egp)===Number(p.retail_note_suggested_egp)+110&&
+     Number(p.suggested_sale_price_egp)>0&&
+     Array.isArray(p.variants)&&p.variants.some(v=>v.is_available===true))
+     .map(p=>{
+       const quote=Number(p.final_price_egp),reference=Number(p.suggested_sale_price_egp);
+       const provisional=quote-reference-110-cpa-returns-fees;
+       return {id:p.supplier_product_id,name:p.name,category:p.category_name,
+         categoryConfirmed:p.source_category_confirmed===true,hasVideo:videoIds.has(p.supplier_product_id),
+         reference,quote,originalNote:Number(p.retail_note_suggested_egp),
+         spread:quote-reference-110,provisional,ownerApproved:p.owner_verified===true&&p.review_state==="approved"};
+     })
+     .filter(p=>p.provisional>0)
+     .sort((a,b)=>Number(b.hasVideo&&b.categoryConfirmed)-Number(a.hasVideo&&a.categoryConfirmed)||
+       b.provisional-a.provisional||a.quote-b.quote);
+   const selected=candidates.filter(p=>p.hasVideo&&p.categoryConfirmed).slice(0,20);
+   commercialRows=selected;
+   const queue=$("commercialShortlist");queue.replaceChildren();
+   for(const [i,p] of selected.entries()){
+     const card=node("div","mediaQueueItem");
+     card.append(node("strong","",(i+1)+". "+p.name));
+     card.append(node("small","","سعر الموقع شامل الشحن: "+money(p.quote)+
+       " | مرجع سعر المورد: "+money(p.reference)+
+       " | فرق مرجعي بعد 110 شحن: "+money(p.spread)));
+     card.append(node("small","","متبقٍ في النموذج بعد الأرقام المدخلة: "+money(p.provisional)+
+       " — تقدير وليس ربحًا مثبتًا."));
+     card.append(node("small","","فيديو مرتبط: نعم (صلاحية التشغيل غير مضمونة)"+
+       " | القسم محفوظ من مصدر سابق"+
+       " | المخزون الفعلي والعمولات يحتاجان تأكيدًا"));
+     const preview=node("a","","عرض صفحة المنتج");
+     preview.href="https://selectshopeg.com/?product="+encodeURIComponent(p.id)+"#products";
+     preview.target="_blank";preview.rel="noopener noreferrer";
+     const check=node("button","","افتحه للمراجعة");
+     check.type="button";check.onclick=()=>openCommercialProduct(p);
+     card.append(preview,check);queue.append(card);
+   }
+   if(!selected.length)queue.append(node("p","","مفيش منتجات اجتمعت فيها الشروط المطلوبة مع تقديرات التكاليف الحالية."));
+   exportBtn.disabled=selected.length===0;
+   const unmodeled=cpa===0&&returns===0&&fees===0?
+     " تنبيه: التكاليف كلها صفر — ده مش إثبات عدم وجود مصاريف.":"";
+   status("فحصنا "+all.length+" منتجًا؛ "+candidates.length+
+     " عندها فرق مرجعي إيجابي بعد التكاليف المُدخلة؛ "+selected.length+
+     " في قائمة المراجعة (سعر موثّق، متاح حسب API، فيديو مرتبط، قسم محفوظ). "+
+     "ولا منتج اتوافق عليه لإعلان أو اتبعت له طلب."+unmodeled,
+     false,"commercialReviewMessage");
+ }catch(err){
+   $("commercialShortlist").replaceChildren();
+   status(String(err?.message||"تعذر إعداد القائمة").slice(0,300),true,"commercialReviewMessage");
+ }finally{btn.disabled=false;}
+}
+$("runCommercialReview").addEventListener("click",()=>void runCommercialReview());
+$("downloadCommercialCsv").addEventListener("click",()=>{
+ if(!user||!commercialRows.length)return;
+ const cost=[commercialCost("commercialCpa"),commercialCost("commercialReturns"),commercialCost("commercialFees")];
+ const escapeCsv=x=>{
+   let s=String(x??"");
+   if(/^[=+@\\-\\t\\r]/.test(s))s="'"+s;
+   return '"'+s.replace(/"/g,'""')+'"';
+ };
+ const headers=["الترتيب","كود المنتج","المنتج","السعر شامل الشحن","مرجع المورد (ليس تكلفة مؤكدة)",
+   "فرق مرجعي بعد شحن 110","تكلفة الإعلان لكل طلب مُدخل","تكلفة إلغاء/مرتجع مُدخل",
+   "رسوم إضافية مُدخلة","المتبقي في النموذج وليس ربحًا معتمدًا","رابط صفحة المنتج",
+   "حالة التقييم"];
+ const body=commercialRows.map((p,i)=>[
+   i+1,p.id,p.name,p.quote,p.reference,p.spread,...cost,p.spread-cost.reduce((a,b)=>a+b,0),
+   "https://selectshopeg.com/?product="+p.id+"#products",
+   "للمراجعة فقط — يلزم إثبات تكلفة الشراء والعمولات والمخزون والفيديو"
+ ].map(escapeCsv).join(","));
+ const blob=new Blob(["\\uFEFF"+[headers.map(escapeCsv).join(","),...body].join("\\r\\n")],
+   {type:"text/csv;charset=utf-8"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download="SELECT-SHOP-SAFKA-AD-REVIEW-"+new Date().toISOString().slice(0,10)+".csv";
+ document.body.append(a);a.click();a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),5000);
+});
+
 // Owner-only CSV of product/option price provenance and pending reviews.
 async function exportVariantPricingCsv(){
   if(!user)return;
