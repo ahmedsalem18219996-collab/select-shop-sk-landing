@@ -675,7 +675,7 @@ $("downloadCommercialCsv").addEventListener("click",()=>{
  const cost=[commercialCost("commercialCpa"),commercialCost("commercialReturns"),commercialCost("commercialFees")];
  const escapeCsv=x=>{
    let s=String(x??"");
-   if(/^[=+@\\-\\t\\r]/.test(s))s="'"+s;
+   if(/^[=+@-]/.test(s)||s.startsWith("\t")||s.startsWith("\r"))s="'"+s;
    return '"'+s.replace(/"/g,'""')+'"';
  };
  const headers=["الترتيب","كود المنتج","المنتج","السعر شامل الشحن","مرجع المورد (ليس تكلفة مؤكدة)",
@@ -687,7 +687,7 @@ $("downloadCommercialCsv").addEventListener("click",()=>{
    "https://selectshopeg.com/?product="+p.id+"#products",
    "للمراجعة فقط — يلزم إثبات تكلفة الشراء والعمولات والمخزون والفيديو"
  ].map(escapeCsv).join(","));
- const blob=new Blob(["\\uFEFF"+[headers.map(escapeCsv).join(","),...body].join("\\r\\n")],
+ const blob=new Blob(["\uFEFF"+[headers.map(escapeCsv).join(","),...body].join("\r\n")],
    {type:"text/csv;charset=utf-8"});
  const url=URL.createObjectURL(blob),a=document.createElement("a");
  a.href=url;a.download="SELECT-SHOP-SAFKA-AD-REVIEW-"+new Date().toISOString().slice(0,10)+".csv";
