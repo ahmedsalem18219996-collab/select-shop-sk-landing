@@ -158,7 +158,9 @@
       '<div class="cardBottom"><span class="includedShipping">السعر شامل الشحن</span><button type="button" data-show-product="'+htmlEsc(id)+'">اختار المقاس واطلب <span aria-hidden="true"><svg class="ssIcon ssIconArrow" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 17.5 17.5 6.5M7.5 6.5h10v10"/></svg></span></button></div></div></article>';
   }
   function renderProducts(){
-    const list=ids.filter(id=>{
+    // Curated storefront: keep the full footwear catalog & old ad landing logic
+    // intact, but unlist all four shoe groups from ordinary browse/search.
+    const list=(window.SELECT_SHOP_CURATED_MODE===true?[]:ids).filter(id=>{
       const p=C[id];
       const matchesFilter=filter==="all"||productCategory(id)===filter;
       const txt=[p.name,p.short,p.description,...p.variants.map(v=>v.name+" "+v.code)].join(" ").toLowerCase();
