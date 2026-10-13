@@ -96,6 +96,26 @@
       <p>طلبات العملاء المحفوظة على SELECT SHOP للمراجعة. تأكيد الطلب هنا لا يرسله إلى صفقة تلقائيًا.</p></div>
     <button id="reloadSafkaInbox" type="button">تحديث الطلبات</button>
   </div>
+  <div class="overview ssOrderOpsOverview" aria-label="مراقبة استقبال الطلبات">
+    <div class="stat"><span>طلبات صفقة بانتظار التواصل</span><strong id="safkaPendingOrders">—</strong></div>
+    <div class="stat"><span>طلبات صفقة مؤكدة ولم تُرسل</span><strong id="safkaConfirmedOrders">—</strong></div>
+    <div class="stat"><span>أوردرات الأحذية بانتظار المراجعة</span><strong id="shoePendingOrders">—</strong></div>
+    <div class="stat"><span>إجمالي طلبات المتجر المحفوظة</span><strong id="allOrderSourcesTotal">—</strong></div>
+  </div>
+  <div class="ssOrderOpsControls">
+    <label>فلترة طلبات صفقة
+      <select id="safkaInboxFilter">
+        <option value="active">تحتاج إجراء (مراجعة أو إرسال)</option>
+        <option value="review">مراجعة العميل فقط</option>
+        <option value="confirmed">مؤكدة وتنتظر تحويلها للمورد</option>
+        <option value="sent">تم تسجيل تحويلها للمورد يدويًا</option>
+        <option value="all">كل الحالات</option>
+      </select>
+    </label>
+    <a class="ssOrdersJump" href="/ops/orders/" rel="noopener">إدارة أوردرات الأحذية الأصلية ←</a>
+  </div>
+  <p id="ownerNewOrdersAlert" class="ssOwnerOrderAlert" role="alert" hidden></p>
+  <p id="ownerOrdersPollNote" class="feedback">عند فتح لوحة الإدارة، يتم تحديث الطلبات كل 60 ثانية، وعند الرجوع للتبويب. عند إغلاق اللوحة تتوقف المتابعة اللحظية.</p>
   <p class="feedback" id="safkaInboxMessage" role="status" aria-live="polite">بيانات العملاء ظاهرة للمدير فقط.</p>
   <div id="safkaInboxList" class="mediaWorkQueue"></div>
  </section>
