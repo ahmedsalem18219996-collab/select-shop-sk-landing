@@ -408,7 +408,7 @@ function curatedDraw(){
  if(!pendingCuratedIds.length)list.append(node("p","","ما ينفعش تحفظ معرض فاضي. اختار منتجًا واحدًا على الأقل."));
 }
 async function loadCuratedOwner(){
- if(!user||curatedBusy)return;
+ if(!user)return;
  try{
   const {data:ids,error}=await db.from("ss_safka_curated_selection")
     .select("supplier_product_id,sort_order").order("sort_order").limit(20);
