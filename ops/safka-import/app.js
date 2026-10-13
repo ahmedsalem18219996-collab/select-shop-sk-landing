@@ -1094,7 +1094,7 @@ async function openDetail(p){
     const syncApproval=()=>{
       approveButton.disabled=!approveCheck.checked||
         p.retail_price_verification!=="verified_note"||
-        !p.source_category_latest_present||
+        !p.source_category_confirmed||
         Number(priceInput.value)!==Number(p.final_price_egp)||
         !p.final_price_egp;
     };
@@ -1120,8 +1120,12 @@ async function openDetail(p){
         syncApproval();
       }
     });
-    if(!p.source_category_latest_present)
-      approveStatus.textContent="الاعتماد الرسمي موقوف: API صفقة الأخير لا يُظهر تصنيف المنتج؛ قسم أقدم غير كافٍ لإثبات مطابقته.";
+    if(!p.source_category_confirmed)
+      approveStatus.textContent="اعتماد السعر موقوف: لا يوجد تصنيف موثق لهذا المنتج في أي استيراد مؤكد.";
+    else if(!p.source_category_latest_present)
+      approveStatus.textContent="تنبيه: تصنيف المنتج محفوظ من بيانات صفقة سابقة ولم يظهر في API الأحدث. راجع القسم الحالي بنفسك، وتأكد من تكاليف التوريد والمرتجعات قبل اعتماد السعر؛ الخادم يسمح بالاعتماد بعد موافقتك.";
+    else
+      approveStatus.textContent="الاعتماد يدوي فقط بعد إثبات تكلفة التوريد والعمولة والتوفر؛ لا يرسل الطلب للمورد.";
     approval.append(approveLabel,approveButton,approveStatus);
   }
   pricing.append(approval);
