@@ -18,6 +18,9 @@ on:
       - 'v2-live/featured-picks.css'
       - 'ops/safka-import/app.js'
       - 'ops/safka-import/style.css'
+      - 'ops/safka-import/edge-functions/safka-capture-order/**'
+      - 'ops/safka-import/edge-functions/safka-capture-cart/**'
+      - 'ops/safka-import/edge-functions/safka-dispatch-order/**'
       - 'ops/safka-import/edge-functions/safka-github-sync/**'
       - '.github/workflows/select-shop-qa.yml'
   workflow_dispatch:
@@ -54,7 +57,7 @@ jobs:
           node --check ci/safka-daily-sync.mjs
           node --input-type=module --check < ops/safka-import/edge-functions/safka-github-sync/index.ts
           node --check ops/safka-import/edge-functions/safka-github-sync/normalize.mjs
-          node -e 'const fs=require("node:fs"),assert=require("node:assert/strict");const h=fs.readFileSync("ops/safka-import/index.html","utf8"),s=fs.readFileSync("ops/safka-import/app.js","utf8");for(const id of ["currentAvailableCount","commercialReviewHeading","commercialCpa","commercialReturns","commercialFees","commercialShortlist","downloadCommercialCsv","pilotReturnReserve","pilotExtraReserve","pilotProfitGoal","pilotProducts","pilotReviewStatus","curatedOwnerCount","curatedOwnerArchived","curatedOwnerList","curatedFindProduct","curatedFindButton","curatedFindResults","curatedSave","curatedRefresh"]) assert(h.includes("id=\""+id+"\""),"missing owner dashboard field "+id);assert(s.includes("supplierMediaCoverageIds"),"missing product media check");assert(s.includes("retail_price_verification"),"missing price provenance");'
+          node -e 'const fs=require("node:fs"),assert=require("node:assert/strict");const h=fs.readFileSync("ops/safka-import/index.html","utf8"),s=fs.readFileSync("ops/safka-import/app.js","utf8");for(const id of ["currentAvailableCount","commercialReviewHeading","commercialCpa","commercialReturns","commercialFees","commercialShortlist","downloadCommercialCsv","pilotReturnReserve","pilotExtraReserve","pilotProfitGoal","pilotProducts","pilotReviewStatus","curatedOwnerCount","curatedOwnerArchived","curatedOwnerList","curatedFindProduct","curatedFindButton","curatedFindResults","curatedSave","curatedRefresh","safkaTransferredCount"]) assert(h.includes("id=\""+id+"\""),"missing owner dashboard field "+id);assert(s.includes("supplierMediaCoverageIds"),"missing product media check");assert(s.includes("retail_price_verification"),"missing price provenance");'
       - name: Install isolated browser runner
         run: |
           npm install --no-save --no-package-lock playwright@1.56.1
