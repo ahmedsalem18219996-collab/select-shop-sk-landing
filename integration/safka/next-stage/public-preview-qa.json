@@ -1,0 +1,27 @@
+{
+  "landing": {
+    "status": 200,
+    "verified": true,
+    "sha256": "401078fb529ff9a7a3e9cb93d227f3a32d9570de32885ba4d21c396dfadcf370"
+  },
+  "landing_js": {
+    "status": 200,
+    "verified": true,
+    "sha256": "b78c90fccb0952861356854bd1420c0a2690435c7658b54da1c11998fece830d"
+  },
+  "landing_css": {
+    "status": 200,
+    "verified": true,
+    "sha256": "6ab416b9381980504afe63a2252ddb9a79a5eb5d09123529f31cc550454cda0a"
+  },
+  "admin": {
+    "status": 200,
+    "verified": true,
+    "sha256": "403dec3d9c5f93eaa83ac2c31c009e692a93d9536d707dd988019d459ae47196"
+  },
+  "admin_js": {
+    "status": 200,
+    "verified": true,
+    "sha256": "0df8527ae476950d0497604d4dd4631602e8619147dc7b57fe608f5bdbbc97e2"
+  }
+}
