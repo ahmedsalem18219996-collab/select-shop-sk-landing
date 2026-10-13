@@ -101,20 +101,34 @@ Deno.serve(async(req)=>{
     if(type==="products"&&unique.length){
       const ids=unique.map(x=>x.supplier_product_id);
       const existing=await admin.from("ss_safka_import_products")
-        .select("supplier_product_id,review_state,final_price_egp,owner_verified,category_key,category_name,category_parent_key,source_category_confirmed")
+        .select("supplier_product_id,review_state,final_price_egp,owner_verified,is_available,suggested_sale_price_egp,variants,category_key,category_name,category_parent_key,source_category_confirmed")
         .in("supplier_product_id",ids);
       if(existing.error)throw Error("existing_lookup_failed");
       const known=new Map((existing.data||[]).map(x=>[x.supplier_product_id,x]));
       const next=unique.map(product=>{
         const prior=known.get(product.supplier_product_id);
+        function variantFingerprint(list){
+          const rows=(Array.isArray(list)?list:[]).map(v=>({
+            id:String(v.provider_id||""),
+            available:v.is_available===true,
+            quote:Number(v.suggested_price)||0
+          }));
+          rows.sort((a,b)=>a.id.localeCompare(b.id));
+          return JSON.stringify(rows);
+        }
+        const keepApproval=prior?.owner_verified===true&&prior?.review_state==="approved"&&
+          prior.is_available===true&&product.is_available===true&&
+          product.retail_price_verification==="verified_note"&&
+          Number(prior.final_price_egp)===Number(product.retail_note_suggested_egp)+110&&
+          Number(prior.suggested_sale_price_egp)===Number(product.suggested_sale_price_egp)&&
+          variantFingerprint(prior.variants)===variantFingerprint(product.variants);
         return {
           ...product,
-          review_state:prior?.review_state||"imported",
-          final_price_egp:prior?.owner_verified&&prior?.review_state==="approved"?
-            prior.final_price_egp:
+          review_state:keepApproval?"approved":prior?.review_state==="rejected"?"rejected":"imported",
+          final_price_egp:keepApproval?prior.final_price_egp:
             product.retail_price_verification==="verified_note"&&Number(product.retail_note_suggested_egp)>0?
               Math.round(Number(product.retail_note_suggested_egp)+110):null,
-          owner_verified:prior?.owner_verified||false,
+          owner_verified:Boolean(keepApproval),
           category_key:(!product.source_category_confirmed&&prior?.source_category_confirmed)?
             prior.category_key:product.category_key,
           category_name:(!product.source_category_confirmed&&prior?.source_category_confirmed)?
