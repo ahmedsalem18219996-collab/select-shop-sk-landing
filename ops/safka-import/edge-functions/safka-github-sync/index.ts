@@ -83,11 +83,55 @@ Deno.serve(async(req)=>{
   let input;
   try{input=await safeJson(req)}catch{return response(400,{error:"invalid_json"},origin)}
   const type=input?.mode;
-  if(type!=="products"&&type!=="shipping"&&type!=="audit"&&type!=="probe_category_details")return response(422,{error:"invalid_mode"},origin);
+  if(type!=="products"&&type!=="shipping"&&type!=="audit"&&type!=="probe_category_details"&&type!=="finalize")return response(422,{error:"invalid_mode"},origin);
   const page=type==="products"||type==="audit"?(input.page??1):null;
   if((type==="products"||type==="audit")&&(!Number.isInteger(page)||page<1||page>10000))
     return response(422,{error:"invalid_page"},origin);
   const admin=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
+  // Called only after ALL upstream pages succeeded in one signed GitHub sync.
+  // A partial run never hides any inventory. Disappeared source IDs are hidden,
+  // not deleted; a later source reappearance restores them through normal upsert.
+  if(type==="finalize"){
+    const since=typeof input?.since==="string"?input.since:"";
+    const started=Date.parse(since);
+    const expected=Number(input?.expectedImported);
+    const pagesDone=Number(input?.confirmedPages);
+    const now=Date.now();
+    if(!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$/.test(since)||
+      !Number.isFinite(started)||started>now||now-started>20*60*1000||
+      !Number.isInteger(expected)||expected<100||expected>20000||
+      !Number.isInteger(pagesDone)||pagesDone<1||pagesDone>50)
+      return response(422,{error:"invalid_complete_sync_confirmation"},origin);
+    const [{count:fresh,error:freshError},{count:priorTotal,error:countError}]=await Promise.all([
+      admin.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).gte("synced_at",since),
+      admin.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true})
+    ]);
+    if(freshError||countError)return response(503,{error:"source_snapshot_count_unavailable"},origin);
+    // Distinct IDs may be slightly lower than upstream rows due to source duplicates.
+    // Stop, don't hide stock, if a pagination glitch yields an incomplete snapshot.
+    if((fresh||0)<Math.max(100,expected-5)||
+      (fresh||0)<Math.ceil((priorTotal||0)*0.75))
+      return response(409,{error:"incomplete_source_snapshot",fresh,expected,previous:priorTotal},origin);
+    const {data:missing,error:missingError}=await admin.from("ss_safka_import_products")
+      .select("supplier_product_id").lt("synced_at",since).eq("is_available",true)
+      .order("supplier_product_id").limit(20001);
+    if(missingError)return response(503,{error:"stale_inventory_lookup_failed"},origin);
+    if((missing||[]).length>20000)return response(409,{error:"too_many_stale_products"},origin);
+    let marked=0;
+    for(let at=0;at<(missing||[]).length;at+=80){
+      const ids=missing.slice(at,at+80).map(x=>x.supplier_product_id);
+      const unavailable=await admin.from("ss_safka_import_products")
+        .update({is_available:false}).in("supplier_product_id",ids)
+        .lt("synced_at",since);
+      if(unavailable.error)return response(503,{error:"stale_inventory_hide_failed",marked},origin);
+      const options=await admin.from("ss_safka_variant_price_drafts")
+        .update({supplier_available:false}).in("supplier_product_id",ids);
+      if(options.error)return response(503,{error:"stale_inventory_options_hide_failed",marked},origin);
+      marked+=ids.length;
+    }
+    return response(200,{ok:true,mode:"finalize",freshProducts:fresh,expectedImported:expected,
+      staleProductsHidden:marked,sourceRowsNeverDeleted:true,ordersSent:0},origin);
+  }
   if(type==="probe_category_details"){
     const ids=["6886882c8d9f44a8a150de3d","69c1db9dcc2eaa4914727bbd",
       "6aa80df0ca38d5013ca7d692","66c2889449e955603d22cd3e",
@@ -249,6 +293,7 @@ Deno.serve(async(req)=>{
   const pages=type==="products"?totalPages(root):null;
   return response(200,{
     ok:true,mode:type,source:"safka_api",
+    activeShippingMaxEgp:type==="shipping"?Math.max(0,...unique.filter(x=>x.is_active).map(x=>x.shipping_egp)):null,
     verifiedSuggestedRetailCount:type==="products"?unique.filter(x=>x.retail_price_verification==="verified_note").length:null,
     manualPriceReviewCount:type==="products"?unique.filter(x=>x.retail_price_verification==="manual_review").length:null,
     variantPriceReviewCount:type==="products"?unique.filter(x=>x.retail_price_verification==="variant_review").length:null,
