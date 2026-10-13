@@ -175,6 +175,9 @@ for (const profile of [
     await page.screenshot({path:resultDir+"/"+profile.name+"-supplier-basket.png",fullPage:false});
     await multiBag.locator(".ssBagClose").click();
     if(profile.name==="desktop"){
+      // A bare Meta fbclid must NOT send anonymous customers to archived shoe ads.
+      await page.goto(base+"/?fbclid=curated-route-test",{waitUntil:"domcontentloaded",timeout:60000});
+      assert.equal(new URL(page.url()).pathname,"/","Old shoe campaign fbclid redirect reactivated");
       await page.goto(base,{waitUntil:"domcontentloaded",timeout:60000});
       // Featured landing candidates only use current public catalog quotes.
       await page.locator("#ssOwnerPicks .ssFeaturedCard").first().waitFor({state:"visible",timeout:28000});
