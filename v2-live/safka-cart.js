@@ -285,12 +285,32 @@ async function openCheckout(){
  const governor=e("label","ssBagLabel","المحافظة");
  const gov=e("select","ssBagInput");gov.required=true;gov.name="governorate";
  const initial=e("option","","تحميل المحافظات...");initial.value="";gov.append(initial);governor.append(gov);
+ const cityIdRow=e("label","ssBagLabel","المدينة حسب تقسيم التوصيل");
+ const cityId=e("select","ssBagInput");cityId.name="cityId";cityId.disabled=true;
+ cityIdRow.append(cityId);
+ let cityIndex=new Map();
+ function syncCityOptions(){
+   const list=cityIndex.get(gov.value)||[];
+   cityId.replaceChildren();
+   const first=e("option","",list.length?"اختار المدينة":"اكتب اسم المدينة في خانة المنطقة أدناه");
+   first.value="";cityId.append(first);
+   cityId.required=list.length>0;cityId.disabled=list.length===0;
+   for(const city of list){
+     if(!/^\\d{1,8}$/.test(String(city?.id||""))||typeof city?.name!=="string")continue;
+     const op=e("option","",city.name);op.value=city.id;cityId.append(op);
+   }
+   if(list.length){
+     const other=e("option","","مدينتي مش موجودة — هكتبها بالتفصيل");
+     other.value="__other__";cityId.append(other);
+   }
+ }
+ gov.addEventListener("change",syncCityOptions);
  const total=e("p","ssBagTotal","الإجمالي شامل التوصيل: "+money(subtotal()));
  const website=e("input","ssCoHoney");website.name="website";website.tabIndex=-1;website.setAttribute("aria-hidden","true");
  const submit=e("button","ssBagPrimary","سجّل طلبي للتأكيد");submit.type="submit";submit.disabled=true;
  const status=e("p","ssBagStatus","بنجهز الطلب...");
  status.setAttribute("role","status");status.setAttribute("aria-live","polite");
- orderForm.append(name.root,phone.root,governor,city.root,address.root,notes.root,total,
+ orderForm.append(name.root,phone.root,governor,cityIdRow,city.root,address.root,notes.root,total,
    e("small","ssBagMuted","الدفع عند الاستلام بعد التأكيد. السعر المعروض شامل التوصيل."),
    website,submit,status);
  c.append(back,intro,orderForm);
@@ -301,7 +321,11 @@ async function openCheckout(){
   gov.replaceChildren();const first=e("option","","اختار المحافظة");first.value="";gov.append(first);
   areas.filter(x=>mongo(x.id)&&x.name).forEach(x=>{
    const op=e("option","",x.name);op.value=x.id;gov.append(op);
-  });nonce=proof;submit.disabled=false;status.textContent="جاهز لتسجيل الطلب.";
+  });
+  cityIndex=new Map(areas.filter(x=>mongo(x.id))
+    .map(x=>[x.id,Array.isArray(x.cities)?x.cities:[]]));
+  syncCityOptions();
+  nonce=proof;submit.disabled=false;status.textContent="جاهز لتسجيل الطلب.";
  }catch{status.textContent="تعذر تجهيز الطلب، حاول مرة تانية."}
  orderForm.addEventListener("submit",async event=>{
   event.preventDefault();if(!nonce||busy||!orderForm.reportValidity())return;
@@ -310,7 +334,7 @@ async function openCheckout(){
   busy=true;submit.disabled=true;status.textContent="جاري مراجعة الأسعار وحفظ الطلب...";
   const order={
    requestId,items:items.map(i=>({productId:i.productId,variantId:i.variantId,quantity:i.quantity})),
-   governorateId:gov.value,cityId:"",
+   governorateId:gov.value,cityId:cityId.value==="__other__"?"":cityId.value,
    customer:{name:name.input.value.trim(),phone:msisdn,area:city.input.value.trim(),
      address:address.input.value.trim(),notes:notes.input.value.trim()},
    workNonce:nonce,website:website.value
