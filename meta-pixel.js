@@ -7,8 +7,10 @@
   const PIXEL_ID = '992616030526349';
   const enabled = /^\d{5,20}$/.test(PIXEL_ID) && !/^0+$/.test(PIXEL_ID) && window.SELECT_SHOP_TEST_MODE !== true;
   const seenViews = new Set();
+  const seenSafqaViews = new Set();
   const sentOrderEvents = new Set();
   let lastCheckoutKey = '';
+  let lastSafqaCheckoutKey = '';
   let sdkReady = Promise.resolve(false);
 
   if (enabled) {
@@ -97,6 +99,63 @@
       const key = JSON.stringify(items.map(item => [item.variantId, item.role, item.sizes]));
       if (key === lastCheckoutKey) return;
       if (send('InitiateCheckout', orderData(items, total))) lastCheckoutKey = key;
+    },
+
+    // Temporary Safqa storefront funnel: customer review requests are Leads,
+    // not completed Purchases. IDs and currency only; never names, phones or addresses.
+    safkaView(product) {
+      const id=String(product?.id||"");
+      if(!enabled||!/^[a-f0-9]{24}$/i.test(id)||seenSafqaViews.has(id))return;
+      const value=Number(product?.display_price_egp)||0;
+      if(send('ViewContent',{content_type:'product',content_ids:['SS:'+id],
+        content_name:String(product?.name||'منتج SELECT SHOP').slice(0,120),
+        value,currency:'EGP'}))seenSafqaViews.add(id);
+    },
+    safkaAdd(product,option,quantity=1) {
+      const id=String(product?.id||""),vid=String(option?.id||"");
+      const amount=Number(option?.display_price_egp),qty=Number(quantity);
+      if(!enabled||!/^[a-f0-9]{24}$/i.test(id)||!/^[a-f0-9]{24}$/i.test(vid)||
+         !Number.isFinite(amount)||amount<=0||!Number.isInteger(qty)||qty<1||qty>3)return;
+      send('AddToCart',{content_type:'product',content_ids:['SS:'+id],
+        contents:[{id:'SS:'+id,quantity:qty,item_price:amount}],
+        num_items:qty,value:amount*qty,currency:'EGP'});
+    },
+    safkaCheckout(lines,total) {
+      if(!enabled||!Array.isArray(lines)||!lines.length)return;
+      const clean=lines.filter(x=>/^[a-f0-9]{24}$/i.test(String(x.productId))&&
+        Number.isFinite(Number(x.unitPrice))&&Number(x.unitPrice)>0&&
+        Number.isInteger(Number(x.quantity))&&Number(x.quantity)>0);
+      if(!clean.length)return;
+      const key=JSON.stringify(clean.map(x=>[x.productId,x.variantId,x.quantity,x.unitPrice]));
+      if(key===lastSafqaCheckoutKey)return;
+      const sent=send('InitiateCheckout',{content_type:'product',
+        content_ids:clean.map(x=>'SS:'+x.productId),
+        contents:clean.map(x=>({id:'SS:'+x.productId,quantity:Number(x.quantity),item_price:Number(x.unitPrice)})),
+        num_items:clean.reduce((sum,x)=>sum+Number(x.quantity),0),
+        value:Number(total)||0,currency:'EGP'});
+      if(sent)lastSafqaCheckoutKey=key;
+    },
+    safkaLead(orderCode,total,lines) {
+      const code=String(orderCode||"").slice(0,90);
+      if(!enabled||!/^[-A-Za-z0-9_]{5,90}$/.test(code)||!Array.isArray(lines)||!lines.length)return;
+      const eventID='SafkaLead:'+code;
+      if(sentOrderEvents.has(eventID))return;
+      try{if(JSON.parse(sessionStorage.getItem('selectShopMetaOrders')||'[]').includes(eventID))return}catch{}
+      const clean=lines.filter(x=>/^[a-f0-9]{24}$/i.test(String(x.productId)));
+      if(!clean.length)return;
+      const success=send('Lead',{content_type:'product',content_ids:clean.map(x=>'SS:'+x.productId),
+        contents:clean.map(x=>({id:'SS:'+x.productId,quantity:Number(x.quantity)||1,
+          item_price:Number(x.unitPrice)||0})),
+        num_items:clean.reduce((v,x)=>v+(Number(x.quantity)||1),0),
+        value:Number(total)||0,currency:'EGP',
+        lead_type:'order_received_for_review'},eventID);
+      if(success){
+        sentOrderEvents.add(eventID);
+        try{
+          const prior=JSON.parse(sessionStorage.getItem('selectShopMetaOrders')||'[]');
+          sessionStorage.setItem('selectShopMetaOrders',JSON.stringify([...new Set([...prior,eventID])].slice(-100)));
+        }catch{}
+      }
     },
 
     async finish(order, receipt = {}) {
