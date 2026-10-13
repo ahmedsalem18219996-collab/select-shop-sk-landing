@@ -811,7 +811,7 @@ function fulfillmentCopyText(item,lines){
     "الإجمالي المعروض للعميل شامل التوصيل: "+money(item.total_egp),
     "ملاحظات: "+(item.notes||"لا يوجد"),
     "حالة تحويل المورد: "+(item.supplier_status||"غير معروفة")
-  ].join("\\n");
+  ].join("\n");
 }
 let inboxLoading=false,inboxMonitorBooted=false,lastInboxIds=new Set(),ownerTitle=document.title;
 async function loadSafqaOrderInbox(options={}){
