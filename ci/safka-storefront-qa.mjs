@@ -95,6 +95,7 @@ for (const profile of [
       assert.equal(payload.quantity,1,"Unexpected checkout quantity");
       assert(payload.governorateId && /^01[0125][0-9]{8}$/.test(payload.customer.phone),
         "Order customer details missing or invalid");
+      assert.equal(payload.cityId,"383","Wrong Safqa supplier city ID recorded from client form");
       assert(/^[0-9a-f]+$/.test(payload.workNonce),"Missing proof-of-work");
       testedCapture=true;
       await route.fulfill({status:201,contentType:"application/json",
@@ -104,7 +105,12 @@ for (const profile of [
     await orderForm.locator('input[name="phone"]').fill("01012345678");
     await orderForm.locator('input[name="area"]').fill("مدينة نصر");
     await orderForm.locator('input[name="address"]').fill("عنوان تجريبي للاختبار لا يرسل للخادم");
-    await orderForm.locator('select[name="governorate"]').selectOption({index:1});
+    await orderForm.locator('select[name="governorate"] option[value="64879004dc16090c1858e69e"]')
+      .waitFor({state:"attached",timeout:15000});
+    await orderForm.locator('select[name="governorate"]').selectOption("64879004dc16090c1858e69e");
+    await orderForm.locator('select[name="cityId"] option[value="383"]')
+      .waitFor({state:"attached",timeout:10000});
+    await orderForm.locator('select[name="cityId"]').selectOption("383");
     await orderForm.locator('button.ssCoSubmit').waitFor({state:"visible"});
     await orderForm.locator('button.ssCoSubmit').click({timeout:45000});
     await orderForm.getByText("اتسجّل طلبك بنجاح").waitFor({state:"visible",timeout:15000});
