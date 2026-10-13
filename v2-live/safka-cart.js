@@ -41,7 +41,7 @@ async function recommendationsFor(item){
  if(!recommendationsCache)recommendationsCache=new Map();
  if(recommendationsCache.has(key))return recommendationsCache.get(key);
  async function fetchList(search,limit){
-   const res=await fetch(DB+"/rest/v1/rpc/ss_safka_public_catalog_v2",{
+   const res=await fetch(DB+"/rest/v1/rpc/ss_safka_curated_catalog_v1",{
      method:"POST",headers:{apikey:KEY,"content-type":"application/json"},
      body:JSON.stringify({p_page:1,p_limit:limit,p_category:null,p_search:search}),
      cache:"no-store",signal:AbortSignal.timeout(12000)});
