@@ -537,7 +537,7 @@ async function reload(){
     else $("safkaLastSync").textContent="وقت آخر مزامنة غير متاح؛ استخدم زر استيراد كل المنتجات عند الحاجة.";
     await loadProducts();
     await loadMediaCoverage();
-    await Promise.all([loadSafqaOrderInbox(),loadCheckoutReadiness(),loadOperatorPicks(),loadCuratedOwner()]);
+    await Promise.all([loadSafqaOrderInbox(),loadCheckoutReadiness(),loadOperatorPicks(),loadCuratedOwner(),loadSafkaDispatchControl()]);
   }catch(err){status(err.message,true,"catalogMessage")}
 }
 // Export only after owner auth. Contains supplier prices and private pricing drafts.
@@ -1019,6 +1019,43 @@ function fulfillmentCopyText(item,lines){
     "حالة تحويل المورد: "+(item.supplier_status||"غير معروفة")
   ].join("\n");
 }
+let safkaDispatchState=null,safkaDispatchBusy=false;
+async function loadSafkaDispatchControl(){
+ if(!user)return;
+ const {data,error}=await db.from("ss_safka_dispatch_control")
+   .select("enabled,daily_limit").eq("id",true).maybeSingle();
+ if(error||!data){
+   safkaDispatchState=null;$("safkaAutoTransferToggle").disabled=true;
+   $("safkaAutoTransferState").textContent="حالة غير معروفة";
+   status("تعذر التحقق من زر الإرسال؛ راجع قاعدة البيانات. لا تفترض أنه متوقف.",true,"safkaAutoTransferMessage");
+   return;
+ }
+ safkaDispatchState=data;
+ $("safkaAutoTransferState").textContent=data.enabled?"مفعّل":"موقوف";
+ $("safkaAutoTransferToggle").textContent=data.enabled?"إيقاف الإرسال التلقائي":"تشغيل الإرسال التلقائي";
+ $("safkaAutoTransferToggle").disabled=safkaDispatchBusy;
+ status("الحد الأقصى "+data.daily_limit+" محاولة إرسال خلال 24 ساعة. المراقبة لا تعيد إرسال الطلبات غير المؤكدة.",false,"safkaAutoTransferMessage");
+}
+$("safkaAutoTransferToggle").addEventListener("click",async()=>{
+ if(!user||!safkaDispatchState||safkaDispatchBusy)return;
+ const next=!safkaDispatchState.enabled;
+ const approval=next?
+   "تشغيل إرسال طلبات المنتجات المختارة إلى صفقة فور حفظها؟ الطلبات الجديدة قد تبدأ متابعة وشحنًا حقيقيًا.":
+   "إيقاف أي إرسال تلقائي جديد إلى صفقة؟ لا يمكن سحب أوردر سبق قبوله عند المورد.";
+ if(!window.confirm(approval))return;
+ safkaDispatchBusy=true;$("safkaAutoTransferToggle").disabled=true;
+ const prior=safkaDispatchState.enabled;
+ try{
+   const {data,error}=await db.from("ss_safka_dispatch_control")
+     .update({enabled:next,updated_at:new Date().toISOString()})
+     .eq("id",true).eq("enabled",prior).select("enabled,daily_limit").maybeSingle();
+   if(error||!data)throw Error("toggle_failed_or_modified");
+   safkaDispatchState=data;
+   await loadSafkaDispatchControl();
+ }catch{
+   status("تعذر تغيير إعداد الإرسال؛ الحالة لم تتأكد. جدّد بيانات اللوحة قبل أي إجراء.",true,"safkaAutoTransferMessage");
+ }finally{safkaDispatchBusy=false;void loadSafkaDispatchControl();}
+});
 let inboxLoading=false,inboxMonitorBooted=false,lastInboxIds=new Set(),ownerTitle=document.title;
 async function loadSafqaOrderInbox(options={}){
   if(!user||inboxLoading)return;
