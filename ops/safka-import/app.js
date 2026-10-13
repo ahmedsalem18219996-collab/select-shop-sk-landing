@@ -370,24 +370,26 @@ async function reload(){
   if(!user)return;
   try{
     const [
-      products,categories,regions,approved,pending,priced
+      products,categories,regions,approved,pending,priced,available
     ]=await Promise.all([
       db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}),
       db.from("ss_safka_import_categories").select("category_key,category_name").order("category_name").limit(1000),
       db.from("ss_safka_import_shipping").select("governorate_id,name_ar,shipping_egp,is_active").order("name_ar").limit(100),
       db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("review_state","approved").eq("owner_verified",true),
       db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("category_key","uncategorized"),
-      db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("retail_price_verification","verified_note")
+      db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("retail_price_verification","verified_note").eq("is_available",true),
+      db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true}).eq("is_available",true)
     ]);
-    if(products.error||categories.error||regions.error||approved.error||pending.error||priced.error)throw Error("تعذّر تحميل ملخص البيانات من Supabase.");
+    if(products.error||categories.error||regions.error||approved.error||pending.error||priced.error||available.error)throw Error("تعذّر تحميل ملخص البيانات من Supabase.");
     $("allCount").textContent=(products.count??0).toLocaleString("ar-EG");
+    $("currentAvailableCount").textContent=(available.count??0).toLocaleString("ar-EG");
     $("categoryCount").textContent=(categories.data||[]).length.toLocaleString("ar-EG");
     $("regionCount").textContent=(regions.data||[]).length.toLocaleString("ar-EG");
     $("approvedCount").textContent=(approved.count??0).toLocaleString("ar-EG");
     $("pricedCount").textContent=(priced.count??0).toLocaleString("ar-EG");
     const [reviewPrices,currentCat]=await Promise.all([
       db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true})
-        .neq("retail_price_verification","verified_note"),
+        .neq("retail_price_verification","verified_note").eq("is_available",true),
       db.from("ss_safka_import_products").select("supplier_product_id",{count:"exact",head:true})
         .eq("source_category_latest_present",true)
     ]);
@@ -503,18 +505,19 @@ async function loadPricingAudit(){
   const all=[];
   for(let offset=0;offset<5000;offset+=500){
    const {data,error}=await db.from("ss_safka_import_products")
-    .select("supplier_product_id,name,category_name,source_category_latest_present,suggested_sale_price_egp,retail_note_suggested_egp,retail_price_verification,final_price_egp")
+    .select("supplier_product_id,name,category_name,is_available,source_category_latest_present,suggested_sale_price_egp,retail_note_suggested_egp,retail_price_verification,final_price_egp")
     .order("supplier_product_id").range(offset,offset+499);
    if(error)throw Error("فشل قراءة الأسعار من قاعدة البيانات");
    all.push(...(data||[]));if((data||[]).length<500)break;
   }
-  const valid=all.filter(p=>p.retail_price_verification==="verified_note"&&
+  const current=all.filter(p=>p.is_available===true);
+  const valid=current.filter(p=>p.retail_price_verification==="verified_note"&&
     Number(p.final_price_egp)>0&&Number(p.final_price_egp)===Number(p.retail_note_suggested_egp)+110);
-  const manual=all.filter(p=>p.retail_price_verification==="manual_review"||
+  const manual=current.filter(p=>p.retail_price_verification==="manual_review"||
      p.retail_price_verification==="unverified");
-  const variants=all.filter(p=>p.retail_price_verification==="variant_review");
-  const unresolved=all.filter(p=>p.retail_price_verification!=="verified_note");
-  const missingCat=all.filter(p=>!p.source_category_latest_present);
+  const variants=current.filter(p=>p.retail_price_verification==="variant_review");
+  const unresolved=current.filter(p=>p.retail_price_verification!=="verified_note");
+  const missingCat=current.filter(p=>!p.source_category_latest_present);
   const lowGap=valid.filter(p=>Number(p.suggested_sale_price_egp)>0&&
     Number(p.retail_note_suggested_egp)-Number(p.suggested_sale_price_egp)<90)
     .sort((a,b)=>(Number(a.retail_note_suggested_egp)-Number(a.suggested_sale_price_egp))-
@@ -558,7 +561,7 @@ async function loadPricingAudit(){
     };
     item.append(btn);queue.append(item);
   }
-  status("إجمالي "+all.length+" — أسعار متحققة بالمعادلة المطلوبة: "+valid.length+
+  status("محفوظ "+all.length+"، ظاهر "+current.length+" — أسعار متحققة بالمعادلة المطلوبة: "+valid.length+
    "؛ أسعار موقوفة: "+unresolved.length+
    " (ملاحظات غير واضحة "+manual.length+"، واختلاف اختيارات "+variants.length+")"+
    "؛ الأقسام غير مثبتة في آخر API: "+missingCat.length+
@@ -670,6 +673,13 @@ async function runCommercialReview(){
  }finally{btn.disabled=false;}
 }
 $("runCommercialReview").addEventListener("click",()=>void runCommercialReview());
+for(const id of ["commercialCpa","commercialReturns","commercialFees"]){
+  $(id).addEventListener("input",()=>{
+    commercialRows=[];
+    $("downloadCommercialCsv").disabled=true;
+    status("التكاليف اتغيرت؛ اضغط «حلل المنتجات» لإعادة الحساب على الأرقام الجديدة.",false,"commercialReviewMessage");
+  });
+}
 $("downloadCommercialCsv").addEventListener("click",()=>{
  if(!user||!commercialRows.length)return;
  const cost=[commercialCost("commercialCpa"),commercialCost("commercialReturns"),commercialCost("commercialFees")];
