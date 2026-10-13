@@ -140,3 +140,14 @@ footer{text-align:center;padding:22px;border-top:1px solid var(--border);color:#
 .ssManualSupplierHandoff button{min-height:44px;font-weight:750}
 .ssHandoffConfirmed{font-weight:800;color:#d8f4ba;border:1px solid #568a62;border-radius:7px;padding:8px}
 @media(max-width:600px){.ssOrderOpsControls>*{flex-basis:100%}.ssSafqaOrderActions .ssSafqaContactLink{flex-basis:100%}}
+
+/* Owner marketing pilot risk gate, isolated from public customer pages. */
+.ssAdPilotPanel{border-color:#866793;background:linear-gradient(135deg,#282035,#1c2626)}
+.ssAdPilotPanel .syncControls{align-items:flex-end;margin:14px 0}
+.ssAdPilotPanel .syncControls label{flex:1 1 185px;min-width:0;display:flex;flex-direction:column;gap:7px}
+.ssAdPilotPanel .syncControls input{min-height:44px}
+.ssAdPilotPanel .ssOperatorPick{border-color:#735c84;background:#2c2537}
+.ssAdPilotPanel .ssOperatorPick>strong{color:#ffdbf1}
+.ssAdPilotPanel .ssSafqaOrderActions{display:flex;flex-wrap:wrap;gap:8px}
+.ssAdPilotPanel .ssOrdersJump,.ssAdPilotPanel .ssSafqaOrderActions button{flex:1 1 150px;min-height:44px}
+@media(max-width:570px){.ssAdPilotPanel .syncControls label{flex-basis:100%}}
