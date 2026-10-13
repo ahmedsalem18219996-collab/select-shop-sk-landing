@@ -20,6 +20,30 @@
 </section>
 <section id="ownerConsole" hidden>
  <div class="titleRow"><div><span class="eyebrow">SAFQA × SELECT SHOP</span><h1>كتالوج صفقة الكامل</h1><p>بيانات المورد الأصلية بالأكواد والأقسام والاختيارات. لا نشر ولا أوردرات من الشاشة دي.</p></div><button id="logout" type="button">خروج</button></div>
+ <section class="panel ssCuratedManager" aria-labelledby="ssCuratedManagerTitle">
+  <span class="eyebrow">CURATED STOREFRONT · 20 PRODUCT LIMIT · PRIVATE</span>
+  <h2 id="ssCuratedManagerTitle">إدارة الـ20 منتج المعروضين للعملاء</h2>
+  <p>الموقع بيعرض القائمة المختارة بس. باقي الكتالوج والكوتشيات محفوظين بالكامل ومخفيين عن البحث والتصفح. هنا تقدر تستبدل منتج أو تغيّر ترتيبه من غير حذف من صفقة، أو من قاعدة بيانات المورد.</p>
+  <div class="overview">
+   <div class="stat"><span>مختار للعرض</span><strong id="curatedOwnerCount">—</strong></div>
+   <div class="stat"><span>عدد المنتجات القديمة المحفوظة</span><strong id="curatedOwnerArchived">—</strong></div>
+  </div>
+  <div class="syncControls">
+   <button id="curatedRefresh" type="button">تحديث القائمة</button>
+   <button id="curatedSave" type="button" class="primary" disabled>حفظ ونشر اختياراتي</button>
+  </div>
+  <p id="curatedManagerStatus" class="feedback" role="status" aria-live="polite">تحميل القائمة الخاصة من قاعدة البيانات...</p>
+  <div id="curatedOwnerList" class="ssCuratedOwnerList"></div>
+  <div class="ssCuratedFind">
+   <label for="curatedFindProduct">إضافة أو استبدال منتج من الكتالوج المخفي (اسم أو كود المورد)</label>
+   <div class="syncControls">
+    <input id="curatedFindProduct" type="search" autocomplete="off" placeholder="مثال: منفاخ، تنظيف، رقم المنتج..." maxlength="80">
+    <button type="button" id="curatedFindButton">ابحث في المخزون المحفوظ</button>
+   </div>
+   <div id="curatedFindResults" class="ssCuratedFindResults"></div>
+  </div>
+  <p class="feedback">الحد 20 منتجًا. التغيير بيؤثر على الظهور فقط، ولا يغيّر سعر المورد أو مخزونه أو تفاصيل الطلب. لو المنتج اتوقف عند صفقة، مش هيظهر حتى لو لسه ضمن قائمتك.</p>
+ </section>
  <section class="panel syncPanel">
   <div><h2>استيراد كل المنتجات</h2><p>هندخل المنتجات على دفعات، ونحفظ سعر المورد المقترح منفصل عن سعر البيع النهائي الشامل للشحن.</p></div>
   <div class="syncControls"><button class="primary" id="importAll" type="button">استورد كل منتجات صفقة</button><button id="refreshSafkaCities" type="button">تحديث شحن المحافظات والمدن فقط</button><button id="reload" type="button">تحديث القائمة</button><button id="syncCategories" type="button">طابق الأقسام الأصلية من صفقة</button></div>
