@@ -17,7 +17,7 @@ for(const id of ["safkaInboxFilter","safkaInboxMessage","safkaPendingOrders",
 
 for(const marker of ["loadSafqaOrderInbox()","setInterval(","visibilitychange",
   '"ss_safka_checkout_requests"','"ss_orders"','record_sent',
-  '"safka-review-order"','"supplierOrderRef"','"https://wa.me/20"',
+  '"safka-review-order"','supplierOrderRef:','"https://wa.me/20"',
   'fulfillmentCopyText','navigator.clipboard.writeText'])
   assert(admin.includes(marker),"Owner order workflow missing: "+marker);
 
