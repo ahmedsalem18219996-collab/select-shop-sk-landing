@@ -542,7 +542,7 @@ function openProduct(p,trigger,showVideo=false){
   const body=node("div","ssSafkaDetailBody");
   const eyebrow=node("div","ssSafkaDetailEyebrow");
   eyebrow.append(node("span","ssSafkaTag",categoryName(p.category_name)),
-    node("span","ssSafkaAvailability","متاح للطلب"));
+    node("span","ssSafkaAvailability","متاح لطلب مراجعة"));
   body.append(eyebrow,node("h2","",p.name));
   const info=node("div","ssSafkaPriceInfo");
   info.append(node("span","","السعر شامل التوصيل"),node("strong","",price(p)));
@@ -551,7 +551,7 @@ function openProduct(p,trigger,showVideo=false){
   confidence.setAttribute("aria-label","معلومات الطلب");
   confidence.append(
     node("span","","السعر شامل التوصيل"),
-    node("span","","تأكيد قبل التجهيز"),
+    node("span","","هنتواصل لتأكيد طلبك"),
     node("span","","الدفع عند الاستلام")
   );
   body.append(confidence);
