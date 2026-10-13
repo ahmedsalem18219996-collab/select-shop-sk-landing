@@ -792,6 +792,27 @@ async function loadCheckoutReadiness(){
 }
 
 // Owner-only Safqa guest-order inbox. NEVER calls Safqa supplier order API.
+function fulfillmentCopyText(item,lines){
+  const goods=lines.length?lines.map((l,i)=>
+    (i+1)+") "+l.product_title+" / "+l.variant_title+" × "+l.quantity+
+    " — كود المنتج: "+l.supplier_product_id+" — كود الاختيار: "+l.supplier_variant_id):
+    [item.product_title+" / "+item.variant_title+" × "+item.quantity+
+      " — كود المنتج: "+item.supplier_product_id+" — كود الاختيار: "+item.supplier_variant_id];
+  return [
+    "SELECT SHOP — تجهيز يدوي عند المورد (ليس إرسالًا آليًا)",
+    "رقم أوردر الموقع: "+item.order_code,
+    ...goods,
+    "اسم العميل: "+item.customer_name,
+    "الهاتف: "+item.phone,
+    "المحافظة: "+item.governorate_name,
+    "كود مدينة صفقة: "+(item.city_id||"غير محدد — مطلوب تدقيق"),
+    "المنطقة: "+item.area,
+    "العنوان: "+item.address,
+    "الإجمالي المعروض للعميل شامل التوصيل: "+money(item.total_egp),
+    "ملاحظات: "+(item.notes||"لا يوجد"),
+    "حالة تحويل المورد: "+(item.supplier_status||"غير معروفة")
+  ].join("\\n");
+}
 let inboxLoading=false,inboxMonitorBooted=false,lastInboxIds=new Set(),ownerTitle=document.title;
 async function loadSafqaOrderInbox(options={}){
   if(!user||inboxLoading)return;
@@ -873,19 +894,77 @@ async function loadSafqaOrderInbox(options={}){
         }
         article.append(group);
       }else article.append(node("p","",item.product_title+" · "+item.variant_title+" × "+item.quantity));
-      article.append(node("small","","الإجمالي: "+money(item.total_egp)+" | الحالة عند صفقة: "+(item.supplier_status==="not_sent"?"لم يُرسل":"يتطلب متابعة")));
+      article.append(node("small","","الإجمالي: "+money(item.total_egp)+" | حالة تحويل المورد: "+(item.supplier_status==="not_sent"?"لم يُرسل":item.supplier_status==="sent"?"مسجل يدويًا كمرسل":"تحتاج مطابقة")));
       article.append(node("p","",item.customer_name+" — "+item.phone));
       article.append(node("small","",item.governorate_name+" — "+item.area+" — "+item.address));
       if(item.notes)article.append(node("small","","ملاحظات: "+item.notes));
+      // Private owner actions: only open customer WhatsApp or copy a manual
+      // supplier checklist. Neither operation sends an order to Safqa.
+      const manualTools=node("div","ssSafqaOrderActions");
+      if(/^01[0125][0-9]{8}$/.test(item.phone)){
+        const whatsapp=node("a","ssSafqaContactLink","راسل العميل لتأكيد الطلب ↗");
+        whatsapp.href="https://wa.me/20"+item.phone.slice(1)+"?text="+encodeURIComponent(
+          "أهلاً بحضرتك، بنتواصل من SELECT SHOP بخصوص طلبك رقم "+item.order_code+
+          " علشان نأكد التفاصيل قبل تجهيز الشحنة.");
+        whatsapp.target="_blank";whatsapp.rel="noopener noreferrer";
+        manualTools.append(whatsapp);
+      }
+      const copy=node("button","","انسخ بيانات الأوردر للمورد");copy.type="button";
+      copy.addEventListener("click",async()=>{
+        try{
+          if(!navigator.clipboard?.writeText)throw Error("clipboard_unavailable");
+          await navigator.clipboard.writeText(fulfillmentCopyText(item,lines));
+          copy.textContent="اتنسخت بيانات الأوردر";
+        }catch{
+          copy.textContent="النسخ غير متاح؛ راجع التفاصيل الظاهرة هنا";
+        }
+      });
+      manualTools.append(copy);article.append(manualTools);
+      if(item.supplier_status==="sent"){
+        article.append(node("p","ssHandoffConfirmed","تحويل يدوي مسجل عند المورد. رقم المرجع: "+(item.supplier_order_ref||"غير متاح")));
+      }
+      if(item.status==="confirmed"&&item.supplier_status==="not_sent"){
+        const block=node("div","ssManualSupplierHandoff");
+        block.append(node("strong","","مرحلة المورد — تسجيل تحويل يدوي فقط"));
+        block.append(node("p","detailNote",
+          "اتأكد الأول من تسجيل كل منتجات الأوردر على منصة المورد بنفسك. الموقع لن يرسل أي بيانات للمورد آليًا."));
+        const refLabel=node("label","","رقم الطلب / أرقام الطلبات عند صفقة");
+        const ref=node("input");ref.type="text";ref.maxLength=160;
+        ref.placeholder="مرجع صفقة بعد تسجيل الطلب يدويًا";ref.autocomplete="off";
+        refLabel.append(ref);
+        const checkLabel=node("label","","أؤكد أني دخلت كل المنتجات على صفقة بالفعل وتحققت من أرقام التحويل.");
+        const check=node("input");check.type="checkbox";checkLabel.prepend(check);
+        const mark=node("button","","سجّل أن الطلب اتحوّل للمورد يدويًا");
+        mark.type="button";mark.disabled=true;
+        const sync=()=>{mark.disabled=!check.checked||ref.value.trim().length<3||ref.value.trim().length>160;};
+        check.addEventListener("change",sync);ref.addEventListener("input",sync);
+        mark.addEventListener("click",async()=>{
+          if(!user||mark.disabled)return;
+          if(!window.confirm("هل كل عناصر الطلب اتسجلت عند صفقة يدويًا، والمرجع المدخل صحيح؟ الضغط هنا تسجيل فقط، مش إرسال للمورد."))return;
+          mark.disabled=true;
+          try{
+            const {data:out,error:err}=await db.functions.invoke("safka-review-order",{
+              body:{orderId:item.id,action:"record_sent",supplierOrderRef:ref.value.trim()}
+            });
+            if(err||!out?.ok)throw Error(out?.error||err?.message||"supplier_handoff_failed");
+            await loadSafqaOrderInbox();
+          }catch(error){
+            status("تعذر تسجيل مرجع المورد: "+String(error?.message||error).slice(0,150),true,"safkaInboxMessage");
+            sync();
+          }
+        });
+        block.append(refLabel,checkLabel,mark);article.append(block);
+      }
+
       article.append(node("small","","تاريخ الطلب: "+new Date(item.created_at).toLocaleString("ar-EG")));
       if(item.status==="review"&&item.supplier_status==="not_sent"){
         const controls=node("div","ssSafqaOrderActions");
         for(const action of ["confirm","cancel"]){
-          const label=action==="confirm"?"تأكيد المراجعة (بدون إرسال لصفقة)":"إلغاء الطلب";
+          const label=action==="confirm"?"العميل أكّد الطلب — خزّن التأكيد":"إلغاء الطلب";
           const btn=node("button","",label);btn.type="button";
           btn.addEventListener("click",async()=>{
             if(!user)return;
-            if(!window.confirm(action==="confirm"?"تأكيد الطلب داخل الموقع فقط؟ لن يتم إرساله إلى صفقة.":"إلغاء هذا الطلب؟"))return;
+            if(!window.confirm(action==="confirm"?"هل تواصلت مع العميل وأكّد الطلب والعنوان والتوفر؟ سيتم حفظ التأكيد فقط، ولن يُرسل أي شيء إلى صفقة.":"هل أكدت مع العميل إلغاء الطلب؟"))return;
             btn.disabled=true;
             try{
               const {data:out,error:callError}=await db.functions.invoke("safka-review-order",{body:{orderId:item.id,action}});
