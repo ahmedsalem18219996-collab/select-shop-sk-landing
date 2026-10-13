@@ -331,6 +331,7 @@ async function openCheckout(){
   }catch(err){
    const labels={product_unavailable:"في منتج بقى غير متوفر. راجع السلة.",
     variant_unavailable:"في اختيار اتغير توفره. راجع السلة.",
+    shipping_rate_exceeds_included_allowance:"شحن المحافظة دي اتغير؛ مش هنحفظ طلب بسعر غير صحيح. تواصل معانا للمراجعة.",
     price_changed:"سعر منتج اتغير. ارجع للسلة وحدّث الأسعار.",
     validation_required:"تعذر التحقق الأمني. اقفل النموذج وابدأ تاني.",
     rate_limit_exceeded:"تم تجاوز عدد الطلبات. تواصل مع خدمة العملاء.",
