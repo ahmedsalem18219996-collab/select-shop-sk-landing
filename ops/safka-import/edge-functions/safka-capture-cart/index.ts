@@ -1,5 +1,5 @@
-// SELECT SHOP temporary multi-product Safqa cart — private owner review only.
-// Never forwards, purchases, or reserves anything at the upstream supplier.
+// SELECT SHOP temporary multi-product Safqa cart — protected one-shot supplier dispatch after private owner-order storage.
+// Supplier delivery is attempted at most once after complete input and source verification.
 import {createClient} from "npm:@supabase/supabase-js@2.79.0";
 const ORIGINS=new Set(["https://selectshopeg.com","https://www.selectshopeg.com"]);
 const encoder=new TextEncoder(),idRx=/^[a-f0-9]{24}$/i;
