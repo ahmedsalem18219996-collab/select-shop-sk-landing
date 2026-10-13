@@ -2,6 +2,7 @@
 // Provider credentials never enter GitHub; only Supabase Edge reads them.
 // Refresh request: reconcile the expanded ~490-item upstream catalog against live staging.
 const env=process.env;
+const syncStartedAt=new Date().toISOString();
 if(!env.ACTIONS_ID_TOKEN_REQUEST_URL||!env.ACTIONS_ID_TOKEN_REQUEST_TOKEN)
  throw Error("GitHub Actions OIDC is not available. This job cannot use any fallback credentials.");
 const identityUrl=new URL(env.ACTIONS_ID_TOKEN_REQUEST_URL);
@@ -18,7 +19,7 @@ async function stage(mode,page){
   method:"POST",headers:{"origin":"https://selectshopeg.com",
    "apikey":"sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa",
    "content-type":"application/json","x-select-shop-oidc":token},
-  body:JSON.stringify(mode==="products"||mode==="audit"?{mode,page}:{mode}),
+  body:JSON.stringify(mode==="products"||mode==="audit"?{mode,page}:mode==="finalize"?{mode,...page}:{mode}),
   signal:AbortSignal.timeout(32000)
  });
  const body=await response.json().catch(()=>({error:"unexpected_response"}));
@@ -59,6 +60,8 @@ if(env.GITHUB_EVENT_NAME==="push"){
 }
 const shipped=await stage("shipping");
 console.log("Shipping regions synced:",shipped.saved);
+if(!Number.isFinite(Number(shipped.activeShippingMaxEgp))||Number(shipped.activeShippingMaxEgp)<=0||Number(shipped.activeShippingMaxEgp)>110)
+ throw Error("SAFKA_SHIPPING_ALARM: active supplier shipping exceeds the included 110 EGP cap, or supplier failed to provide a valid maximum. Pause prices/orders until updated safely.");
 let completed=false,sourceRows=0,productsSaved=0,pageCount=0,confirmedPages=null,verified=0,manual=0,variantReview=0;
 for(let page=1;page<=50;page++){
  const result=await stage("products",page);
@@ -76,3 +79,5 @@ console.log("SELECT SHOP temporary Safqa sync complete:",
   storedAs:"private_temp_catalog",verifiedRetailNote:verified,manualPriceReview:manual,variantPriceReview:variantReview,supplierOrdersSent:0}));
 
 if(verified+manual+variantReview!==productsSaved)throw Error("Pricing classification incomplete");
+const reconciled=await stage("finalize",{since:syncStartedAt,expectedImported:productsSaved,confirmedPages:pageCount});
+console.log("SAFKA_COMPLETE_SNAPSHOT_RECONCILIATION="+JSON.stringify(reconciled));
