@@ -119,7 +119,7 @@ async function open(product){
   status.setAttribute("role","status");status.setAttribute("aria-live","polite");
   const submit=make("button","ssCoSubmit","سجّل طلبي للتأكيد");
   submit.type="submit";submit.disabled=true;
-  const terms=make("small","ssCoDisclaimer","مش هنشحن أي منتج قبل تأكيد الطلب معاك. الدفع عند الاستلام؛ مش بنطلب بيانات بطاقة بنكية.");
+  const terms=make("small","ssCoDisclaimer","بالضغط لتسجيل الطلب، بتوافق على مشاركة بيانات التوصيل مع شريك التجهيز والتأكيد، اللي هيتواصل معاك قبل الشحن. الدفع عند الاستلام؛ مش بنطلب بيانات بطاقة بنكية.");
   // A decoy field helps avoid automated bot submissions; it is never shown to customers.
   const website=make("input","ssCoHoney");
   website.name="website";website.autocomplete="off";website.tabIndex=-1;
