@@ -273,7 +273,7 @@ async function openCheckout(){
  list.hidden=true;c.hidden=false;c.replaceChildren();
  const back=e("button","ssBagLink","← العودة للسلة");back.type="button";
  back.onclick=()=>{c.hidden=true;list.hidden=false};
- const intro=e("p","ssBagMuted","الأوردر كله هيتسجل برقم طلب واحد. هنراجع التوفر ونكلمك للتأكيد قبل التجهيز.");
+ const intro=e("p","ssBagMuted","طلبك هيتسجل برقم واحد للمراجعة، وهنكلمك لتأكيد السعر النهائي والتوفر قبل أي تجهيز أو شحن.");
  const addMore=actionButton("＋ أضف منتج آخر للطلب",keepShopping);
  c.append(addMore);
  const orderForm=e("form","ssBagForm");
@@ -287,7 +287,7 @@ async function openCheckout(){
  const initial=e("option","","تحميل المحافظات...");initial.value="";gov.append(initial);governor.append(gov);
  const total=e("p","ssBagTotal","الإجمالي شامل التوصيل: "+money(subtotal()));
  const website=e("input","ssCoHoney");website.name="website";website.tabIndex=-1;website.setAttribute("aria-hidden","true");
- const submit=e("button","ssBagPrimary","تأكيد الطلب");submit.type="submit";submit.disabled=true;
+ const submit=e("button","ssBagPrimary","سجّل طلبي للتأكيد");submit.type="submit";submit.disabled=true;
  const status=e("p","ssBagStatus","بنجهز الطلب...");
  status.setAttribute("role","status");status.setAttribute("aria-live","polite");
  orderForm.append(name.root,phone.root,governor,city.root,address.root,notes.root,total,
@@ -327,7 +327,7 @@ async function openCheckout(){
    c.append(e("h3","ssBagSuccess","تم تسجيل طلبك بنجاح"),
      e("p","", "رقم الطلب: "+result.orderCode),
      e("p","ssBagTotal","الإجمالي شامل التوصيل: "+money(result.totalEgp)),
-     e("p","ssBagMuted","هنكلمك لتأكيد الأوردر. احتفظ برقم الطلب للمتابعة."));
+     e("p","ssBagMuted","ده طلب للمراجعة مش شحنة مؤكدة. هنكلمك لتأكيده قبل التجهيز؛ احتفظ برقم الطلب."));
   }catch(err){
    const labels={product_unavailable:"في منتج بقى غير متوفر. راجع السلة.",
     variant_unavailable:"في اختيار اتغير توفره. راجع السلة.",
