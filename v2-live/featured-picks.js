@@ -31,7 +31,7 @@ async function load(){
   for(const p of cards){
     const link=el("a","ssFeaturedCard");
     const url=new URL("/",window.location.origin);
-    url.searchParams.set("product","safka-"+p.id);
+    url.searchParams.set("product",p.id);
     for(const k of ["utm_source","utm_medium","utm_campaign","utm_content"]){
      const v=new URLSearchParams(location.search).get(k);
      if(v&&v.length<110)url.searchParams.set(k,v);
