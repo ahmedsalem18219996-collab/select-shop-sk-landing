@@ -1029,7 +1029,7 @@ async function loadSafqaOrderInbox(options={}){
   try{
     const [safkaResult,shoeResult]=await Promise.all([
       db.from("ss_safka_checkout_requests")
-        .select("id,order_code,supplier_product_id,supplier_variant_id,product_title,variant_title,quantity,unit_price_egp,total_egp,customer_name,phone,governorate_id,governorate_name,city_id,area,address,notes,status,supplier_status,supplier_order_ref,created_at",{count:"exact"})
+        .select("id,order_code,supplier_product_id,supplier_variant_id,product_title,variant_title,quantity,unit_price_egp,total_egp,customer_name,phone,governorate_id,governorate_name,city_id,area,address,notes,status,supplier_status,supplier_order_ref,supplier_serial,supplier_dispatch_error_code,created_at",{count:"exact"})
         .order("created_at",{ascending:false}).limit(100),
       db.from("ss_orders")
         .select("id,order_code,status,created_at",{count:"exact"})
@@ -1053,7 +1053,9 @@ async function loadSafqaOrderInbox(options={}){
       ...(shoeOrders||[]).map(x=>"shoe:"+x.id)]);
     const newlyArrived=inboxMonitorBooted?[...ids].filter(id=>!lastInboxIds.has(id)):[];
     lastInboxIds=ids;inboxMonitorBooted=true;
-    const pendingSafka=(data||[]).filter(x=>x.status==="review").length;
+    const pendingSafka=(data||[]).filter(x=>x.status==="review"&&x.supplier_status!=="sent").length;
+    const transferredSafka=(data||[]).filter(x=>x.supplier_status==="sent").length;
+    $("safkaTransferredCount").textContent=String(transferredSafka);
     const confirmedAwaitingSupplier=(data||[]).filter(x=>x.status==="confirmed"&&x.supplier_status==="not_sent").length;
     const pendingShoes=(shoeOrders||[]).filter(x=>["new","review","shipping_quote"].includes(x.status)).length;
     const pendingTotal=pendingSafka+confirmedAwaitingSupplier+pendingShoes;
@@ -1073,10 +1075,10 @@ async function loadSafqaOrderInbox(options={}){
     const filter=$("safkaInboxFilter").value;
     const visible=(data||[]).filter(item=>
       filter==="all"||
-      filter==="review"&&item.status==="review"||
+      filter==="review"&&item.status==="review"&&item.supplier_status!=="sent"||
       filter==="confirmed"&&item.status==="confirmed"&&item.supplier_status==="not_sent"||
       filter==="sent"&&item.supplier_status==="sent"||
-      filter==="active"&&(item.status==="review"||
+      filter==="active"&&(item.status==="review"&&item.supplier_status!=="sent"||
         item.status==="confirmed"&&item.supplier_status==="not_sent"));
     const root=$("safkaInboxList");root.replaceChildren();
     if(!visible.length){
@@ -1100,7 +1102,7 @@ async function loadSafqaOrderInbox(options={}){
         }
         article.append(group);
       }else article.append(node("p","",item.product_title+" · "+item.variant_title+" × "+item.quantity));
-      article.append(node("small","","الإجمالي: "+money(item.total_egp)+" | حالة تحويل المورد: "+(item.supplier_status==="not_sent"?"لم يُرسل":item.supplier_status==="sent"?"مسجل يدويًا كمرسل":"تحتاج مطابقة")));
+      article.append(node("small","","الإجمالي: "+money(item.total_egp)+" | حالة تحويل المورد: "+(item.supplier_status==="not_sent"?"لم يُرسل":item.supplier_status==="sent"?"اتسجل عند صفقة":item.supplier_status==="dispatching"?"جاري الإرسال":item.supplier_status==="needs_reconciliation"?"رد غير مؤكد — لا تعيد الإرسال":item.supplier_status==="blocked"?"إرسال مرفوض ويحتاج متابعة":"تحتاج مطابقة")));
       article.append(node("p","",item.customer_name+" — "+item.phone));
       article.append(node("small","",item.governorate_name+" — "+item.area+" — "+item.address));
       if(item.notes)article.append(node("small","","ملاحظات: "+item.notes));
@@ -1127,7 +1129,13 @@ async function loadSafqaOrderInbox(options={}){
       });
       manualTools.append(copy);article.append(manualTools);
       if(item.supplier_status==="sent"){
-        article.append(node("p","ssHandoffConfirmed","تحويل يدوي مسجل عند المورد. رقم المرجع: "+(item.supplier_order_ref||"غير متاح")));
+        article.append(node("p","ssHandoffConfirmed","الأوردر وصل للمورد — رقم صفقة: "+
+          (item.supplier_serial||item.supplier_order_ref||"مسجل يدويًا بدون رقم آلي")));
+      }
+      if(["blocked","needs_reconciliation","dispatching"].includes(item.supplier_status)){
+        article.append(node("p","ssOwnerOrderAlert",
+          "متابعة إلزامية: لا تعيد إرسال الطلب لصفقة قبل التحقق من لوحة المورد بنفس رقم أوردر SELECT SHOP. "+
+          (item.supplier_dispatch_error_code?"رمز المشكلة: "+item.supplier_dispatch_error_code:"")));
       }
       if(item.status==="confirmed"&&item.supplier_status==="not_sent"){
         const block=node("div","ssManualSupplierHandoff");
