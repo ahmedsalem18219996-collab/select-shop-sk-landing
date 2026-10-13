@@ -1,4 +1,5 @@
 name: SELECT SHOP Safqa daily catalog sync
+# inclusive_shipping_guard_110: supplier recommended retail + current max active regional delivery (110 EGP), verified by server
 
 on:
   push:
