@@ -277,7 +277,7 @@ body{background:#130d16;font-size:14px;color:var(--ink)}
  border-radius:26px;direction:ltr;text-align:left}
 .hero-content .micro-label{color:#f5e1d5;font-size:10px;letter-spacing:.14em}
 .hero h1{direction:ltr;text-align:left;letter-spacing:-.035em;font-family:"Cormorant Garamond",Georgia,serif;
- font-size:clamp(58px,6vw,90px);line-height:.92;font-weight:500;margin:28px 0 22px;text-shadow:none}
+ font-size:clamp(52px,4.6vw,69px);line-height:1;font-weight:500;margin:28px 0 22px;text-shadow:none}
 .hero h1 span{display:block;color:#fffdfb}
 .hero h1 em{display:block;font-size:.97em;font-style:italic;color:#fbe6d5;font-weight:500;letter-spacing:-.045em}
 .hero-content>p:not(.hero-note){direction:rtl;text-align:right;color:#f8ecf1;font-size:13px;
