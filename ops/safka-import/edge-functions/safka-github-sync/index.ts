@@ -191,7 +191,7 @@ Deno.serve(async(req)=>{
       suggestedBelowSale:withSuggested.filter(p=>p.noteSuggested<p.sale).length,
       sampleDifferences:differences.slice(0,5).map(p=>({
         id:p.id,name:p.name,salePrice:p.sale,noteSuggestedRetail:p.noteSuggested,
-        supplierQuotePlusShippingNotRetail:p.sale+110,noteSuggestedPlusShipping:p.noteSuggested+110
+        supplierQuotePlusShippingNotRetail:p.sale+85,noteSuggestedPlusShipping:p.noteSuggested+85
       })),
       noDatabaseWrites:true,noSupplierOrders:true},origin);
   }
@@ -225,7 +225,7 @@ Deno.serve(async(req)=>{
         const keepApproval=prior?.owner_verified===true&&prior?.review_state==="approved"&&
           prior.is_available===true&&product.is_available===true&&
           product.retail_price_verification==="verified_note"&&
-          Number(prior.final_price_egp)===Number(product.retail_note_suggested_egp)+110&&
+          Number(prior.final_price_egp)===Number(product.retail_note_suggested_egp)+85&&
           Number(prior.suggested_sale_price_egp)===Number(product.suggested_sale_price_egp)&&
           variantFingerprint(prior.variants)===variantFingerprint(product.variants);
         return {
@@ -234,7 +234,7 @@ Deno.serve(async(req)=>{
           final_price_egp:keepApproval?prior.final_price_egp:
             product.retail_price_verification==="verified_note"&&
               Number(product.retail_note_suggested_egp)>0?
-              Math.round(Number(product.retail_note_suggested_egp)+110):null,
+              Math.round(Number(product.retail_note_suggested_egp)+85):null,
           owner_verified:Boolean(keepApproval),
           category_key:(!product.source_category_confirmed&&prior?.source_category_confirmed)?
             prior.category_key:product.category_key,
@@ -255,7 +255,7 @@ Deno.serve(async(req)=>{
           if(!/^[a-f0-9]{24}$/i.test(v.provider_id||"")||!Number.isFinite(suggested)||suggested<=0)return null;
           return {supplier_product_id:p.supplier_product_id,supplier_variant_id:v.provider_id,
             variant_name:v.name||"اختيار",reference_price_egp:suggested,draft_price_egp:p.final_price_egp,
-            supplier_available:v.is_available===true,pricing_source:"safka_note_retail_plus_110_verified",
+            supplier_available:v.is_available===true,pricing_source:"safka_note_retail_plus_85_verified",
             updated_at:new Date().toISOString()};
         }).filter(Boolean));
       for(let at=0;at<propertyPrices.length;at+=150){
@@ -273,8 +273,8 @@ Deno.serve(async(req)=>{
             proposed_price_egp:p.final_price_egp,supplier_reference_egp:Number(p.retail_note_suggested_egp),
             estimated_shipping_egp:110,estimated_ad_egp:0,estimated_returns_egp:0,
             projected_contribution_egp:0,pricing_segment:differs?"manual_price_check":"organic_or_bundle",
-            source:"safka_note_suggested_retail_plus_110_verified",
-            notes:"Validated unique suggested retail amount in Safka note + 110 EGP. Base sale_price is NOT suggested retail. Profit/shipping per governorate unverified.",
+            source:"safka_note_suggested_retail_plus_85_verified",
+            notes:"Validated unique suggested retail amount in Safka note + 85 EGP. Base sale_price is NOT suggested retail. Shipping 85/95/110 by region; customer surcharge 85, excess paid from store margin.",
             reviewed_at:new Date().toISOString()};
         });
       for(let at=0;at<priceReviews.length;at+=150){
