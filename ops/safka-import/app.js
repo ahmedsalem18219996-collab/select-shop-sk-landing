@@ -628,7 +628,7 @@ async function loadPricingAudit(){
   }
   const current=all.filter(p=>p.is_available===true);
   const valid=current.filter(p=>p.retail_price_verification==="verified_note"&&
-    Number(p.final_price_egp)>0&&Number(p.final_price_egp)===Number(p.retail_note_suggested_egp)+110);
+    Number(p.final_price_egp)>0&&Number(p.final_price_egp)===Number(p.retail_note_suggested_egp)+85);
   const manual=current.filter(p=>p.retail_price_verification==="manual_review"||
      p.retail_price_verification==="unverified");
   const variants=current.filter(p=>p.retail_price_verification==="variant_review");
@@ -727,7 +727,7 @@ function renderOperatorPicks(){
  for(const def of operatorPicks){
   const p=operatorCatalog.find(x=>x.supplier_product_id===def.id);
   const safe=Boolean(p?.is_available&&p.retail_price_verification==="verified_note"&&
-    Number(p.final_price_egp)===Number(p.retail_note_suggested_egp)+110&&
+    Number(p.final_price_egp)===Number(p.retail_note_suggested_egp)+85&&
     Number(p.final_price_egp)>110&&p.review_state!=="rejected"&&
     Array.isArray(p.variants)&&p.variants.some(x=>x.is_available===true));
   const card=node("article","mediaQueueItem ssOperatorPick");
@@ -737,11 +737,11 @@ function renderOperatorPicks(){
     target.append(card);continue;
   }
   validated++;
-  const buffer=Number(p.retail_note_suggested_egp)-Number(p.suggested_sale_price_egp);
+  const buffer=Number(p.final_price_egp)-Number(p.suggested_sale_price_egp)-110;
   const maxCpa=buffer-reserve.reduce((sum,n)=>sum+n,0);
   card.append(node("small","","سعر العميل شامل الشحن: "+money(p.final_price_egp)+
     " | عرض مشابه رُصد بتاريخ 13 أكتوبر: "+money(def.marketPrice)));
-  card.append(node("small","","فرق مرجعي بعد احتياطي شحن 110: "+money(buffer)+
+  card.append(node("small","","فرق مرجعي بعد افتراض أعلى شحن 110: "+money(buffer)+
     " (ليس ربحًا معتمدًا)"));
   card.append(node("small","","أقصى تكلفة اكتساب نظرية للطلب المُسلَّم مع الافتراضات دي: "+
     money(maxCpa)+" — قبل إثبات تكلفة المورد ومعدل رفض الأوردرات"));
@@ -831,7 +831,7 @@ async function runCommercialReview(){
    const videoIds=await supplierMediaCoverageIds();
    const candidates=all.filter(p=>p.is_available===true&&
      p.retail_price_verification==="verified_note"&&
-     Number(p.final_price_egp)===Number(p.retail_note_suggested_egp)+110&&
+     Number(p.final_price_egp)===Number(p.retail_note_suggested_egp)+85&&
      Number(p.suggested_sale_price_egp)>0&&
      Array.isArray(p.variants)&&p.variants.some(v=>v.is_available===true))
      .map(p=>{
@@ -1427,11 +1427,11 @@ async function openDetail(p){
       const label=audit.pricing_segment==="paid_ad_candidate"?"مرشح لاختبار إعلان بميزانية محدودة":
         audit.pricing_segment==="manual_price_check"?"اختيارات تحتاج مراجعة يدوية":
         "تحتاج اختبار سوق ومراجعة هامش ربح قبل أي إعلان";
-      pricing.append(node("p","detailNote","قاعدة التسعير الحالية: سعر صفقة المقترح + 110 جنيه شحن. "+label+
+      pricing.append(node("p","detailNote","قاعدة التسعير الحالية: سعر صفقة المقترح + 85 جنيه فقط. زيادة شحن المحافظات 95/110 تُخصم من هامشنا. "+label+
         "؛ هامش الربح الحقيقي غير معروف من البيانات دي."));
     }
   }catch{}
-  pricing.append(node("p","detailNote","قاعدة أسعار المنتجات المؤكدة: سعر البيع المقترح من ملاحظة صفقة +110 جنيه كاحتياطي يغطي أعلى شحن حالي؛ الطلبات تُراجع يدويًا ولا تُرسل للمورد تلقائيًا."));
+  pricing.append(node("p","detailNote","قاعدة السعر: سعر البيع المقترح في ملاحظة صفقة +85 جنيه، شامل الشحن للعميل. الشحن الفعلي 85/95/110 ويُخصم الفرق من هامش المتجر. إرسال الطلب إلى صفقة يظل متوقفًا حتى اعتماد السعر تجاريًا."));
   const form=node("form","ssDraftPriceForm");
   const label=node("label","","سعر البيع النهائي (جنيه)");
   const priceInput=node("input");
@@ -1446,11 +1446,11 @@ async function openDetail(p){
   // Safqa suggested SALE price is not supplier cost. Avoid displaying invented net profit.
   const priceExplainer=node("p","ssPriceHistory");
   const supplierQuote=Number(p.retail_note_suggested_egp)||0;
-  const expectedPrice=supplierQuote+110;
+  const expectedPrice=supplierQuote+85;
   const updateExplainer=()=>{
     const candidate=Number(priceInput.value)||0;
     priceExplainer.textContent="سعر البيع المقترح من صفقة: "+money(supplierQuote)+
-      " + احتياطي شحن 110 جنيه (أعلى تكلفة محافظة حاليًا) = "+money(expectedPrice)+
+      " + 85 جنيه إضافة ثابتة فقط (الشحن الفعلي قد يصل 110) = "+money(expectedPrice)+
       ". السعر الحالي: "+money(candidate)+". الفرق عن القاعدة: "+money(candidate-expectedPrice)+
       ". أسعار الاختيارات المختلفة موجودة تحت؛ لا نفترض تكلفة شراء أو صافي ربح.";
   };
