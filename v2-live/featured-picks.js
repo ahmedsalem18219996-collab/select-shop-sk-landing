@@ -38,12 +38,19 @@ async function load(){
     }
     link.href=url.pathname+url.search+"#products";
     const photo=safePhoto(p);
-    if(photo){const image=el("img","ssFeaturedImage");image.src=photo;image.alt=p.name;image.loading="lazy";image.decoding="async";link.append(image);}
+    const photoWrap=el("span","ssFeaturedPhoto");
+    if(photo){const image=el("img","ssFeaturedImage");image.src=photo;image.alt=p.name;image.loading="lazy";image.decoding="async";photoWrap.append(image);}
+    else photoWrap.append(el("span","ssFeaturedNoPhoto","شوف صور المنتج"));
+    link.append(photoWrap);
     const body=el("span","ssFeaturedBody");
-    body.append(el("span","ssFeaturedEyebrow","اختيارات SELECT SHOP"),
+    const meta=el("span","ssFeaturedMeta");
+    meta.append(el("strong","ssFeaturedValue",Number(p.display_price_egp).toLocaleString("ar-EG")+" ج.م"),
+      el("span","ssFeaturedDelivery","شامل التوصيل"));
+    const action=el("span","ssFeaturedAction","التفاصيل والطلب");
+    action.append(el("span","ssFeaturedActionArrow","←"));
+    body.append(el("span","ssFeaturedTag","مختارات المتجر"),
       el("strong","ssFeaturedName",p.name),
-      el("span","ssFeaturedValue",Number(p.display_price_egp).toLocaleString("ar-EG")+" ج.م — شامل التوصيل"),
-      el("span","ssFeaturedAction","شوف التفاصيل واطلب للتأكيد ←"));
+      meta,action);
     link.append(body);content.append(link);
   }
   root.querySelector("[data-featured-cards]")?.replaceChildren(content);
