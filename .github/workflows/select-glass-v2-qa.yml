@@ -1,0 +1,60 @@
+name: SELECT SHOP glass V2 design QA (isolated)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'preview/select-glass-v2/**'
+      - '.github/workflows/select-glass-v2-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: select-glass-v2-qa
+  cancel-in-progress: true
+
+jobs:
+  verify-preview-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 11
+    steps:
+      - name: Checkout snapshot - do not edit storefront
+        uses: actions/checkout@v4
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify isolated source and no orders code
+        run: |
+          node --check preview/select-glass-v2/app.js
+          node --check preview/select-glass-v2/check.mjs
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const prefix='preview/select-glass-v2/';
+          const files=['index.html','styles.css','app.js'].map(p=>fs.readFileSync(prefix+p,'utf8'));
+          for(const source of files){
+            for(const term of ['safka-capture-order','safka-capture-cart','/functions/v1','meta-pixel.js','ss_safka_checkout_requests']){
+              assert(!source.includes(term),'Preview must not depend on live checkout/tracking: '+term);
+            }
+          }
+          assert(files[0].includes('noindex,nofollow'),'Standalone preview accidentally indexable');
+          assert(files[2].includes('ss_safka_curated_catalog_v1'),'Missing read-only curated public catalog');
+          NODE
+      - name: Install minimal browser test runner
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test V2 preview at desktop, 390px and 320px
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/select-glass-v2-http.log 2>&1 &
+          node preview/select-glass-v2/check.mjs
+      - name: Keep prototype screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: select-glass-v2-preview
+          path: test-results/select-glass-v2/
+          if-no-files-found: ignore
+          retention-days: 7
