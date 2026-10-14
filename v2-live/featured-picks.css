@@ -1,19 +1,203 @@
-/* Compact candidate spotlight: self-hide if public price/stock validation fails. */
-.ssFeaturedSection{margin-block:16px 26px;padding:18px;border-radius:23px;background:linear-gradient(115deg,#201329,#34203f 52%,#1e172b);border:1px solid rgba(226,149,225,.32);color:#fff;box-shadow:0 16px 36px rgba(24,8,28,.12)}
-.ssFeaturedSection[hidden]{display:none}
-.ssFeaturedSection .ssFeaturedHead{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:14px}
-.ssFeaturedHead h2{font-size:clamp(18px,2.4vw,26px);color:#fff;margin:0}
-.ssFeaturedHead p{font-size:12px;color:#e2c9e5;max-width:390px;margin:0}
-.ssFeaturedGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.ssFeaturedCard{display:flex;gap:14px;min-width:0;align-items:center;border-radius:16px;padding:10px;text-decoration:none;color:#fff;background:rgba(255,255,255,.065);border:1px solid rgba(255,255,255,.14);transition:transform .18s ease,border-color .18s ease}
-.ssFeaturedCard:hover,.ssFeaturedCard:focus-visible{transform:translateY(-2px);border-color:#e99cce}
-.ssFeaturedCard:focus-visible{outline:3px solid #e99cce;outline-offset:2px}
-.ssFeaturedImage{width:126px;height:126px;flex:0 0 126px;object-fit:contain;border-radius:12px;background:#f2eff3}
-.ssFeaturedBody{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0}
-.ssFeaturedEyebrow{font:700 10px/1.3 Manrope,Arial,sans-serif;letter-spacing:.02em;color:#ffbce6}
-.ssFeaturedName{font:750 16px/1.6 Alexandria,Arial,sans-serif;color:#fff}
-.ssFeaturedValue{font-size:14px;font-weight:750;color:#ffe2ab}
-.ssFeaturedAction{font-size:12px;font-weight:700;color:#ffbce6}
-@media(max-width:900px){.ssFeaturedGrid{grid-template-columns:1fr}.ssFeaturedSection .ssFeaturedHead{align-items:flex-start;flex-direction:column}}
-@media(max-width:450px){.ssFeaturedSection{padding:13px;border-radius:16px}.ssFeaturedCard{gap:10px}.ssFeaturedImage{width:102px;height:115px;flex-basis:102px}.ssFeaturedName{font-size:13px}.ssFeaturedValue{font-size:12px}.ssFeaturedAction{font-size:11px}}
-@media(prefers-reduced-motion:reduce){.ssFeaturedCard{transition:none}.ssFeaturedCard:hover{transform:none}}
+/* SELECT SHOP temporary site — compact editorial shortlist.
+   Shares the existing charcoal / sage / lime storefront palette, never a
+   second competing purple billboard. Everything is scoped to this module. */
+.ssFeaturedSection.container{
+  --ssEditAccent:#ddf77c;
+  --ssEditSurface:#1b241d;
+  --ssEditBorder:#435343;
+  margin-block:32px 40px;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  box-shadow:none;
+  color:#f1f6ec;
+  min-width:0;
+}
+.ssFeaturedSection[hidden]{display:none!important}
+.ssFeaturedSection .ssFeaturedHead{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:end;
+  justify-content:space-between;
+  gap:12px 24px;
+  margin:0 0 17px;
+  padding:0;
+  background:none;
+}
+.ssFeaturedSection .ssFeaturedHeadline{min-width:0;display:grid;gap:6px}
+.ssFeaturedSection .ssFeaturedEyebrow{
+  display:block;
+  color:var(--ssEditAccent);
+  font:850 10px/1.5 "Manrope",Arial,sans-serif;
+  letter-spacing:.16em;
+  direction:ltr;
+  text-align:right;
+}
+.ssFeaturedSection .ssFeaturedHead h2{
+  margin:0;
+  font:800 clamp(21px,3.2vw,35px)/1.5 "Alexandria","IBM Plex Sans Arabic",sans-serif;
+  letter-spacing:-.035em;
+  color:#f5f7ee;
+}
+.ssFeaturedSection .ssFeaturedHead h2 em{
+  color:var(--ssEditAccent);
+  font-style:normal;
+}
+.ssFeaturedSection .ssFeaturedHead p{
+  margin:0 0 2px;
+  color:#abb9a5;
+  font:500 12px/1.95 "Alexandria","IBM Plex Sans Arabic",sans-serif;
+  max-width:420px;
+}
+.ssFeaturedSection .ssFeaturedGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:13px;
+  min-width:0;
+}
+.ssFeaturedSection .ssFeaturedCard{
+  display:grid;
+  grid-template-columns:clamp(105px,11vw,148px) minmax(0,1fr);
+  gap:17px;
+  align-items:center;
+  min-width:0;
+  min-height:174px;
+  padding:12px;
+  direction:rtl;
+  text-align:right;
+  color:inherit;
+  border:1px solid var(--ssEditBorder);
+  border-radius:11px;
+  background:linear-gradient(125deg,#1f2a22,#1a231d);
+  box-shadow:none;
+  text-decoration:none;
+  transition:border-color .2s,transform .2s,background .2s;
+}
+.ssFeaturedSection .ssFeaturedCard:hover{
+  transform:translateY(-2px);
+  border-color:#a6c782;
+  background:linear-gradient(125deg,#263329,#1e2a23);
+}
+.ssFeaturedSection .ssFeaturedCard:focus-visible{outline:2px solid var(--ssEditAccent);outline-offset:3px}
+.ssFeaturedSection .ssFeaturedPhoto{
+  display:grid;
+  place-items:center;
+  width:100%;
+  aspect-ratio:1/1;
+  background:#e9ede5;
+  border-radius:7px;
+  overflow:hidden;
+  border:1px solid #c7cfc4;
+}
+.ssFeaturedSection .ssFeaturedImage{
+  display:block;
+  width:100%;
+  height:100%;
+  max-width:100%;
+  object-fit:contain;
+  object-position:center;
+  border:0;
+  border-radius:0;
+  background:#e9ede5;
+}
+.ssFeaturedSection .ssFeaturedBody{
+  display:flex;
+  min-width:0;
+  align-self:stretch;
+  flex-direction:column;
+  align-items:stretch;
+  justify-content:center;
+  gap:7px;
+}
+.ssFeaturedSection .ssFeaturedTag{
+  color:#aabca1;
+  font:800 9px/1.4 "Manrope","Alexandria",sans-serif;
+  letter-spacing:.1em;
+}
+.ssFeaturedSection .ssFeaturedName{
+  font:750 clamp(13px,1.25vw,16px)/1.75 "Alexandria","IBM Plex Sans Arabic",sans-serif;
+  color:#f2f6ee;
+  overflow-wrap:anywhere;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.ssFeaturedSection .ssFeaturedMeta{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ssFeaturedSection .ssFeaturedValue{
+  color:var(--ssEditAccent);
+  font:850 clamp(17px,1.7vw,23px)/1.3 "Manrope","Alexandria",sans-serif;
+  direction:rtl;
+  white-space:nowrap;
+}
+.ssFeaturedSection .ssFeaturedDelivery{
+  color:#b7c3b2;
+  font:600 10px/1.6 "Alexandria",sans-serif;
+}
+.ssFeaturedSection .ssFeaturedAction{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  align-self:flex-start;
+  color:#eef5df;
+  border-bottom:1px solid #8caa78;
+  padding-bottom:2px;
+  margin-top:2px;
+  font:750 11px/1.65 "Alexandria",sans-serif;
+}
+.ssFeaturedSection .ssFeaturedActionArrow{font:800 15px/1 "Manrope",sans-serif;color:var(--ssEditAccent)}
+.ssFeaturedSection .ssFeaturedFoot{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:13px 0 0;
+  padding:0 2px;
+  color:#aebca7;
+  font-size:11px;
+  line-height:1.8;
+}
+.ssFeaturedSection .ssFeaturedViewAll{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:40px;
+  color:var(--ssEditAccent);
+  font-weight:800;
+  text-decoration:none;
+}
+.ssFeaturedSection .ssFeaturedViewAll:hover{text-decoration:underline}
+.ssFeaturedSection .ssFeaturedViewAll:focus-visible{outline:2px solid var(--ssEditAccent);outline-offset:3px}
+@media(max-width:860px){
+ .ssFeaturedSection .ssFeaturedGrid{grid-template-columns:1fr}
+ .ssFeaturedSection .ssFeaturedCard{grid-template-columns:136px minmax(0,1fr);min-height:160px}
+}
+@media(max-width:540px){
+ .ssFeaturedSection.container{margin-block:24px 32px}
+ .ssFeaturedSection .ssFeaturedHead{gap:4px;margin-bottom:12px}
+ .ssFeaturedSection .ssFeaturedHead h2{font-size:23px}
+ .ssFeaturedSection .ssFeaturedHead p{font-size:10px;line-height:1.8}
+ .ssFeaturedSection .ssFeaturedGrid{gap:9px}
+ .ssFeaturedSection .ssFeaturedCard{
+  grid-template-columns:105px minmax(0,1fr);
+  gap:10px;
+  min-height:132px;
+  padding:9px;
+  border-radius:9px;
+ }
+ .ssFeaturedSection .ssFeaturedBody{gap:4px}
+ .ssFeaturedSection .ssFeaturedName{font-size:12px;line-height:1.65}
+ .ssFeaturedSection .ssFeaturedValue{font-size:17px}
+ .ssFeaturedSection .ssFeaturedDelivery{font-size:9px}
+ .ssFeaturedSection .ssFeaturedAction{font-size:10px}
+ .ssFeaturedSection .ssFeaturedFoot{font-size:10px}
+}
+@media(max-width:365px){
+ .ssFeaturedSection .ssFeaturedCard{grid-template-columns:87px minmax(0,1fr);gap:8px;padding:7px;min-height:115px}
+ .ssFeaturedSection .ssFeaturedName{font-size:11px}
+ .ssFeaturedSection .ssFeaturedValue{font-size:15px}
+ .ssFeaturedSection .ssFeaturedHead h2{font-size:20px}
+}
+@media(prefers-reduced-motion:reduce){.ssFeaturedSection .ssFeaturedCard{transition:none}.ssFeaturedSection .ssFeaturedCard:hover{transform:none}}
