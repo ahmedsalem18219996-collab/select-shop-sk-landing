@@ -62,6 +62,7 @@ footer{background:#241436;color:#e8d6f0;padding:25px 0;margin-top:28px;font-size
 @media(max-width:390px){.wrap{width:calc(100% - 26px)}.brand{font-size:17px}h1{font-size:30px}.lead{font-size:15px}.bottom{padding-inline:11px}.bottom .cta{padding:10px 12px;font-size:14px}.bottom .compactPrice{font-size:15px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 </style>
+<script defer src="/meta-pixel.js?v=tirepro-offer-20261015"></script>
 <script defer src="/v2-live/safka-checkout.js?v=tirepro-offer-20261015"></script>
 </head>
 <body>
@@ -147,6 +148,7 @@ $("#bottomOrder").addEventListener("click",order);
   if(!item||item.price_status!=="approved"||!v.some(x=>x.available===true&&Number(x.display_price_egp)===699)||Number(item.display_price_egp)!==699)
     throw Error("السعر أو توفر المنتج اتغير، الطلب متوقف مؤقتًا للتأكد");
   state.product=item;
+  try{window.SELECT_SHOP_META?.safkaView?.(item)}catch{}
   renderGallery(Array.isArray(item.images)?item.images:[]);
   $("#currentPrice").textContent=Number(item.display_price_egp).toLocaleString("ar-EG")+" جنيه";
   $("#bottomPrice").textContent=Number(item.display_price_egp).toLocaleString("ar-EG")+" جنيه";
