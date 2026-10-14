@@ -122,7 +122,7 @@ Deno.serve(async req=>{
   if(!p||!p.is_available||p.review_state==="rejected"||
       p.retail_price_verification!=="verified_note"||
       !Number.isSafeInteger(Number(p.retail_note_suggested_egp))||
-      Number(p.final_price_egp)!==Number(p.retail_note_suggested_egp)+110)
+      Number(p.final_price_egp)!==Number(p.retail_note_suggested_egp)+85)
    return reply(409,{error:"product_unavailable",productId:line.productId},origin);
   const v=(Array.isArray(p.variants)?p.variants:[]).find(v=>v.provider_id===line.variantId&&v.is_available===true);
   if(!v)return reply(409,{error:"variant_unavailable",productId:line.productId},origin);
@@ -172,7 +172,7 @@ Deno.serve(async req=>{
      Number(upstream.sale_price)!==Number(snapshot?.suggested_sale_price_egp)||
      livePrice!==Number(byOption.get(line.supplier_product_id+":"+line.supplier_variant_id)?.reference_price_egp)||
      suggestedRetailNote(upstream)!==Number(snapshot?.retail_note_suggested_egp)||
-     Number(snapshot.retail_note_suggested_egp)+110!==line.unit_price_egp)
+     Number(snapshot.retail_note_suggested_egp)+85!==line.unit_price_egp)
     return reply(409,{error:"source_price_changed",productId:line.supplier_product_id},origin);
  }
  const total=priced.reduce((sum,i)=>sum+i.unit_price_egp*i.quantity,0);
