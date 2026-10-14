@@ -110,7 +110,7 @@ Deno.serve(async req=>{
  if(!p||!p.is_available||p.review_state==="rejected"||
     p.retail_price_verification!=="verified_note"||
     !Number.isSafeInteger(Number(p.retail_note_suggested_egp))||
-    Number(p.final_price_egp)!==Number(p.retail_note_suggested_egp)+110)
+    Number(p.final_price_egp)!==Number(p.retail_note_suggested_egp)+85)
    return json(409,{error:"product_not_ready"},origin);
  const variant=(Array.isArray(p.variants)?p.variants:[]).find(v=>v.provider_id===variantId&&v.is_available===true);
  if(!variant)return json(409,{error:"variant_not_available"},origin);
@@ -149,7 +149,7 @@ Deno.serve(async req=>{
   if(Number(live.sale_price)!==Number(p.suggested_sale_price_egp)||
      liveReference!==reference||
      suggestedRetailNote(live)!==Number(p.retail_note_suggested_egp)||
-     Number(p.retail_note_suggested_egp)+110!==unitPrice)
+     Number(p.retail_note_suggested_egp)+85!==unitPrice)
     return json(409,{error:"source_price_changed"},origin);
  }catch{return json(503,{error:"source_verification_unavailable"},origin)}
  const region=await db.from("ss_safka_import_shipping")
