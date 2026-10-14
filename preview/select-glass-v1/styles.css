@@ -17,13 +17,13 @@ img{display:block;max-width:100%}
 .preview-pulse{height:7px;width:7px;flex:0 0 7px;border-radius:50%;background:#e6b675;box-shadow:0 0 0 5px #e6b6752a}
 .site-frame{width:min(1390px,calc(100% - 68px));margin:31px auto 36px;min-height:calc(100vh - 110px);border:1px solid #906b862b;border-radius:31px;background:linear-gradient(180deg,#211728f7,#160f1c 72%,#24162a);overflow:clip;box-shadow:0 40px 110px #0009,0 0 0 12px #b87ca709;isolation:isolate}
 .glass{background:rgba(35,23,43,.64);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);border:1px solid rgba(244,231,240,.15)}
-.site-header{height:77px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 clamp(18px,2.9vw,47px);border:0;border-bottom:1px solid #faf0f228;position:sticky;top:0;z-index:30;border-radius:0;background:rgba(31,21,39,.86)}
+.site-header{height:77px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:0 clamp(18px,2.9vw,47px);border:0;border-bottom:1px solid #faf0f228;position:sticky;top:0;z-index:30;border-radius:0;background:rgba(31,21,39,.86);direction:ltr}
 .logo{display:inline-flex;align-items:center;gap:11px;flex-shrink:0;direction:ltr;text-align:left;white-space:nowrap}
 .logo-symbol{font:28px/1 Georgia,serif;color:var(--champagne)}
 .logo-text{font:500 clamp(18px,2vw,25px)/1.2 Georgia,"Times New Roman",serif;letter-spacing:.015em;color:#fff7f2}
 .logo-text b{font-weight:500;color:#e9bf83}
 .logo-text small{display:block;text-align:right;font:750 7px/1.5 Manrope,sans-serif;letter-spacing:.28em;color:#baa7bd}
-.desktop-nav{display:flex;align-items:center;gap:clamp(10px,2vw,29px);height:100%;flex-wrap:nowrap}
+.desktop-nav{display:flex;align-items:center;gap:clamp(10px,2vw,29px);height:100%;flex-wrap:nowrap;direction:rtl}
 .desktop-nav a{position:relative;font-size:11px;color:#e2d6e2;white-space:nowrap;padding:11px 0;transition:color .2s}
 .desktop-nav a:hover,.desktop-nav a.is-active{color:#fff}
 .desktop-nav a.is-active:after{position:absolute;content:"";height:2px;left:12%;right:12%;bottom:0;border-radius:3px;background:var(--champagne)}
@@ -43,7 +43,7 @@ img{display:block;max-width:100%}
 .hero-photo img{width:100%;height:100%;object-fit:cover;object-position:center 50%;filter:saturate(.78) contrast(1.07)}
 .hero-film{background:linear-gradient(270deg,#1f122a31 0%,#22162920 29%,#211326b6 76%,#150b1cc4 100%),linear-gradient(0deg,#120b19a8 0%,transparent 24%,#16101a1d 100%)}
 .hero:before{content:"";position:absolute;z-index:1;inset:0;background:linear-gradient(90deg,transparent,transparent 60%,#4428451c);pointer-events:none}
-.hero-content{position:relative;z-index:2;width:min(580px,55%);margin-right:clamp(25px,5vw,78px);margin-block:44px;padding:clamp(27px,3.6vw,52px) clamp(24px,4vw,56px);border-radius:25px;border:1px solid rgba(255,239,248,.43);background:linear-gradient(145deg,rgba(64,40,63,.74),rgba(35,20,41,.72));-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 25px 70px #120a1a66, inset 0 1px 1px #ffffff40}
+.hero-content{position:relative;z-index:2;width:min(580px,55%);justify-self:end;margin-right:0;margin-left:clamp(25px,5vw,78px);margin-block:44px;padding:clamp(27px,3.6vw,52px) clamp(24px,4vw,56px);border-radius:25px;border:1px solid rgba(255,239,248,.43);background:linear-gradient(145deg,rgba(64,40,63,.74),rgba(35,20,41,.72));-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);box-shadow:0 25px 70px #120a1a66, inset 0 1px 1px #ffffff40}
 .micro-label{display:inline-flex;align-items:center;gap:11px;color:#f1d6db;direction:ltr;font:750 10px/1.5 Manrope,sans-serif;letter-spacing:.22em}
 .micro-label span{width:23px;height:2px;background:var(--champagne)}
 .hero h1{color:#fff7f7;font:750 clamp(43px,4.8vw,72px)/1.54 "Alexandria","IBM Plex Sans Arabic",sans-serif;margin:21px 0 15px;letter-spacing:-.055em;text-shadow:0 3px 20px #2b182b36}
@@ -163,7 +163,7 @@ body.theme-light .empty-products{color:#735d74}
  .logo-text{font-size:19px}
  .theme-switch{margin-left:0}
  .hero{min-height:535px}
- .hero-content{width:min(565px,60%);margin-right:32px}
+ .hero-content{width:min(565px,60%);margin-left:32px;margin-right:0}
  .products-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
 @media(max-width:800px){
@@ -172,7 +172,7 @@ body.theme-light .empty-products{color:#735d74}
  .site-header{height:68px}
  .mobile-nav{top:68px}
  .hero{min-height:525px}
- .hero-content{width:min(500px,76%);margin-right:24px}
+ .hero-content{width:min(500px,76%);margin-left:24px;margin-right:0}
  .hero-side-tag{left:16px}
  .intro-grid{grid-template-columns:1fr;gap:12px}
  .products-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
