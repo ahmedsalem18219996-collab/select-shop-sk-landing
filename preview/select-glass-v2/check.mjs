@@ -27,7 +27,7 @@ for(const [label,width,height] of [["desktop",1440,960],["mobile",390,844],["sma
  await page.goto(base,{waitUntil:"domcontentloaded",timeout:30000});
  await page.locator(".product-card").first().waitFor({state:"visible",timeout:15000});
  assert.equal(await page.locator(".product-card").count(),8);
- assert.equal(await page.locator("#heroHeading").innerText().then(s=>s.includes("اختيارات أنيقة")),true);
+ assert.equal(await page.locator("#heroHeading").innerText().then(s=>s.includes("Everyday Luxury")),true);
  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth);
  assert(overflow<=4,label+" horizontal overflow: "+overflow);
  assert.equal(await page.locator("#previewCart").count(),1);
