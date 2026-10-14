@@ -21,3 +21,18 @@ html{scroll-behavior:smooth}body{background:var(--ux-mist);color:var(--ux-ink);f
 @media(max-width:767px){html,body{overflow-x:clip}.siteHeader .headerInner{gap:8px}.premiumHero{border-radius:20px!important;padding:20px!important;gap:22px!important}.heroText h1{font-size:clamp(2.6rem,13vw,4.4rem)!important;line-height:1.06!important;overflow-wrap:anywhere}.heroVisual.editorialStage{min-height:240px!important}.editorialHeadline{font-size:clamp(1.4rem,7vw,2.8rem)!important}.heroActions{display:grid!important;grid-template-columns:1fr!important}.heroActions .button{width:100%;justify-content:center;min-height:48px}.merchGateway{grid-template-columns:1fr!important}.gatewayCard{min-height:240px!important}.productGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}.trustSlim{gap:6px!important}.trustSlim small{font-size:10px!important}.drawer{max-width:100%!important;margin:0!important}.drawerFooter{padding-bottom:max(14px,env(safe-area-inset-bottom))!important}.mobileBar{padding-bottom:max(6px,env(safe-area-inset-bottom))!important}}
 @media(max-width:380px){.productGrid{grid-template-columns:minmax(0,1fr)!important}.heroText h1{font-size:2.5rem!important}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+
+/* Original Aurora Motion — zero third-party videos, no JS and no external assets */
+.premiumHero .heroVisual.editorialStage{isolation:isolate;position:relative;overflow:hidden!important;contain:paint;background:#241037!important}
+.premiumHero .heroVisual.editorialStage::before,
+.premiumHero .heroVisual.editorialStage::after{content:"";position:absolute;pointer-events:none;z-index:-1;border-radius:50%;filter:blur(31px);opacity:.7;will-change:transform}
+.premiumHero .heroVisual.editorialStage::before{width:80%;height:100%;top:-28%;right:-28%;background:radial-gradient(ellipse at center,rgba(201,95,238,.85),rgba(112,45,204,.42) 48%,transparent 70%);animation:selectAuroraDrift 16s ease-in-out infinite alternate}
+.premiumHero .heroVisual.editorialStage::after{width:90%;height:85%;bottom:-45%;left:-24%;background:radial-gradient(ellipse at center,rgba(239,69,169,.77),rgba(115,48,178,.3) 52%,transparent 73%);animation:selectAuroraDrift 21s ease-in-out infinite alternate-reverse}
+.premiumHero .heroVisual.editorialStage .editorialGrid{position:absolute;inset:0;z-index:0;pointer-events:none;background:linear-gradient(145deg,transparent 25%,rgba(255,255,255,.04) 52%,transparent 76%);opacity:.6}
+.premiumHero .heroVisual.editorialStage .editorialHeadline,
+.premiumHero .heroVisual.editorialStage .editorialIssue,
+.premiumHero .heroVisual.editorialStage .editorialFootline{position:relative;z-index:2;text-shadow:0 1px 12px rgba(13,5,29,.3)}
+@keyframes selectAuroraDrift{0%{transform:translate3d(-6%,2%,0) scale(1) rotate(-8deg)}50%{transform:translate3d(8%,-7%,0) scale(1.17) rotate(11deg)}100%{transform:translate3d(-1%,9%,0) scale(.96) rotate(-4deg)}}
+@media(max-width:767px){.premiumHero .heroVisual.editorialStage::before,.premiumHero .heroVisual.editorialStage::after{animation:none!important;will-change:auto!important;filter:blur(19px)}}
+@media(prefers-reduced-motion:reduce){.premiumHero .heroVisual.editorialStage::before,.premiumHero .heroVisual.editorialStage::after{animation:none!important;will-change:auto!important}}
