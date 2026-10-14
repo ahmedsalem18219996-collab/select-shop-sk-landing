@@ -199,7 +199,7 @@ async function refreshCart(){
    const found=(await result.json()).items?.find(x=>x.id===item.productId);
    const v=choices(found).find(x=>x.id===item.variantId);
    if(!found||!v)return{item:null,warning:item.name+" غير متوفر حاليًا",failed:true};
-   const warning=item.unitPrice!==Number(v.display_price_egp)?"سعر "+item.name+" اتحدث.":"";
+   const warning=item.unitPrice!==Number(v.display_price_egp)?"تنبيه قبل إتمام الطلب: سعر "+item.name+" كان "+money(item.unitPrice)+" وبقى "+money(Number(v.display_price_egp))+". تم تحديث السلة بالسعر الجديد.":"";
    return{item:{...item,unitPrice:Number(v.display_price_egp),name:clean(found.name,350),
     variant:clean(v.name,220),photo:photo(found),categoryName:clean(found.category_name,100)},
     warning,failed:false};
@@ -387,10 +387,10 @@ async function openCart(){
  buttons.append(continueButton,retry,btn);
  const suggestions=e("section","ssBagSuggestions");suggestions.dataset.bagRecommendations="";
  suggestions.setAttribute("aria-label","منتجات مقترحة لإكمال الطلب");suggestions.hidden=true;
- const shoeNote=e("p","ssBagMuted","ملحوظة: الأحذية الأصلية لها سلة وطلب منفصلين حاليًا، علشان الطلبات متتخلطش.");
+
  const normal=e("section","ssBagList");normal.dataset.bagList="";
  const form=e("section","ssBagCheckout");form.dataset.bagForm="";form.hidden=true;
- normal.append(notice,list,total,buttons,suggestions,shoeNote);
+ normal.append(notice,list,total,buttons,suggestions);
  shell.append(head,status,normal,form);cartDialog.append(shell);
  // Each dialog only disposes itself. Old close events must NEVER delete a newer
  // cart instance after a recommendation triggers addItem/openCart synchronously.
