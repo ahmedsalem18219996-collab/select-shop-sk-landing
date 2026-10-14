@@ -70,7 +70,7 @@ Deno.serve(async req=>{
  const productIds=[...new Set(lines.map(x=>x.supplier_product_id))];
  const [pr,options,region]=await Promise.all([
   db.from("ss_safka_import_products")
-    .select("supplier_product_id,is_available,retail_price_verification,final_price_egp,review_state")
+    .select("supplier_product_id,is_available,retail_price_verification,final_price_egp,review_state,owner_verified")
     .in("supplier_product_id",productIds),
   db.from("ss_safka_variant_price_drafts")
     .select("supplier_product_id,supplier_variant_id,reference_price_egp,draft_price_egp,supplier_available")
@@ -89,13 +89,13 @@ Deno.serve(async req=>{
  for(const line of lines){
    const p=pmap.get(line.supplier_product_id);
    const v=vmap.get(line.supplier_product_id+":"+line.supplier_variant_id);
-   if(!p||!p.is_available||p.review_state==="rejected"||
+   if(!p||!p.is_available||p.review_state!=="approved"||p.owner_verified!==true||
       p.retail_price_verification!=="verified_note"||
       p.final_price_egp!==line.unit_price_egp||
       !v?.supplier_available||Number(v.draft_price_egp)!==line.unit_price_egp||
       !Number.isSafeInteger(Number(v.reference_price_egp))||
       Number(v.reference_price_egp)<=0)
-      return reply(409,{ok:false,error:"supplier_pricing_or_stock_changed"});
+      return reply(409,{ok:false,error:"commercial_approval_required_or_stock_changed"});
    base+=Number(v.reference_price_egp)*line.quantity;
  }
  // Actual supplier price-list freight is charged per order, not per item.
