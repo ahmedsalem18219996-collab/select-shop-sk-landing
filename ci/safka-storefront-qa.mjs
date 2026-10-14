@@ -39,8 +39,8 @@ for (const profile of [
     const title = await productDialog.locator(".ssSafkaDialogShortTitle").innerText();
     assert(title.includes("البخار"), "Wrong supplier product landed");
     const body = await productDialog.innerText();
-    assert(body.includes(new Intl.NumberFormat("ar-EG").format(1810)),
-      "Expected supplier note recommended retail 1700 + inclusive average delivery 110 = 1810 EGP");
+    assert(body.includes(new Intl.NumberFormat("ar-EG").format(1785)),
+      "Expected supplier note recommended retail 1700 + fixed customer uplift 85 = 1785 EGP");
     assert(!/شحن\s*\+?\s*[٩٠90]{2}|سعر صفقة/i.test(body),
       "Customer-facing page exposed supplier identity or itemized internal shipping");
 
@@ -99,7 +99,7 @@ for (const profile of [
       assert(/^[0-9a-f]+$/.test(payload.workNonce),"Missing proof-of-work");
       testedCapture=true;
       await route.fulfill({status:201,contentType:"application/json",
-        body:JSON.stringify({ok:true,orderCode:"SK-TEST-NO-WRITE",totalEgp:1810,status:"review",sentToSupplier:false})});
+        body:JSON.stringify({ok:true,orderCode:"SK-TEST-NO-WRITE",totalEgp:1785,status:"review",sentToSupplier:false})});
     });
     await orderForm.locator('input[name="name"]').fill("اختبار الواجهة فقط");
     await orderForm.locator('input[name="phone"]').fill("01012345678");
@@ -305,7 +305,7 @@ try {
     }else{
       verifiedForSale++;
       assert(Number.isInteger(p.display_price_egp) && p.display_price_egp > 0,
-        "Verified retail-note +110 price missing for " + p.id);
+        "Verified retail-note +85 price missing for " + p.id);
     }
     assert(Array.isArray(p.images) && p.images.length > 0, "Missing supplier product photos " + p.id);
     if (!p.images?.length) missingImages++;
@@ -398,7 +398,7 @@ try {
   const body=await response.json();
   assert(response.ok&&body.ok&&body.validated===true,
     "Real order validation API did not accept the sample: "+JSON.stringify({status:response.status,error:body.error}));
-  assert.equal(body.totalEgp,1810,"Wrong confirmed supplier note-retail + 110 server quote");
+  assert.equal(body.totalEgp,1785,"Wrong confirmed supplier note-retail + 85 server quote");
   assert.equal(body.orderSaved,false,"Validation mode unexpectedly created an order");
   assert.equal(body.sentToSupplier,false,"Validation mode unexpectedly contacted supplier");
   summary.push({profile:"live-order-backend-no-write",serverQuoteEgp:body.totalEgp,storedOrder:false,supplierOrder:false});
@@ -407,8 +407,8 @@ try {
 // Current campaign candidates must be accepted by the LIVE source-checking
 // order server. This is read-only: no database insert and no supplier order.
 for(const candidate of [
-  {id:"6a71f70b4d956cf608604baa",variant:"6a71f70b4d956cf608604bab",price:810},
-  {id:"6abac80af2dfbd30480af5ee",variant:"6abac80af2dfbd30480af5ef",price:1010}
+  {id:"6a71f70b4d956cf608604baa",variant:"6a71f70b4d956cf608604bab",price:785},
+  {id:"6abac80af2dfbd30480af5ee",variant:"6abac80af2dfbd30480af5ef",price:985}
 ]){
  try{
   const {randomUUID,createHash}=await import("node:crypto");
