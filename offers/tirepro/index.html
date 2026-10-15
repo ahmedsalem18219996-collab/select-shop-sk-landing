@@ -114,6 +114,13 @@ footer a{color:#ddf77c;text-decoration:underline;text-underline-offset:4px}
 .bottom .compactPrice{color:#ddf77c}
 #status{color:#ffe1ab}
 :where(a,button,summary):focus-visible{outline:3px solid #ddf77c;outline-offset:3px}
+.originalVideo{padding:14px;border-radius:10px;border:1px solid #52664b;background:#1c2a20;box-shadow:0 12px 27px #0003}
+.originalVideoHead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-bottom:10px}
+.originalVideoHead h2{font-size:18px;margin:0;color:#f4f8e8}
+.originalVideoHead p{margin:0;color:#c5d4c1;font-size:12px}
+.originalVideoBadge{font:800 9px "Manrope",sans-serif;letter-spacing:.09em;background:#ddf77c;color:#172019;border-radius:3px;padding:4px 7px;white-space:nowrap}
+.originalVideoPlayer{width:100%;aspect-ratio:16/9;background:#080c09;border-radius:6px;display:block;object-fit:contain}
+.originalVideoFallback{display:inline-block;padding-top:9px;color:#ddf77c;font-size:12px;text-decoration:underline;text-underline-offset:3px}
 @media(max-width:830px){.hero{gap:18px;padding:20px 0}.mainPhoto{min-height:270px}#videoStage{min-height:245px}.videoFrame{min-height:0}}
 @media(max-width:500px){.top{min-height:56px}.brand{font-size:17px}.brandMark{width:32px;height:32px;font-size:18px}.headerNav .micro{display:none}.headerNav a{font-size:11px;padding:7px 8px}.hero h1{font-size:29px}.mainPhoto{min-height:230px}.thumb[data-kind=video]{flex-basis:94px}.offerTicker{font-size:9px;gap:8px}}
 @media(max-width:360px){.wrap{width:calc(100% - 24px)}.brand{font-size:16px}}
@@ -131,6 +138,14 @@ footer a{color:#ddf77c;text-decoration:underline;text-underline-offset:4px}
  <div class="mainPhoto"><img id="photo" src="https://safka.fra1.cdn.digitaloceanspaces.com/media/products/1785853729759-129599.webp" alt="منفاخ TirePro للسيارة" fetchpriority="high"><div id="videoStage" hidden aria-label="مشغل فيديو TirePro"></div></div>
  <button type="button" id="watchVideo" class="watchVideo" hidden>▶ شاهد فيديو المنفاخ وهو شغّال</button>
  <div id="thumbs" class="thumbs" aria-label="صور وفيديوهات المنتج"></div>
+ <section class="originalVideo" aria-labelledby="originalVideoTitle">
+  <div class="originalVideoHead"><span class="originalVideoBadge">REAL PRODUCT VIDEO</span><h2 id="originalVideoTitle">شوف فيديو المنفاخ</h2><p>فيديو عرض المنتج — شغّله قبل ما تطلب.</p></div>
+  <video id="tireproOriginalVideo" class="originalVideoPlayer" controls playsinline preload="metadata" poster="https://safka.fra1.cdn.digitaloceanspaces.com/media/products/1785853729759-129599.webp" aria-label="فيديو استعراض منفاخ TirePro">
+    <source src="/assets/ads/tirepro-original-demo-21s.mp4" type="video/mp4">
+    متصفحك لا يدعم تشغيل الفيديو.
+  </video>
+  <a class="originalVideoFallback" href="/assets/ads/tirepro-original-demo-21s.mp4" target="_blank" rel="noopener noreferrer">الفيديو مش شغال؟ افتحه مباشرة ↗</a>
+ </section>
 </div>
 <div>
  <span class="flag">عرض تجربة SELECT SHOP</span>
