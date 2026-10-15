@@ -173,6 +173,36 @@ footer a{color:#ddf77c;text-decoration:underline;text-underline-offset:4px}
 <script>
 (()=>{"use strict";
 const ID="6a71f70b4d956cf608604baa";
+
+/* Product-only, PII-free conversion-funnel diagnostics.
+   Meta works now; GA4 receives the same events when a correct tag is configured. */
+const TIREPRO_EVENTS=Object.freeze({
+  cta_click:"TireProCtaClick",
+  checkout_open:"TireProCheckoutOpen",
+  form_ready:"TireProFormReady",
+  form_start:"TireProFormStart",
+  submit_attempt:"TireProSubmitAttempt",
+  submit_error:"TireProSubmitError",
+  lead_saved:"TireProLeadSaved"
+});
+window.SS_TIREPRO_TRACK=(stage,details={})=>{
+  const event=TIREPRO_EVENTS[stage];
+  if(!event||window.SELECT_SHOP_TEST_MODE===true)return;
+  const safe={content_type:"product",content_ids:["SS:"+ID],currency:"EGP",value:699};
+  if(stage==="submit_error"&&/^[a-z_]{3,48}$/.test(String(details.error||"")))
+    safe.error_code=details.error;
+  try{if(typeof window.fbq==="function")window.fbq("trackCustom",event,safe)}catch{}
+  const gaName="tirepro_"+stage;
+  try{
+    if(typeof window.gtag==="function")window.gtag("event",gaName,{
+      currency:"EGP",value:699,item_id:"SS:"+ID,...(safe.error_code?{error_code:safe.error_code}:{})
+    });
+    else if(Array.isArray(window.dataLayer))window.dataLayer.push({
+      event:gaName,product_id:"SS:"+ID,value:699,currency:"EGP"
+    });
+  }catch{}
+};
+
 const ENDPOINT="https://zznqdwrohrycsjfpvkhc.supabase.co/rest/v1/rpc/ss_safka_curated_catalog_v1";
 const PUBLIC_KEY="sb_publishable_l0ii5-zDTo3tl1wVujmD1A_kR0njRNa";
 const $=s=>document.querySelector(s);
@@ -223,6 +253,7 @@ function renderGallery(images,videos){
 }
 function order(){
  if(!state.product||!window.SS_SAFKA_CHECKOUT){setStatus("تعذر تحميل نموذج الطلب. حدّث الصفحة أو ارجع للمتجر.");return}
+ window.SS_TIREPRO_TRACK?.("cta_click");
  window.SS_SAFKA_CHECKOUT.open(state.product);
 }
 $("#order").addEventListener("click",order);
