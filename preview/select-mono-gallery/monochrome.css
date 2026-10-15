@@ -219,6 +219,7 @@ button,a,input,summary{ -webkit-tap-highlight-color:transparent}
 }
 @media (max-width:639px){
 .header-search{display:none}
+.header-search.mobile-active{display:flex;position:absolute;z-index:39;right:12px;left:12px;top:calc(100% + 8px);width:calc(100% - 24px);margin:0;border:1px solid var(--ink);background:var(--paper)}
 .mobile-search-trigger{display:grid}
 .logo{margin-left:auto}
 .section-heading{align-items:flex-start}
