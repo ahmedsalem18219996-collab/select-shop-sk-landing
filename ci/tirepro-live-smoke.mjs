@@ -1,7 +1,7 @@
 // SELECT SHOP TEMP — TirePro live customer-journey smoke test. NO orders are submitted.
 import assert from "node:assert/strict";
 import {mkdir} from "node:fs/promises";
-import {chromium} from "playwright";
+import {chromium,webkit} from "playwright";
 
 const origin="https://selectshopeg.com";
 const url=origin+"/offers/tirepro/?qa=tirepro-read-only-smoke";
@@ -71,8 +71,33 @@ try{
     "Customer address field missing");
   assert.equal(failures.length,0,"Browser JavaScript errors: "+failures.join(" | "));
   await page.locator("dialog.ssCoDialog").screenshot({path:"test-results/tirepro-order-dialog.png"});
+  // The bundled Chromium omits proprietary H264; WebKit is closer to iPhone Safari.
+  const safari=await webkit.launch({headless:true});
+  let safariPlayback=false,safariCodec="";
+  try{
+    const mobileSafari=await safari.newPage({viewport:{width:390,height:844},
+      isMobile:true,deviceScaleFactor:1,locale:"ar-EG"});
+    await mobileSafari.route("**/functions/v1/safka-capture-order",
+      route=>route.abort("blockedbyclient"));
+    const safariResponse=await mobileSafari.goto(url,{waitUntil:"domcontentloaded",timeout:45000});
+    assert(safariResponse?.ok(),"Safari TirePro page is unavailable");
+    await mobileSafari.locator("#videoStage video").waitFor({state:"visible",timeout:40000});
+    const mediaResult=await mobileSafari.locator("#videoStage video").evaluate(el=>new Promise(resolve=>{
+      const result=()=>({ready:el.readyState>=1,codec:el.canPlayType('video/mp4; codecs="avc1.42E01E"'),
+        error:el.error?.code||null});
+      if(el.readyState>=1||el.error)return resolve(result());
+      el.addEventListener("loadedmetadata",()=>resolve(result()),{once:true});
+      el.addEventListener("error",()=>resolve(result()),{once:true});
+      setTimeout(()=>resolve(result()),20000);
+    }));
+    safariPlayback=mediaResult.ready;
+    safariCodec=mediaResult.codec;
+    console.log("TIREPRO_WEBKIT_VIDEO_CHECK",JSON.stringify(mediaResult));
+  }finally{await safari.close();}
+  assert(safariPlayback,"WebKit could not load product video metadata; inspect codec compatibility");
   console.log("TIREPRO_LIVE_SMOKE_OK",JSON.stringify({
-    offerPrice:"699 EGP",productVideoPlayable:true,ga4QueueReady:true,
+    offerPrice:"699 EGP",videoAssetHttpOk:served.status===200,
+    videoMetadataOnWebKit:safariPlayback,webkitCodec:safariCodec,ga4QueueReady:true,
     orderButtonEnabled:true,checkoutFormReady:true,governoratesLoaded:true,
     ordersSubmitted:0,supplierOrdersSent:0
   }));
