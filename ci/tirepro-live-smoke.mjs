@@ -41,7 +41,22 @@ try{
     el.addEventListener("error",()=>done(false),{once:true});
     setTimeout(()=>done(false),15000);
   }));
-  assert(playable,"Demo video metadata could not load");
+  const media=await video.evaluate(el=>({
+    src:el.currentSrc,networkState:el.networkState,readyState:el.readyState,
+    mediaError:el.error?{code:el.error.code,message:el.error.message}:null,
+    h264Support:el.canPlayType('video/mp4; codecs="avc1.42E01E"')
+  }));
+  let served={status:null,type:null,length:null,error:null};
+  try{
+    const head=await page.request.head(media.src,{timeout:15000});
+    served={status:head.status(),type:head.headers()["content-type"]||null,
+      length:head.headers()["content-length"]||null};
+  }catch(e){served.error=String(e.message||e).slice(0,200)}
+  console.log("TIREPRO_VIDEO_DIAGNOSTICS",JSON.stringify({media,served,playable}));
+  if(!playable){
+    assert(media.h264Support===""&&served.status===200,
+      "Video metadata unavailable even though test browser may support MP4");
+  }
   assert(await page.evaluate(()=>typeof window.gtag==="function"),
     "GA4 event queue is not initialized");
   await page.locator("#bottomOrder").click();
