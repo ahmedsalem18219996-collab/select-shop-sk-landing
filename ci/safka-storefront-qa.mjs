@@ -407,7 +407,7 @@ try {
 // Current campaign candidates must be accepted by the LIVE source-checking
 // order server. This is read-only: no database insert and no supplier order.
 for(const candidate of [
-  {id:"6a71f70b4d956cf608604baa",variant:"6a71f70b4d956cf608604bab",price:785},
+  {id:"6a71f70b4d956cf608604baa",variant:"6a71f70b4d956cf608604bab",price:699},
   {id:"6abac80af2dfbd30480af5ee",variant:"6abac80af2dfbd30480af5ef",price:985}
 ]){
  try{
