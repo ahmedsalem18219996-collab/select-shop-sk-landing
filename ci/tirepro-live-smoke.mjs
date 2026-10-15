@@ -17,7 +17,11 @@ try{
   page.on("pageerror",error=>failures.push(String(error.message||error).slice(0,250)));
   const response=await page.goto(url,{waitUntil:"domcontentloaded",timeout:45000});
   assert(response?.ok(),"TirePro landing HTTP "+response?.status());
-  await page.locator("#order:not([disabled])").waitFor({state:"visible",timeout:40000});
+  await page.waitForFunction(() => {
+    const top=document.querySelector("#order"),bottom=document.querySelector("#bottomOrder");
+    return !!top&&!top.disabled&&!!bottom&&!bottom.disabled&&
+      getComputedStyle(bottom).display!=="none";
+  },null,{timeout:40000});
   const price=(await page.locator("#currentPrice").textContent()||"").trim();
   assert(price.includes("٦٩٩")||price.includes("699"),
     "Offer is not buyable at 699 EGP: "+price);
@@ -40,7 +44,7 @@ try{
   assert(playable,"Demo video metadata could not load");
   assert(await page.evaluate(()=>typeof window.gtag==="function"),
     "GA4 event queue is not initialized");
-  await page.locator("#order").click();
+  await page.locator("#bottomOrder").click();
   await page.locator("dialog.ssCoDialog[open]").waitFor({state:"visible",timeout:10000});
   await page.locator("dialog .ssCoSubmit:not([disabled])")
     .waitFor({state:"visible",timeout:60000});
