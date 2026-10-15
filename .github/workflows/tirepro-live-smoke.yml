@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'ci/tirepro-live-smoke.mjs'
+      - 'ci/tirepro-backend-no-write.mjs'
       - '.github/workflows/tirepro-live-smoke.yml'
       - 'offers/tirepro/index.html'
   workflow_dispatch:
@@ -34,6 +35,8 @@ jobs:
           npx playwright install --with-deps chromium webkit
       - name: Check live TirePro order path without submitting
         run: node ci/tirepro-live-smoke.mjs
+      - name: Validate real production quote with zero saved or supplier orders
+        run: node ci/tirepro-backend-no-write.mjs
       - name: Store QA screenshots
         if: always()
         uses: actions/upload-artifact@v4
