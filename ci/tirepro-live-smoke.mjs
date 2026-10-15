@@ -1,9 +1,11 @@
 // SELECT SHOP TEMP — TirePro live customer-journey smoke test. NO orders are submitted.
 import assert from "node:assert/strict";
+import {mkdir} from "node:fs/promises";
 import {chromium} from "playwright";
 
 const origin="https://selectshopeg.com";
 const url=origin+"/offers/tirepro/?qa=tirepro-read-only-smoke";
+await mkdir("test-results",{recursive:true});
 const browser=await chromium.launch({headless:true});
 let page;
 try{
