@@ -12,8 +12,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://safka.fra1.cdn.digitaloceanspaces.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./monochrome.css?v=1">
-<link rel="preload" href="/assets/sk-1.jpg" as="image" fetchpriority="high">
+<link rel="stylesheet" href="./monochrome.css?v=2">
 <script defer src="./ui.js?v=1"></script>
 </head>
 <body>
@@ -56,14 +55,23 @@
 <main id="main">
  <!-- Storefront (entire section is a visual-only preview) -->
  <div id="homeView">
-  <section class="hero" aria-labelledby="heroTitle">
+  <!-- Editorial typographic hero, adapted from the minimalist centered hero design pattern on 21st.dev.
+       Original HTML/CSS implementation; no external component code or media. -->
+  <section class="hero hero--editorial" aria-labelledby="heroTitle">
    <div class="container hero-inner">
-    <div class="hero-media"><img src="/assets/sk-1.jpg" alt="سنيكرز SK أبيض بتفاصيل وردية — صورة المنتج الأصلية" width="1080" height="1080" fetchpriority="high" decoding="async"></div>
+    <div class="hero-topline" aria-hidden="true">
+     <span>SELECT SHOP — THE EDIT</span>
+     <span>EST. 2026</span>
+    </div>
     <div class="hero-content">
-     <div class="kicker">SELECT SHOP / سنيكرز</div>
-     <h1 id="heroTitle">الراحة تبدأ<br>من أول خطوة.</h1>
-     <p>موديلات يومية تناسب مشاويرك. شوفي التفاصيل واختاري المقاس اللي يناسبك.</p>
-     <a href="#shop" class="pill pill-primary" data-category-link="shoes">تسوقي الآن <svg style="width:18px;height:18px"><use href="#i-arrow"/></svg></a>
+     <span class="hero-kicker">جزم. بيت. وتفاصيل يومك.</span>
+     <h1 id="heroTitle">اختيارات على<br><span>ذوقك.</span></h1>
+     <p>سنيكرز لمشاويرك، وحاجات عملية لبيتك. كل اللي تحتاجيه، في مكان واحد.</p>
+     <a href="#shop" class="pill pill-primary hero-cta" data-category-link="all">تسوقي الآن <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </div>
+    <div class="hero-bottomline" aria-hidden="true">
+     <span>EVERYDAY ESSENTIALS</span>
+     <span>اكتشفي المجموعة <span class="hero-down">↓</span></span>
     </div>
    </div>
   </section>
