@@ -64,6 +64,7 @@ async function open(product){
   funnelEvent("begin_checkout",{value:Number(product.display_price_egp)||0,
    items:[{item_id:product.id,item_name:String(product.name).slice(0,100),quantity:1,
     price:Number(product.display_price_egp)||0}]});
+  try{window.SS_TIREPRO_TRACK?.("checkout_open")}catch{}
   const dialog=make("dialog","ssCoDialog");
   dialog.setAttribute("aria-label","إتمام طلب SELECT SHOP");
   const outer=make("div","ssCoContent");
@@ -73,6 +74,7 @@ async function open(product){
   const summary=make("p","ssCoProduct",product.name);
   const note=make("p","ssCoInfo","اختار المقاس أو اللون وسيب بياناتك. الطلب بيتسجل للمراجعة، وهنكلمك لتأكيد التوفر والسعر قبل تجهيز أي شحنة.");
   const form=make("form","ssCoForm");
+  form.addEventListener("input",()=>{try{window.SS_TIREPRO_TRACK?.("form_start")}catch{}},{once:true});
   const choiceRow=make("label","ssCoLabel","اللون / المقاس / الاختيار");
   const variant=make("select","ssCoInput");variant.name="variant";variant.required=true;
   for(const v of choices){const option=make("option","",(v.name||"اختيار")+" — "+money(v.display_price_egp));option.value=v.id;variant.append(option);}
@@ -149,6 +151,7 @@ async function open(product){
     updateDeliveryCities();
     proof=nonce;ready=true;submit.disabled=false;
     status.textContent="جاهز لتسجيل طلبك.";
+    try{window.SS_TIREPRO_TRACK?.("form_ready")}catch{}
   }catch{
     status.textContent="تعذر تجهيز الطلب حاليًا. تواصل مع خدمة العملاء.";
   }
@@ -162,6 +165,7 @@ async function open(product){
     }
     if(!gov.value){status.textContent="اختار المحافظة.";return;}
     processing=true;submit.disabled=true;status.textContent="بنراجع السعر والتوفر وبنسجل طلبك للتجهيز...";
+    try{window.SS_TIREPRO_TRACK?.("submit_attempt")}catch{}
     const payload={
       requestId,productId:product.id,variantId:variant.value,quantity:Number(quantity.value),
       governorateId:gov.value,cityId:cityCode.value==="__other__"?"":cityCode.value,
@@ -184,6 +188,7 @@ async function open(product){
           quantity:Number(quantity.value),unitPrice:Number(choice?.display_price_egp)||0
         }]);
       }catch{}
+      try{window.SS_TIREPRO_TRACK?.("lead_saved")}catch{}
       form.replaceChildren();
       form.append(make("h3","","اتسجّل طلبك بنجاح"),
         make("p","ssCoSuccess","رقم الطلب: "+data.orderCode),
@@ -205,6 +210,7 @@ async function open(product){
         request_id_conflict:"بيانات الطلب اتغيرت؛ اقفل الطلب وابدأ من جديد."
       };
       status.textContent=errors[err.message]||"تعذر تأكيد الحفظ. لو كنت حاولت قبل كده، تواصل معانا قبل إعادة الطلب.";
+      try{window.SS_TIREPRO_TRACK?.("submit_error",{error:err.message})}catch{}
       submit.disabled=false;
     }finally{processing=false;}
   });
