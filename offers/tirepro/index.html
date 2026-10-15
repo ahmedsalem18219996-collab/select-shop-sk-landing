@@ -119,6 +119,20 @@ footer a{color:#ddf77c;text-decoration:underline;text-underline-offset:4px}
 @media(max-width:360px){.wrap{width:calc(100% - 24px)}.brand{font-size:16px}}
 @media(prefers-reduced-motion:reduce){.cta{transition:none}}
 </style>
+<script>
+(() => {
+  if (window.SELECT_SHOP_TEST_MODE === true) return;
+  const measurementId="G-NB8PZCX35Z";
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=window.gtag||function(){window.dataLayer.push(arguments)};
+  window.gtag("js",new Date());
+  window.gtag("config",measurementId,{send_page_view:true});
+  const script=document.createElement("script");
+  script.async=true;
+  script.src="https://www.googletagmanager.com/gtag/js?id="+encodeURIComponent(measurementId);
+  document.head.appendChild(script);
+})();
+</script>
 <script defer src="/meta-pixel.js?v=tirepro-offer-20261015"></script>
 <script defer src="/v2-live/safka-checkout.js?v=20261015-tirepro-funnel-v1"></script>
 </head>
@@ -212,7 +226,9 @@ function renderGallery(images,videos){
  const host=$("#thumbs"),stage=$("#videoStage"),photo=$("#photo"),watch=$("#watchVideo");
  host.replaceChildren();stage.replaceChildren();stage.hidden=true;photo.hidden=false;
  const photos=[...new Set((Array.isArray(images)?images:[]).filter(s=>typeof s==="string"&&/^https:\/\//.test(s)))].slice(0,12);
- const videoLinks=[...new Set((Array.isArray(videos)?videos:[]).filter(s=>typeof s==="string"&&(
+ const videoSources=["https://selectshopeg.com/assets/ads/tirepro-original-demo-21s.mp4",
+   ...(Array.isArray(videos)?videos:[])];
+ const videoLinks=[...new Set(videoSources.filter(s=>typeof s==="string"&&(
     /^https:\/\/drive\.google\.com\/file\/d\/[a-zA-Z0-9_-]{15,}\/preview$/.test(s)||
     /^https:\/\/[a-z0-9.-]+\/[a-z0-9/_%.-]+\.(mp4|webm)(\?[a-z0-9&=_%-]+)?$/i.test(s)
  )))].slice(0,5);
@@ -249,6 +265,8 @@ function renderGallery(images,videos){
  if(videoLinks.length){
   watch.hidden=false;watch.textContent="▶ شاهد فيديو المنتج ("+videoLinks.length.toLocaleString("ar-EG")+")";
   watch.onclick=()=>{play(videoLinks[0],buttons[photos.length]);stage.scrollIntoView({block:"nearest",behavior:"smooth"})};
+  // The local product-demo video is the primary media, not hidden behind a thumbnail.
+  play(videoLinks[0],buttons[photos.length]);
  }else{watch.hidden=true;watch.onclick=null}
 }
 function order(){
