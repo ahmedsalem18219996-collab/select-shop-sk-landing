@@ -1,0 +1,44 @@
+name: TirePro live no-write smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ci/tirepro-live-smoke.mjs'
+      - '.github/workflows/tirepro-live-smoke.yml'
+      - 'offers/tirepro/index.html'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tirepro-live-smoke
+  cancel-in-progress: true
+
+jobs:
+  tirepro-mobile-checkout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout temporary SELECT SHOP only
+        uses: actions/checkout@v4
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          node --check ci/tirepro-live-smoke.mjs
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Check live TirePro order path without submitting
+        run: node ci/tirepro-live-smoke.mjs
+      - name: Store QA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tirepro-live-no-write
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
