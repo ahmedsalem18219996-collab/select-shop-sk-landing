@@ -105,6 +105,13 @@ Deno.serve(async(req)=>{
         .in("supplier_product_id",ids);
       if(existing.error)throw Error("existing_lookup_failed");
       const known=new Map((existing.data||[]).map(x=>[x.supplier_product_id,x]));
+      // Preserve previously owner-approved discounts only when the recorded
+      // pilot, original source note and conservative unit margin still match.
+      const pilotRead=await admin.from("ss_safka_pilot_prices")
+        .select("supplier_product_id,original_price_egp,promotional_price_egp,source_note_price_egp,active")
+        .in("supplier_product_id",ids).eq("active",true);
+      if(pilotRead.error)throw Error("approved_pilot_lookup_failed");
+      const pilotById=new Map((pilotRead.data||[]).map(x=>[x.supplier_product_id,x]));
       const next=unique.map(product=>{
         const prior=known.get(product.supplier_product_id);
         function variantFingerprint(list){
@@ -116,10 +123,20 @@ Deno.serve(async(req)=>{
           rows.sort((a,b)=>a.id.localeCompare(b.id));
           return JSON.stringify(rows);
         }
+        const noteRetail=Number(product.retail_note_suggested_egp);
+        const sourceSale=Number(product.suggested_sale_price_egp);
+        const approvedAmount=Number(prior?.final_price_egp);
+        const pilot=pilotById.get(product.supplier_product_id);
+        const pilotValid=pilot?.active===true&&Number.isFinite(sourceSale)&&
+          Number(pilot.original_price_egp)===noteRetail+85&&
+          Number(pilot.source_note_price_egp)===noteRetail&&
+          Number(pilot.promotional_price_egp)===approvedAmount&&
+          approvedAmount>=sourceSale+110+100;
+        const approvedPriceMatches=approvedAmount===noteRetail+85||pilotValid;
         const keepApproval=prior?.owner_verified===true&&prior?.review_state==="approved"&&
           prior.is_available===true&&product.is_available===true&&
           product.retail_price_verification==="verified_note"&&
-          Number(prior.final_price_egp)===Number(product.retail_note_suggested_egp)+85&&
+          approvedPriceMatches&&
           Number(prior.suggested_sale_price_egp)===Number(product.suggested_sale_price_egp)&&
           variantFingerprint(prior.variants)===variantFingerprint(product.variants);
         return {
