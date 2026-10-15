@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="description" content="SELECT SHOP — معرض أحادي اللون. معاينة تصميمية للملابس والأحذية والأدوات المنزلية. بدون إرسال طلبات حقيقية.">
+<title>SELECT SHOP — Mono Gallery | معاينة تصميم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://safka.fra1.cdn.digitaloceanspaces.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./monochrome.css?v=1">
+<link rel="preload" href="/assets/sk-1.jpg" as="image" fetchpriority="high">
+<script defer src="./ui.js?v=1"></script>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="7"/><path d="m16 16 5 5"/></symbol>
+<symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l1 13H4L5 8Z"/><path d="M9 9V6a3 3 0 1 1 6 0v3"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+<symbol id="i-delivery" viewBox="0 0 24 24"><path d="M2 6h12v11H2V6Zm12 3h4l4 4v4h-8V9Z"/><circle cx="6.5" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 1-8 8c-1.3 0-2.6-.3-3.7-.9L4 20l1.6-4.2A8 8 0 1 1 20 11Z"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="M5 5 19 19M19 5 5 19"/></symbol>
+</svg>
+
+<a class="skip" href="#main">تخطي للقسم الرئيسي</a>
+<div class="announcement">شحن مجاني – السعر شامل التوصيل – الدفع عند الاستلام</div>
+<div class="preview-notice"><strong>معاينة تجريبية فقط</strong> — لا تُسجل طلبات أو مدفوعات. <a href="/" style="text-decoration:underline">المتجر الحالي</a></div>
+<header class="site-header">
+ <div class="container header-main">
+  <a class="logo" href="./" aria-label="SELECT SHOP الرئيسية">SELECT<br>SHOP<small>MONO GALLERY</small></a>
+  <form class="header-search" id="desktopSearch" role="search">
+   <svg aria-hidden="true"><use href="#i-search"/></svg>
+   <label class="visually-hidden" for="siteSearch">ابحثي عن منتج</label>
+   <input id="siteSearch" type="search" placeholder="بتدوري على إيه؟" autocomplete="off" enterkeyhint="search">
+  </form>
+  <button class="icon-button mobile-search-trigger" type="button" id="mobileSearchBtn" aria-label="ابحثي عن منتج"><svg><use href="#i-search"/></svg></button>
+  <button class="icon-button" type="button" id="cartOpen" aria-label="السلة التجريبية"><svg><use href="#i-bag"/></svg><span class="cart-count numeral" id="cartBadge" hidden>0</span></button>
+  <details class="header-menu" id="menuDetails">
+   <summary class="icon-button" aria-label="فتح قائمة الأقسام"><svg><use href="#i-menu"/></svg></summary>
+   <nav class="menu-panel" aria-label="أقسام المتجر">
+    <a href="./" data-category-link="all">الرئيسية</a>
+    <a href="#shop" data-category-link="shoes">الجزم والسنيكرز</a>
+    <a href="#shop" data-category-link="home">الأدوات المنزلية</a>
+    <a href="#trust">التوصيل والدفع</a>
+   </nav>
+  </details>
+ </div>
+</header>
+
+<main id="main">
+ <!-- Storefront (entire section is a visual-only preview) -->
+ <div id="homeView">
+  <section class="hero" aria-labelledby="heroTitle">
+   <div class="container hero-inner">
+    <div class="hero-media"><img src="/assets/sk-1.jpg" alt="سنيكرز SK أبيض بتفاصيل وردية — صورة المنتج الأصلية" width="1080" height="1080" fetchpriority="high" decoding="async"></div>
+    <div class="hero-content">
+     <div class="kicker">SELECT SHOP / سنيكرز</div>
+     <h1 id="heroTitle">الراحة تبدأ<br>من أول خطوة.</h1>
+     <p>موديلات يومية تناسب مشاويرك. شوفي التفاصيل واختاري المقاس اللي يناسبك.</p>
+     <a href="#shop" class="pill pill-primary" data-category-link="shoes">تسوقي الآن <svg style="width:18px;height:18px"><use href="#i-arrow"/></svg></a>
+    </div>
+   </div>
+  </section>
+
+  <section class="container section" id="categories" aria-labelledby="categoriesTitle">
+   <div class="section-heading"><div><h2 id="categoriesTitle">اختاري قسمك.</h2><p>حاجات للبس وحاجات للبيت.</p></div></div>
+   <div class="category-grid">
+    <a class="category-tile" href="#shop" data-category-link="shoes">
+     <div class="category-photo"><img src="/assets/wk_1.jpg" width="700" height="700" loading="lazy" decoding="async" alt="سنيكرز WK — صورة منتج أصلية"></div>
+     <div class="category-caption"><strong>الجزم والسنيكرز</strong><span>اكتشفي الموديلات ←</span></div>
+    </a>
+    <a class="category-tile" href="#shop" data-category-link="home">
+     <div class="category-photo"><img src="https://safka.fra1.cdn.digitaloceanspaces.com/media/products/1790784712532-27807D19-541F-44A6-BE50-7A6222F3668F.webp" width="700" height="700" loading="lazy" decoding="async" alt="فرشاة تنظيف متعددة الاستخدام — صورة المورد"></div>
+     <div class="category-caption"><strong>الأدوات المنزلية</strong><span>اكتشفي المنتجات ←</span></div>
+    </a>
+   </div>
+  </section>
+
+  <section class="container section products-section" id="shop" aria-labelledby="productsTitle">
+   <div class="section-heading">
+    <div><h2 id="productsTitle">تسوقي المجموعة.</h2><p id="productsSub">صور المنتجات الأصلية والأسعار المتاحة للعرض.</p></div>
+    <span class="text-link" id="productsCount" aria-live="polite">جارٍ التحميل</span>
+   </div>
+   <div class="toolbar">
+    <div class="filters" role="group" aria-label="تصفية المنتجات">
+     <button class="filter" data-filter="all" type="button" aria-pressed="true">الكل</button>
+     <button class="filter" data-filter="shoes" type="button" aria-pressed="false">الجزم</button>
+     <button class="filter" data-filter="home" type="button" aria-pressed="false">الأدوات المنزلية</button>
+    </div>
+    <label class="visually-hidden" for="sortSelect">ترتيب المنتجات</label>
+    <select id="sortSelect" class="sort"><option value="featured">المختارات</option><option value="price-asc">الأقل سعرًا</option><option value="price-desc">الأعلى سعرًا</option></select>
+   </div>
+   <div class="product-grid" id="productGrid" aria-live="polite">
+    <div class="load-message"><strong>بنجهّز المنتجات…</strong>ثواني لعرض صورها وأسعارها.</div>
+   </div>
+  </section>
+
+  <section class="trust-band" id="trust" aria-labelledby="trustTitle">
+   <div class="container">
+    <h2 class="visually-hidden" id="trustTitle">التوصيل والدفع</h2>
+    <div class="trust-grid">
+     <div class="trust-item"><svg aria-hidden="true"><use href="#i-check"/></svg><div><strong>الدفع عند الاستلام</strong><p>ادفعي بعد وصول الأوردر، بدون دفع مسبق.</p></div></div>
+     <div class="trust-item"><svg aria-hidden="true"><use href="#i-delivery"/></svg><div><strong>توصيل للمناطق المتاحة</strong><p>القاهرة، الجيزة، الرحاب، الشروق ومدينتي. التوفر النهائي حسب العنوان.</p></div></div>
+     <div class="trust-item"><svg aria-hidden="true"><use href="#i-chat"/></svg><div><strong>تواصل واتساب</strong><p>للاستفسار عن المنتجات قبل الطلب من المتجر الحالي.</p></div></div>
+    </div>
+   </div>
+  </section>
+ </div>
+
+ <!-- Product page preview; URL ?product=... for direct product links -->
+ <section class="container pdp" id="productView" hidden aria-labelledby="pdpTitle">
+  <div class="breadcrumbs"><a href="./" id="backToStore">الرئيسية</a><span> / </span><span id="crumbCategory">المنتجات</span></div>
+  <div class="pdp-layout">
+   <div class="gallery">
+    <div class="gallery-track" id="galleryTrack" tabindex="0" role="region" aria-label="صور المنتج، اسحبي أفقيًا للتنقل"></div>
+    <div class="gallery-controls"><span class="gallery-count numeral" id="galleryCount">1 / 1</span><div class="gallery-buttons"><button id="prevImage" type="button" aria-label="الصورة السابقة">→</button><button id="nextImage" type="button" aria-label="الصورة التالية">←</button></div></div>
+   </div>
+   <div class="pdp-data">
+    <div class="pdp-eyebrow" id="pdpCategory"></div>
+    <h1 id="pdpTitle"></h1>
+    <div class="pdp-price"><strong id="pdpPrice" class="numeral"></strong> <span>جنيه</span></div>
+    <p class="pdp-note">السعر شامل التوصيل للمنتجات المتاحة على المتجر.</p>
+    <p class="pdp-desc" id="pdpDescription"></p>
+    <div id="sizesBox" hidden>
+     <div class="variants-label">اختاري مقاسك <small id="sizeHint">حددي مقاسًا للمتابعة</small></div>
+     <div class="size-grid" id="sizeButtons" role="group" aria-label="اختيار المقاس"></div>
+    </div>
+    <div id="variantBox" hidden>
+     <label class="variants-label" for="variantSelect">اختاري الموديل</label>
+     <select id="variantSelect" class="option-select"></select>
+    </div>
+    <p class="error" id="pdpError" role="alert" aria-live="polite"></p>
+    <button type="button" class="pill pill-primary pdp-desktop-cta" id="pdpBuy">اطلبي الآن</button>
+    <div class="pdp-trust">
+     <p><strong>الدفع عند الاستلام فقط</strong> مفيش دفع إلكتروني في SELECT SHOP.</p>
+     <p><strong>شحن مجاني ضمن السعر</strong> للمناطق المشمولة بتوصيل المنتج.</p>
+    </div>
+    <div class="preview-warning">دي صفحة عرض تصميم تجريبي. اختيار المقاس والسلة للتجربة فقط، ومفيش تسجيل أو إرسال أوردر للمورد. الموديلات المخفية في المتجر الحالي معروضة هنا بغرض التصميم فقط.</div>
+   </div>
+  </div>
+ </section>
+</main>
+<footer class="footer" id="footer">
+ <div class="container">
+  <div class="footer-grid">
+   <div><a class="logo" href="./">SELECT<br>SHOP<small>MONO GALLERY</small></a><p>كل ما تحتاجيه، في مكان واحد. اختيارات للجزم والبيت بطريقة أبسط.</p></div>
+   <div class="footer-links"><a href="#categories" id="footerCategories">الأقسام</a><a href="#trust" id="footerTrust">التوصيل والدفع</a><a href="/">الموقع الرسمي</a></div>
+  </div>
+  <div class="footer-base"><span>© SELECT SHOP 2026</span><span>DESIGN PREVIEW — NO REAL ORDERS</span></div>
+ </div>
+</footer>
+
+<div class="mobile-cta" id="mobileCta" hidden><div class="mobile-cta-inner"><span class="mobile-cta-price" id="stickyPrice"></span><button class="pill pill-primary" id="stickyBuy" type="button">اطلبي الآن</button></div></div>
+<div class="scrim" id="scrim" aria-hidden="true"></div>
+<aside class="drawer" id="cartDrawer" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+ <div class="drawer-head"><h2 id="cartTitle">السلة التجريبية</h2><button class="icon-button" id="cartClose" aria-label="إغلاق السلة"><svg><use href="#i-close"/></svg></button></div>
+ <div class="drawer-body" id="cartContents"></div>
+ <div class="drawer-foot"><div class="cart-total"><span>إجمالي المنتجات</span><strong id="cartTotal" class="numeral">0 جنيه</strong></div><button class="pill pill-primary" type="button" id="cartCheckout" style="width:100%">اطلبي الآن</button><p style="margin:12px 0 0;font-size:11px;color:var(--steel)">معاينة فقط — لن تُرسل بيانات الطلبات.</p></div>
+</aside>
+<div class="modal" id="previewModal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+ <div class="modal-panel"><h2 id="modalTitle">النسخة دي للمعاينة فقط</h2><p>اختيار المنتج والمقاس والسلة شغالين علشان نشوف التصميم. لكن الطلبات مقفولة هنا لحماية الموقع الشغال وربط صفقة. تقدري تكملي على المتجر الحالي بعد التأكد من توفر المنتج.</p><button class="pill pill-primary" id="goLive" type="button">روحي للموقع الحالي</button><button class="pill pill-secondary" id="modalClose" type="button">كمّلي معاينة</button></div>
+</div>
+</body></html>
