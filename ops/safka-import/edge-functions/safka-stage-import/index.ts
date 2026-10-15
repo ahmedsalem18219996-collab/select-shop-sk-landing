@@ -105,13 +105,13 @@ Deno.serve(async(req)=>{
         .in("supplier_product_id",ids);
       if(existing.error)throw Error("existing_lookup_failed");
       const known=new Map((existing.data||[]).map(x=>[x.supplier_product_id,x]));
-      // Preserve previously owner-approved discounts only when the recorded
-      // pilot, original source note and conservative unit margin still match.
-      const pilotRead=await admin.from("ss_safka_pilot_prices")
+      // Active pilot retail prices remain authorized across provider catalog refresh.
+      const pilotRows=await admin.from("ss_safka_pilot_prices")
         .select("supplier_product_id,original_price_egp,promotional_price_egp,source_note_price_egp,active")
-        .in("supplier_product_id",ids).eq("active",true);
-      if(pilotRead.error)throw Error("approved_pilot_lookup_failed");
-      const pilotById=new Map((pilotRead.data||[]).map(x=>[x.supplier_product_id,x]));
+        .in("supplier_product_id",ids);
+      if(pilotRows.error)throw Error("pilot_price_lookup_failed");
+      const pilotMap=new Map((pilotRows.data||[]).map(x=>[x.supplier_product_id,x]));
+
       const next=unique.map(product=>{
         const prior=known.get(product.supplier_product_id);
         function variantFingerprint(list){
@@ -123,26 +123,30 @@ Deno.serve(async(req)=>{
           rows.sort((a,b)=>a.id.localeCompare(b.id));
           return JSON.stringify(rows);
         }
-        const noteRetail=Number(product.retail_note_suggested_egp);
-        const sourceSale=Number(product.suggested_sale_price_egp);
-        const approvedAmount=Number(prior?.final_price_egp);
-        const pilot=pilotById.get(product.supplier_product_id);
-        const pilotValid=pilot?.active===true&&Number.isFinite(sourceSale)&&
-          Number(pilot.original_price_egp)===noteRetail+85&&
-          Number(pilot.source_note_price_egp)===noteRetail&&
-          Number(pilot.promotional_price_egp)===approvedAmount&&
-          approvedAmount>=sourceSale+110+100;
-        const approvedPriceMatches=approvedAmount===noteRetail+85||pilotValid;
+        const pilot=pilotMap.get(product.supplier_product_id);
+        const keepPromotion=pilot?.active===true&&prior?.is_available===true&&
+          product.is_available===true&&product.retail_price_verification==="verified_note"&&
+          Number(pilot.promotional_price_egp)===Number(prior.final_price_egp)&&
+          Number(pilot.original_price_egp)===Number(product.retail_note_suggested_egp)+85&&
+          Number(pilot.source_note_price_egp)===Number(product.retail_note_suggested_egp)&&
+          Number(prior.suggested_sale_price_egp)===Number(product.suggested_sale_price_egp)&&
+          variantFingerprint(prior.variants)===variantFingerprint(product.variants);
         const keepApproval=prior?.owner_verified===true&&prior?.review_state==="approved"&&
           prior.is_available===true&&product.is_available===true&&
           product.retail_price_verification==="verified_note"&&
-          approvedPriceMatches&&
+          (
+          Number(prior.final_price_egp)===Number(product.retail_note_suggested_egp)+85||
+          (pilotMap.get(product.supplier_product_id)?.active===true&&
+            Number(pilotMap.get(product.supplier_product_id).promotional_price_egp)===Number(prior.final_price_egp)&&
+            Number(pilotMap.get(product.supplier_product_id).original_price_egp)===Number(product.retail_note_suggested_egp)+85&&
+            Number(pilotMap.get(product.supplier_product_id).source_note_price_egp)===Number(product.retail_note_suggested_egp))
+          )&&
           Number(prior.suggested_sale_price_egp)===Number(product.suggested_sale_price_egp)&&
           variantFingerprint(prior.variants)===variantFingerprint(product.variants);
         return {
           ...product,
           review_state:keepApproval?"approved":prior?.review_state==="rejected"?"rejected":"imported",
-          final_price_egp:keepApproval?prior.final_price_egp:
+          final_price_egp:(keepApproval||keepPromotion)?prior.final_price_egp:
             product.retail_price_verification==="verified_note"&&Number(product.retail_note_suggested_egp)>0?
               Math.round(Number(product.retail_note_suggested_egp)+85):null,
           owner_verified:Boolean(keepApproval),
