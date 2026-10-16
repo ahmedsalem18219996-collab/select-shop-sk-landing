@@ -7,17 +7,20 @@
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const el=(name,cls,text)=>{const n=document.createElement(name);if(cls)n.className=cls;if(text!==undefined)n.textContent=String(text);return n};
-const fmtCat={dresses:"فساتين",sets:"أطقم",tops:"بلوزات",bottoms:"بناطيل"};
-const pic=(id,width=720)=>"https://images.unsplash.com/"+id+"?auto=format&fit=crop&w="+width+"&q=78";
+const fmtCat={jackets:"جاكيتات",dresses:"فساتين",sets:"أطقم",tops:"بلوزات",bottoms:"بناطيل"};
 const DEMO_PRODUCTS=Object.freeze([
- {id:"demo-01",name:"مساحة موديل فستان 01",category:"dresses",label:"LOOK 01",images:[pic("photo-1496747611176-843222e1e57c")],sizes:["S","M","L"]},
- {id:"demo-02",name:"مساحة موديل طقم 02",category:"sets",label:"LOOK 02",images:[pic("photo-1539109136881-3be0616acf4b")],sizes:["ONE SIZE"]},
- {id:"demo-03",name:"مساحة موديل بلوزة 03",category:"tops",label:"LOOK 03",images:[pic("photo-1515886657613-9f3515b0c78f")],sizes:["S","M","L"]},
- {id:"demo-04",name:"مساحة موديل بنطلون 04",category:"bottoms",label:"LOOK 04",images:[pic("photo-1509631179647-0177331693ae")],sizes:["S","M","L"]},
- {id:"demo-05",name:"مساحة موديل فستان 05",category:"dresses",label:"LOOK 05",images:[pic("photo-1550614000-4895a10e1bfd")],sizes:["ONE SIZE"]},
- {id:"demo-06",name:"مساحة موديل طقم 06",category:"sets",label:"LOOK 06",images:[pic("photo-1483985988355-763728e1935b")],sizes:["S","M","L"]},
- {id:"demo-07",name:"مساحة موديل بلوزة 07",category:"tops",label:"LOOK 07",images:[pic("photo-1516762689617-e1cffcef479d")],sizes:["ONE SIZE"]},
- {id:"demo-08",name:"مساحة موديل بنطلون 08",category:"bottoms",label:"LOOK 08",images:[pic("photo-1558769132-cb1aea458c5e")],sizes:["S","M","L"]}
+ {id:"sw-001",code:"SW-001",name:"جاكيت جينز حريمي بأكمام كحلي",category:"jackets",label:"SW-001",
+  images:[
+   "./media/sw-001-01.webp",
+   "./media/sw-001-02.webp",
+   "./media/sw-001-03.webp",
+   "./media/sw-001-04.webp",
+   "./media/sw-001-05.webp",
+   "./media/sw-001-06.webp"
+  ],
+  sizes:[],color:"جينز أزرق × كحلي",
+  description:"جاكيت حريمي بتصميم جينز أزرق وأكمام كحلي، ياقة جينز وأزرار وجيوب أمامية. الصور أصلية للقطعة نفسها من عدة زوايا. السعر والمقاسات لسه قيد التأكيد."
+ }
 ]);
 const state={filter:"all",search:"",sort:"curated",liked:new Set(),selected:null,size:null,active:null,previousFocus:null};
 let toastTimer;
@@ -28,14 +31,14 @@ function buildCard(p,i){
  const card=el("article","product-card"),media=el("div","product-photo");
  media.tabIndex=0;media.setAttribute("role","button");media.setAttribute("aria-label","فتح تفاصيل "+p.name);
  const img=el("img");img.src=p.images[0];img.alt="صورة توضيحية مؤقتة للعرض — "+label(p.category);img.width=570;img.height=760;img.loading=i<2?"eager":"lazy";img.decoding="async";
- media.append(img,el("span","mock-badge","تصميم تجريبي"));
+ media.append(img,el("span","mock-badge",p.code));
  const fav=el("button","fav-button");fav.type="button";fav.setAttribute("aria-label","أضيفي الموديل للمفضلة التجريبية");fav.setAttribute("aria-pressed",String(state.liked.has(p.id)));
  fav.innerHTML='<svg aria-hidden="true"><use href="#i-heart"/></svg>';
  fav.addEventListener("click",e=>{e.stopPropagation();state.liked.has(p.id)?state.liked.delete(p.id):state.liked.add(p.id);fav.setAttribute("aria-pressed",String(state.liked.has(p.id)));notify(state.liked.has(p.id)?"اتضاف للمفضلة التجريبية":"اتشال من المفضلة")});
  media.append(fav);media.addEventListener("click",e=>{if(!e.target.closest("button"))showProduct(p.id)});
  media.addEventListener("keydown",e=>{if(e.target===media&&(e.key==="Enter"||e.key===" ")){e.preventDefault();showProduct(p.id)}});
- card.append(media,el("h3","product-title",p.name),el("p","product-subtitle",label(p.category)));
- const price=el("p","product-price");price.append(el("strong","","السعر بعد إضافة منتجاتك"));card.append(price);
+ card.append(media,el("h3","product-title",p.name),el("p","product-subtitle",p.code+" · "+p.color));
+ const price=el("p","product-price");price.append(el("strong","","السعر بعد التأكيد"));card.append(price);
  const btn=el("button","view-product","تفاصيل الموديل ←");btn.type="button";btn.addEventListener("click",()=>showProduct(p.id));card.append(btn);
  return card
 }
@@ -83,10 +86,11 @@ function showProduct(id){
  const p=DEMO_PRODUCTS.find(p=>p.id===id);if(!p)return;
  state.selected=p;state.size=null;
  $("#detailTitle").textContent=p.name;
- $("#detailDescription").textContent=label(p.category)+" — ده نموذج عرض مؤقت. لما تبعت صور القطعة والوصف والخامة والسعر والمقاسات، هتظهر بياناتها هنا بدل المثال.";
+ $("#detailDescription").textContent=p.code+" · "+p.description;
  const imgs=$("#detailImages");imgs.replaceChildren();
- for(const src of p.images){const img=el("img");img.src=src;img.alt="صورة عرض مؤقتة";img.width=430;img.height=550;img.loading="lazy";imgs.append(img)}
+ for(const src of p.images){const img=el("img");img.src=src;img.alt=p.name+" — صورة أصلية للمنتج";img.width=430;img.height=550;img.loading="lazy";imgs.append(img)}
  const sizes=$("#detailSizes");sizes.replaceChildren();
+ if(!p.sizes.length){sizes.append(el("p","detail-meta","المقاسات لسه قيد التأكيد من المورد."));}
  for(const val of p.sizes){
  const b=el("button","",val);b.type="button";b.setAttribute("aria-pressed","false");
  b.addEventListener("click",()=>{state.size=val;sizes.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)))});
@@ -95,6 +99,7 @@ function showProduct(id){
  activate("#productDrawer","[data-close]");
 }
 $("#demoOrder").onclick=()=>{
+ if(!state.selected?.sizes?.length){notify("السعر والمقاسات لسه قيد التأكيد — الطلبات غير مفعلة.");return}
  if(!state.size){notify("اختاري مقاسًا تجريبيًا الأول");return}
  notify("الطلبات الحقيقية متوقفة في النسخة التجريبية — هنفتحها بعد رفع الصور والمقاسات والأسعار المؤكدة");
 };
