@@ -284,7 +284,7 @@ async function loadProduct(){
  if(state.product)return state.product;
  if(pendingProduct)return pendingProduct;
  pendingProduct=(async()=>{
-  const signal=typeof AbortSignal?.timeout==="function"?AbortSignal.timeout(13000):undefined;
+  const signal=typeof AbortSignal!=="undefined"&&typeof AbortSignal.timeout==="function"?AbortSignal.timeout(13000):undefined;
   const res=await fetch(ENDPOINT,{method:"POST",headers:{apikey:PUBLIC_KEY,"content-type":"application/json"},
    body:JSON.stringify({p_page:1,p_limit:1,p_category:null,p_search:ID}),cache:"no-store",signal});
   if(!res.ok)throw Error("تعذر الاتصال بالمنتجات. اضغط «تحقق واطلب» للمحاولة مرة تانية.");
