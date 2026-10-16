@@ -7,7 +7,9 @@
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const el=(name,cls,text)=>{const n=document.createElement(name);if(cls)n.className=cls;if(text!==undefined)n.textContent=String(text);return n};
-const fmtCat={jackets:"جاكيتات",dresses:"فساتين",sets:"أطقم",tops:"بلوزات",bottoms:"بناطيل"};
+const fmtCat={jackets:"جاكيتات",hoodies:"هوديات",dresses:"فساتين",sets:"أطقم",tops:"بلوزات",bottoms:"بناطيل"};
+const offerIsActive=p=>p.offerEndsAt && Date.now()<new Date(p.offerEndsAt).getTime();
+const getPriceText=p=>p.offerEndsAt&&!offerIsActive(p)?"انتهى العرض — السعر قيد التحديث":(p.price ? `${p.price.toLocaleString("ar-EG")} جنيه + مصاريف الشحن`:"السعر بعد التأكيد");
 const DEMO_PRODUCTS=Object.freeze([
  {id:"sw-001",code:"SW-001",name:"جاكيت جينز حريمي بأكمام كحلي",category:"jackets",label:"SW-001",
   images:[
@@ -20,6 +22,18 @@ const DEMO_PRODUCTS=Object.freeze([
   ],
   sizes:[],color:"جينز أزرق × كحلي",
   description:"جاكيت حريمي بتصميم جينز أزرق وأكمام كحلي، ياقة جينز وأزرار وجيوب أمامية. الصور أصلية للقطعة نفسها من عدة زوايا. السعر والمقاسات لسه قيد التأكيد."
+ },
+ {id:"sw-002",code:"SW-002",name:"هودي كحلي بياقة تريكو بيضاء",category:"hoodies",label:"SW-002",
+  images:[
+   "./media/sw-002-01.webp",
+   "./media/sw-002-02.webp",
+   "./media/sw-002-03.webp",
+   "./media/sw-002-04.webp",
+   "./media/sw-002-05.webp"
+  ],
+  price:699,shippingIncluded:false,offerEndsAt:"2026-10-19T23:59:59+03:00",
+  sizes:[],color:"كحلي × أبيض",
+  description:"هودي كحلي بياقة تريكو بيضاء بخط كحلي، بطباعة Artistic Department على الصدر ورقم 83 على الكم. سعر العرض 699 جنيه غير شامل مصاريف الشحن. العرض متاح حتى 19 أكتوبر 2026، والمقاسات لم تُؤكد بعد."
  }
 ]);
 const state={filter:"all",search:"",sort:"curated",liked:new Set(),selected:null,size:null,active:null,previousFocus:null};
@@ -30,15 +44,16 @@ function emptyMessage(){const n=el("div","empty-state");n.append(el("strong","",
 function buildCard(p,i){
  const card=el("article","product-card"),media=el("div","product-photo");
  media.tabIndex=0;media.setAttribute("role","button");media.setAttribute("aria-label","فتح تفاصيل "+p.name);
- const img=el("img");img.src=p.images[0];img.alt="صورة توضيحية مؤقتة للعرض — "+label(p.category);img.width=570;img.height=760;img.loading=i<2?"eager":"lazy";img.decoding="async";
- media.append(img,el("span","mock-badge",p.code));
+ const img=el("img");img.src=p.images[0];img.alt=p.name+" — صورة المنتج الأصلية";img.width=570;img.height=760;img.loading=i<2?"eager":"lazy";img.decoding="async";
+ media.append(img,el("span","mock-badge",offerIsActive(p)?"عرض لفترة محدودة":p.code));
  const fav=el("button","fav-button");fav.type="button";fav.setAttribute("aria-label","أضيفي الموديل للمفضلة التجريبية");fav.setAttribute("aria-pressed",String(state.liked.has(p.id)));
  fav.innerHTML='<svg aria-hidden="true"><use href="#i-heart"/></svg>';
  fav.addEventListener("click",e=>{e.stopPropagation();state.liked.has(p.id)?state.liked.delete(p.id):state.liked.add(p.id);fav.setAttribute("aria-pressed",String(state.liked.has(p.id)));notify(state.liked.has(p.id)?"اتضاف للمفضلة التجريبية":"اتشال من المفضلة")});
  media.append(fav);media.addEventListener("click",e=>{if(!e.target.closest("button"))showProduct(p.id)});
  media.addEventListener("keydown",e=>{if(e.target===media&&(e.key==="Enter"||e.key===" ")){e.preventDefault();showProduct(p.id)}});
  card.append(media,el("h3","product-title",p.name),el("p","product-subtitle",p.code+" · "+p.color));
- const price=el("p","product-price");price.append(el("strong","","السعر بعد التأكيد"));card.append(price);
+ const price=el("p","product-price");price.append(el("strong","",getPriceText(p)));card.append(price);
+ if(offerIsActive(p))card.append(el("p","offer-end","عرض SW-002 حتى 19 أكتوبر 2026 · من غير سعر قديم مفترض"));
  const btn=el("button","view-product","تفاصيل الموديل ←");btn.type="button";btn.addEventListener("click",()=>showProduct(p.id));card.append(btn);
  return card
 }
@@ -87,6 +102,8 @@ function showProduct(id){
  state.selected=p;state.size=null;
  $("#detailTitle").textContent=p.name;
  $("#detailDescription").textContent=p.code+" · "+p.description;
+ $("#detailPrice").textContent=getPriceText(p);
+ $("#detailOffer").hidden=!offerIsActive(p);
  const imgs=$("#detailImages");imgs.replaceChildren();
  for(const src of p.images){const img=el("img");img.src=src;img.alt=p.name+" — صورة أصلية للمنتج";img.width=430;img.height=550;img.loading="lazy";imgs.append(img)}
  const sizes=$("#detailSizes");sizes.replaceChildren();
@@ -99,7 +116,7 @@ function showProduct(id){
  activate("#productDrawer","[data-close]");
 }
 $("#demoOrder").onclick=()=>{
- if(!state.selected?.sizes?.length){notify("السعر والمقاسات لسه قيد التأكيد — الطلبات غير مفعلة.");return}
+ if(!state.selected?.sizes?.length){notify("المقاسات غير مؤكدة — الطلبات غير مفعلة في النسخة التجريبية.");return}
  if(!state.size){notify("اختاري مقاسًا تجريبيًا الأول");return}
  notify("الطلبات الحقيقية متوقفة في النسخة التجريبية — هنفتحها بعد رفع الصور والمقاسات والأسعار المؤكدة");
 };
