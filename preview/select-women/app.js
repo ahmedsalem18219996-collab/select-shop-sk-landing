@@ -25,11 +25,11 @@ const DEMO_PRODUCTS=Object.freeze([
  },
  {id:"sw-002",code:"SW-002",name:"هودي كحلي بياقة تريكو بيضاء",category:"hoodies",label:"SW-002",
   images:[
-   "./media/sw-002-01.webp",
+   "./media/sw-002-01-v2.webp",
    "./media/sw-002-02.webp",
-   "./media/sw-002-03.webp",
-   "./media/sw-002-04.webp",
-   "./media/sw-002-05.webp"
+   "./media/sw-002-03-v2.webp",
+   "./media/sw-002-04-v2.webp",
+   "./media/sw-002-05-v2.webp"
   ],
   price:699,shippingIncluded:false,offerEndsAt:"2026-10-19T23:59:59+03:00",
   sizes:[],color:"كحلي × أبيض",
