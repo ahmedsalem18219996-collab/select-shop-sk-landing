@@ -22,9 +22,17 @@ try{
     return !!top&&!top.disabled&&!!bottom&&!bottom.disabled&&
       getComputedStyle(bottom).display!=="none";
   },null,{timeout:40000});
+  // CTAs stay clickable while the product loads. Wait for verified server pricing.
+  await page.waitForFunction(()=>{
+    const value=document.querySelector("#currentPrice")?.textContent||"";
+    return value.includes("٦٩٩")||value.includes("699");
+  },null,{timeout:40000}).catch(async()=>{
+    const status=await page.locator("#status").textContent();
+    const price=await page.locator("#currentPrice").textContent();
+    throw Error("Offer never loaded verified 699 EGP price: "+price+" | "+status);
+  });
   const price=(await page.locator("#currentPrice").textContent()||"").trim();
-  assert(price.includes("٦٩٩")||price.includes("699"),
-    "Offer is not buyable at 699 EGP: "+price);
+  assert(price.includes("٦٩٩")||price.includes("699"),"Offer price verification failed");
   assert.equal(await page.locator("#bottomOrder").isDisabled(),false,
     "Mobile fixed order button remains disabled");
   assert.equal(await page.locator("#videoStage video").count(),1,
