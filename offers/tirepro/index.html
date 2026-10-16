@@ -152,7 +152,7 @@ footer a{color:#ddf77c;text-decoration:underline;text-underline-offset:4px}
  <p class="lead">لو ضغط الكاوتش قل وإنت في مشوار أو سفرية، خلي معاك منفاخ صغير في شنطة العربية. بيتوصل مباشرة بولاعة السيارة، ومعاه عداد لمتابعة الضغط.</p>
  <div class="price"><strong id="currentPrice">جارٍ التأكد من السعر...</strong><span class="old">785 جنيه</span></div>
  <span class="note">السعر شامل التوصيل للمناطق المدعومة. الدفع عند الاستلام بعد تأكيد الطلب.</span>
- <div class="heroActions"><button type="button" class="cta" id="order" disabled>جارٍ تحميل المنتج</button><a class="cta secondary" href="#features">اعرف المميزات</a></div>
+ <div class="heroActions"><button type="button" class="cta" id="order">اطلب الآن — الدفع عند الاستلام</button><a class="cta secondary" href="#features">اعرف المميزات</a></div>
  <p id="status" role="status" aria-live="polite"></p>
  <ul class="bullets">
   <li>يعمل من ولاعة العربية 12V، مش بطارية قابلة للشحن</li>
@@ -182,7 +182,7 @@ footer a{color:#ddf77c;text-decoration:underline;text-underline-offset:4px}
 <details><summary>هل يمكن الدفع عند الاستلام؟</summary><p>أيوه، الدفع عند الاستلام. تفاصيل المعاينة والاستبدال تُوضح عند تأكيد الطلب وفق سياسة المتجر وشركة الشحن.</p></details>
 </div></section>
 </main>
-<div class="bottom"><strong id="bottomPrice" class="compactPrice">— جنيه</strong><button type="button" class="cta" id="bottomOrder" disabled>اطلب الآن</button></div>
+<div class="bottom"><strong id="bottomPrice" class="compactPrice">— جنيه</strong><button type="button" class="cta" id="bottomOrder">اطلب الآن</button></div>
 <footer><div class="wrap">SELECT SHOP — كل ما تحتاجه.. في مكان واحد. <a href="/">تصفح باقي المنتجات ←</a></div></footer>
 <script>
 (()=>{"use strict";
@@ -269,32 +269,64 @@ function renderGallery(images,videos){
   play(videoLinks[0],buttons[photos.length]);
  }else{watch.hidden=true;watch.onclick=null}
 }
-function order(){
- if(!state.product||!window.SS_SAFKA_CHECKOUT){setStatus("تعذر تحميل نموذج الطلب. حدّث الصفحة أو ارجع للمتجر.");return}
- window.SS_TIREPRO_TRACK?.("cta_click");
- window.SS_SAFKA_CHECKOUT.open(state.product);
+function offerError(error){
+ const message=String(error?.message||"تعذر تحميل بيانات المنتج. حاول مرة تانية.");
+ setStatus(message);
+ if(!state.product){
+  $("#currentPrice").textContent="جارٍ التحقق من السعر";
+  $("#bottomPrice").textContent="— جنيه";
+  $("#order").textContent="تحقق من السعر واطلب";
+  $("#bottomOrder").textContent="تحقق واطلب";
+ }
 }
-$("#order").addEventListener("click",order);
-$("#bottomOrder").addEventListener("click",order);
-(async()=>{
- try{
+let pendingProduct=null;
+async function loadProduct(){
+ if(state.product)return state.product;
+ if(pendingProduct)return pendingProduct;
+ pendingProduct=(async()=>{
+  const signal=typeof AbortSignal?.timeout==="function"?AbortSignal.timeout(13000):undefined;
   const res=await fetch(ENDPOINT,{method:"POST",headers:{apikey:PUBLIC_KEY,"content-type":"application/json"},
-    body:JSON.stringify({p_page:1,p_limit:1,p_category:null,p_search:ID}),cache:"no-store",signal:AbortSignal.timeout(13000)});
-  if(!res.ok)throw Error("تعذر الاتصال بكتالوج المنتجات");
+   body:JSON.stringify({p_page:1,p_limit:1,p_category:null,p_search:ID}),cache:"no-store",signal});
+  if(!res.ok)throw Error("تعذر الاتصال بالمنتجات. اضغط «تحقق واطلب» للمحاولة مرة تانية.");
   const data=await res.json();
   const item=Array.isArray(data?.items)?data.items.find(x=>x.id===ID):null;
-  const v=Array.isArray(item?.variants)?item.variants:[];
-  if(!item||item.price_status!=="approved"||!v.some(x=>x.available===true&&Number(x.display_price_egp)===699)||Number(item.display_price_egp)!==699)
-    throw Error("السعر أو توفر المنتج اتغير، الطلب متوقف مؤقتًا للتأكد");
+  const variants=Array.isArray(item?.variants)?item.variants:[];
+  if(!item||item.price_status!=="approved"||Number(item.display_price_egp)!==699||
+   !variants.some(x=>x.available===true&&Number(x.display_price_egp)===699))
+   throw Error("السعر أو توفر المنتج اتغير، مش هنقبل طلب بسعر غير مؤكد.");
   state.product=item;
   try{window.SELECT_SHOP_META?.safkaView?.(item)}catch{}
   renderGallery(Array.isArray(item.images)?item.images:[],Array.isArray(item.videos)?item.videos:[]);
-  $("#currentPrice").textContent=Number(item.display_price_egp).toLocaleString("ar-EG")+" جنيه";
-  $("#bottomPrice").textContent=Number(item.display_price_egp).toLocaleString("ar-EG")+" جنيه";
+  const price=Number(item.display_price_egp).toLocaleString("ar-EG")+" جنيه";
+  $("#currentPrice").textContent=price;$("#bottomPrice").textContent=price;
   $("#order").textContent="اطلب الآن — الدفع عند الاستلام";
-  $("#order").disabled=false;$("#bottomOrder").disabled=false;setStatus("");
- }catch(error){setStatus(error.message||"تعذر تحميل المنتج. حاول مرة أخرى.");$("#currentPrice").textContent="السعر غير متاح الآن";$("#bottomPrice").textContent="غير متاح";}
-})();
+  $("#bottomOrder").textContent="اطلب الآن";
+  setStatus("");
+  return item;
+ })();
+ try{return await pendingProduct}
+ finally{pendingProduct=null}
+}
+async function order(){
+ if(state.opening)return;
+ state.opening=true;
+ try{
+  window.SS_TIREPRO_TRACK?.("cta_click");
+  setStatus("بنجهز نموذج الطلب...");
+  const product=await loadProduct();
+  if(typeof window.SS_SAFKA_CHECKOUT?.open!=="function")
+   throw Error("نموذج الطلب مش متاح حاليًا. حدّث الصفحة وحاول تاني.");
+  const opening=window.SS_SAFKA_CHECKOUT.open(product);
+  if(opening&&typeof opening.catch==="function")
+   opening.catch(()=>setStatus("حصلت مشكلة أثناء تجهيز نموذج الطلب. حاول تاني."));
+  setStatus("");
+ }catch(error){offerError(error)}
+ finally{state.opening=false}
+}
+$("#order").addEventListener("click",order);
+$("#bottomOrder").addEventListener("click",order);
+// Load in the background, but never strand either CTA permanently disabled.
+loadProduct().catch(offerError);
 })();
 </script>
 </body>
