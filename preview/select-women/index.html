@@ -38,14 +38,12 @@
   <nav class="primary-nav" aria-label="التصفح">
    <a href="#shop" data-category="all">الكل</a>
    <a href="#shop" data-category="jackets">جاكيتات</a>
-  <a href="#shop" data-category="hoodies">هوديات</a>
    <a href="#shop" data-category="hoodies">هوديات</a>
-  <a href="#shop" data-category="dresses">فساتين</a>
+   <a href="#shop" data-category="dresses">فساتين</a>
    <a href="#shop" data-category="sets">أطقم</a>
    <a href="#shop" data-category="tops">بلوزات</a>
    <a href="#shop" data-category="bottoms">بناطيل</a>
-  </nav>
-  <div class="header-actions">
+  </nav> <div class="header-actions">
    <button type="button" class="icon-button" id="searchOpen" aria-label="البحث في الملابس"><svg><use href="#i-search"/></svg></button>
    <button type="button" class="icon-button" id="cartOpen" aria-label="فتح السلة التجريبية"><svg><use href="#i-bag"/></svg><span class="cart-bubble" id="bagCount" hidden>0</span></button>
    <button type="button" class="icon-button menu-button" id="menuOpen" aria-label="فتح القائمة" aria-expanded="false"><svg><use href="#i-menu"/></svg></button>
@@ -54,6 +52,8 @@
  <div class="menu-panel" id="menuPanel" hidden>
   <a href="#home">الرئيسية</a>
   <a href="#shop" data-category="all">كل الملابس</a>
+  <a href="#shop" data-category="jackets">جاكيتات</a>
+  <a href="#shop" data-category="hoodies">هوديات</a>
   <a href="#shop" data-category="dresses">فساتين</a>
   <a href="#shop" data-category="sets">أطقم</a>
   <a href="#shop" data-category="tops">بلوزات</a>
@@ -95,7 +95,7 @@
    </a>
    <a href="#shop" class="collection" data-category="hoodies">
     <div class="collection-image"><img src="./media/sw-002-01.webp" width="900" height="1200" loading="lazy" decoding="async" alt="SW-002 هودي كحلي بياقة تريكو على الموديل"></div>
-    <div class="collection-desc"><b>هوديات حريمي</b><span>SW-002 · 699 جنيه + الشحن ←</span></div>
+    <div class="collection-desc"><b>هوديات حريمي</b><span id="sw002TilePrice">SW-002 · 699 جنيه + الشحن ←</span></div>
    </a>
   </div>
  </section>
