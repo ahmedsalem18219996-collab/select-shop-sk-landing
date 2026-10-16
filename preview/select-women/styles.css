@@ -144,6 +144,12 @@ svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7;stroke
 .search-sheet h2{font-size:17px;margin:0}
 .search-sheet input{margin-top:20px;padding:16px;width:100%;border:1px solid var(--line);background:var(--linen);outline-offset:2px}
 .search-sheet small{display:block;color:var(--muted);margin-top:12px}
+
+/* SW-002: verified supplier imagery and date-bound offer — no fabricated markdown */
+.offer-end{margin:8px 0 4px;padding:7px 9px;color:var(--accent);background:var(--linen);font-size:11px;font-weight:700;line-height:1.8}
+.detail-price{font:700 20px/1.7 var(--font-ar);margin:8px 0;color:var(--ink)}
+.product-photo img,.collection-image img{object-fit:contain;background:#f3f1ed}
+.mock-badge{max-width:calc(100% - 54px)}
 /* Responsive */
 @media(min-width:700px){
 .container{width:min(1300px,calc(100% - 64px))}
