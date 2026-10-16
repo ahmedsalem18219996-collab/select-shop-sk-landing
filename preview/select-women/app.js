@@ -128,5 +128,21 @@ $("#searchForm").addEventListener("submit",e=>{e.preventDefault();state.search=$
 $("#menuOpen").onclick=()=>{const p=$("#menuPanel");p.hidden=!p.hidden;$("#menuOpen").setAttribute("aria-expanded",String(!p.hidden))};
 $("#mobileHome").onclick=()=>window.scrollTo({top:0,behavior:"smooth"});
 $("#mobileProducts").onclick=toShop;
-render();
+function syncLimitedOffer(){
+ const limited=DEMO_PRODUCTS.find(p=>p.id==="sw-002");
+ if(!limited)return;
+ const active=offerIsActive(limited);
+ $("#sw002TilePrice").textContent=active?"SW-002 · 699 جنيه + الشحن ←":"SW-002 · فترة العرض انتهت ←";
+ if(state.selected?.id==="sw-002"){
+   $("#detailPrice").textContent=getPriceText(limited);
+   $("#detailOffer").hidden=!active;
+ }
+ render();
+}
+syncLimitedOffer();
+const expiry=new Date("2026-10-19T23:59:59+03:00").getTime();
+const waiting=expiry-Date.now();
+if(waiting>0) setTimeout(syncLimitedOffer,waiting+1000);
+const requested=new URLSearchParams(window.location.search).get("product");
+if(requested && DEMO_PRODUCTS.some(p=>p.id===requested))showProduct(requested);
 })();
