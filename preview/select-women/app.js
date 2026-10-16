@@ -33,7 +33,7 @@ const DEMO_PRODUCTS=Object.freeze([
   ],
   price:699,shippingIncluded:false,offerEndsAt:"2026-10-19T23:59:59+03:00",
   sizes:[],color:"كحلي × أبيض",
-  description:"هودي كحلي بياقة تريكو بيضاء بخط كحلي، بطباعة Artistic Department على الصدر ورقم 83 على الكم. سعر العرض 699 جنيه غير شامل مصاريف الشحن. العرض متاح حتى 19 أكتوبر 2026، والمقاسات لم تُؤكد بعد."
+  description:"هودي كحلي بياقة تريكو بيضاء بخط كحلي، بطباعة Artistic Department على الصدر ورقم 83 على الكم. المقاسات لم تُؤكد بعد؛ السعر والشحن موضحان بشكل منفصل في العرض الحالي."
  }
 ]);
 const state={filter:"all",search:"",sort:"curated",liked:new Set(),selected:null,size:null,active:null,previousFocus:null};
