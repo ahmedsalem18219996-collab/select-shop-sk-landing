@@ -237,9 +237,15 @@
       h.setAttribute('aria-pressed', r.saved); savedCount = r.count; setDots('.savedot', r.count); buzz(8);
       say(r.saved ? 'اتحفظت في المحفوظة' : 'اتشالت من المحفوظة');
     }
-    if (a) openSheet({ item: byId(a.dataset.add) });
-    /* no product page yet: the name opens the size sheet instead of jumping the page */
-    if (n && !byId(n.dataset.name).url) { e.preventDefault(); openSheet({ item: byId(n.dataset.name) }); }
+    if (a) {
+      if (!CFG.demo) say("المنتج ظاهر للمعاينة فقط؛ الطلبات مش مفعلة لسه.");
+      else openSheet({ item: byId(a.dataset.add) });
+    }
+    /* Product pages will be enabled after secure WOMEN checkout is tested. */
+    if (n && !byId(n.dataset.name).url) { e.preventDefault();
+      if (!CFG.demo) say("الطلبات وصفحات الشراء قيد التجهيز.");
+      else openSheet({ item: byId(n.dataset.name) });
+    }
   });
   apply('الكل');
 
