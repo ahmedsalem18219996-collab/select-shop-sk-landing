@@ -395,7 +395,7 @@ function applyAccess(){
   presentationForm:"products.edit",priceForm:"products.price",imageForm:"media.manage",
   publishBtn:"products.publish",hideBtn:"products.publish",assignShippingForm:"shipping.manage",
   regionForm:"shipping.manage",profileForm:"shipping.manage",shippingRateForm:"shipping.manage",
-  storefrontForm:"settings.manage",brandForm:"settings.manage"
+  storefrontForm:"settings.manage",brandForm:"users.manage"
  })){
   const el=$(id);if(el)el.hidden=!can(permission);
  }
@@ -523,6 +523,100 @@ function renderVariants(){
   row.append(txt,button);container.append(row);
  }
 }
+
+
+function permissionCheckboxes(parent, chosen=[], keyPrefix="staff") {
+ parent.replaceChildren();
+ const selected=new Set(chosen);
+ for(const [key,description] of Object.entries(PERMISSION_LABELS)){
+  const label=document.createElement("label");label.className="permissionOption";
+  const box=document.createElement("input");box.type="checkbox";box.value=key;
+  box.checked=selected.has(key);box.id=keyPrefix+"-"+key.replaceAll(".","-");
+  const text=document.createElement("span");text.textContent=description;
+  label.append(box,text);parent.append(label);
+ }
+}
+function selectedPermissions(parent){
+ return Array.from(parent.querySelectorAll('input[type="checkbox"]:checked'),input=>input.value);
+}
+async function loadTeam(){
+ if(adminState.role!=="owner")throw Error("إدارة الفريق للمالك فقط.");
+ const data=await api("/admin/users");
+ permissionCheckboxes($("invitePermissions"),["products.view","products.edit","media.manage"],"invite");
+ const list=$("teamList");list.replaceChildren();
+ for(const user of data.users||[]){
+  const article=document.createElement("article");article.className="teamMember";article.setAttribute("role","listitem");
+  const heading=document.createElement("div");heading.className="teamMemberHead";
+  const info=document.createElement("div"),h=document.createElement("strong"),note=document.createElement("small");
+  h.textContent=user.email||"حساب مرتبط بـWOMEN";
+  note.textContent=user.role==="owner"?"Owner • كل الصلاحيات":user.active?"Staff • نشط":"Staff • موقوف";
+  info.append(h,note);heading.append(info);
+  article.append(heading);
+  if(user.role!=="owner"){
+   const permissions=document.createElement("div");permissions.className="permissionGrid";
+   permissionCheckboxes(permissions,user.permissions||[],"user"+user.id);
+   const controls=document.createElement("div");controls.className="teamControls";
+   const activeLabel=document.createElement("label");activeLabel.className="checkline";
+   const active=document.createElement("input");active.type="checkbox";active.checked=!!user.active;
+   activeLabel.append(active,document.createTextNode("الحساب نشط"));
+   const save=document.createElement("button");save.type="button";save.className="btn outline";save.textContent="حفظ صلاحيات الموظف";
+   save.addEventListener("click",()=>actionTask(async()=>{
+    const wanted=selectedPermissions(permissions);
+    if(!window.confirm("حفظ صلاحيات الحساب المحدد؟ التغيير هيطبق فورًا."))return"تم إلغاء العملية.";
+    const result=await api("/admin/users/"+encodeURIComponent(user.id),{
+      method:"PATCH",body:{permissions:wanted,active:active.checked}
+    });
+    if(result.outcome!=="saved")throw Error("ما اتحفظتش الصلاحيات.");
+    await loadTeam();
+    return"صلاحيات Staff اتحدثت بنجاح.";
+   }));
+   controls.append(activeLabel,save);
+   article.append(permissions,controls);
+  }
+  list.append(article);
+ }
+ if(!list.children.length){const p=document.createElement("p");p.className="muted";p.textContent="لسه مفيش حسابات فريق.";list.append(p);}
+}
+$("inviteStaffForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
+ if(adminState.role!=="owner")throw Error("دعوة الموظفين للمالك فقط.");
+ const email=$("staffEmail").value.trim().toLowerCase();
+ const permissions=selectedPermissions($("invitePermissions"));
+ if(!permissions.length)throw Error("اختار صلاحية واحدة على الأقل.");
+ if(!confirm("هنبعت دعوة للموظف: "+email+" بالصلاحيات المحددة. تأكيد الإرسال؟"))
+   return"تم إلغاء الدعوة.";
+ const result=await api("/admin/users/invite",{
+  method:"POST",body:{email,permissions}
+ });
+ if(result.outcome!=="invited")throw Error("الدعوة لم تكتمل. اتأكد من إعداد بريد Supabase.");
+ $("inviteStaffForm").reset();await loadTeam();
+ return"تم إرسال دعوة الموظف. هيحدد كلمة مروره من رابط الإيميل.";
+})});
+$("reloadTeamBtn").addEventListener("click",()=>actionTask(async()=>{await loadTeam();return"تم تحديث الفريق.";}));
+async function handleInviteCallback(){
+ const tokenParams=new URLSearchParams(location.hash.replace(/^#/,""));
+ if(tokenParams.get("type")!=="invite" || !tokenParams.get("access_token") ||
+    !tokenParams.get("refresh_token"))return;
+ saveAuth({access_token:tokenParams.get("access_token"),refresh_token:tokenParams.get("refresh_token"),expires_in:Number(tokenParams.get("expires_in")||3600)});
+ history.replaceState(null,"",location.pathname+location.search);
+ $("loginForm").hidden=true;
+ $("inviteAcceptForm").hidden=false;
+ msg("تم التحقق من الدعوة. اختار كلمة مرور جديدة.",true,true);
+}
+$("inviteAcceptForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
+ const password=$("invitePassword").value;
+ if(password.length<12 || password!==$("invitePasswordAgain").value)
+  throw Error("كلمة المرور لازم 12 حرف على الأقل ومتطابقة مع التأكيد.");
+ const token=await authToken();
+ const response=await fetch(BASE+"/auth/v1/user",{method:"PUT",
+  headers:{apikey:PUB,Authorization:"Bearer "+token,"Content-Type":"application/json"},
+  body:JSON.stringify({password})});
+ if(!response.ok)throw Error("تفعيل كلمة المرور فشل. افتح الدعوة مرة تانية.");
+ $("inviteAcceptForm").hidden=true;$("loginForm").hidden=false;
+ $("invitePassword").value="";$("invitePasswordAgain").value="";
+ adminState=await api("/admin/session");applyAccess();showLogged(true);
+ const next=initialTab();if(next){tab(next);if(next==="products")await loadProducts();}
+ return"حساب Staff اتفعل وصلاحياتك جاهزة.";
+})});
 
 function priceText(v){return v?.amount_minor!=null?(Number(v.amount_minor)/100).toString():""}
 async function openItem(code){
@@ -696,6 +790,7 @@ $("settingsRefresh").addEventListener("click",()=>actionTask(async()=>{
  const d=await r.json();$("healthResult").textContent="API: "+d.status+" / "+d.service;return"الاتصال بالخدمة نجح.";
 }));
 try{const raw=sessionStorage.getItem(STORAGE_KEY);if(raw)session=JSON.parse(raw)}catch{clearAuth()}
+handleInviteCallback();
 if(session?.access_token){api("/admin/session").then(async state=>{
  adminState=state;applyAccess();showLogged(true);
  const next=initialTab();if(next){tab(next);if(next==="products")await loadProducts();else if(next==="storefront")await loadStorefront();else if(next==="shipping")await loadShipping();}
