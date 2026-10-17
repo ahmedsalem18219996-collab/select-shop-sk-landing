@@ -2,7 +2,7 @@ name: WOMEN Owner Admin and Edge API QA
 
 on:
   push:
-    branches: [main, experiment/claude-v2-github-pages]
+    branches: [main, feature/women-claude-admin-catalog]
     paths:
       - "preview/women/**"
       - "ci/women-owner-admin-qa.mjs"

@@ -20,6 +20,62 @@
   const chart = DATA.sizeChart, chartMin = DATA.sizeChartMin || { bust: 80, waist: 62 };
   const byId = id => P.find(p => String(p.id) === String(id));
 
+  // Public storefront = real WOMEN catalog. Claude's example data remains an
+  // explicitly labelled comparison at ?design-preview=1 only.
+  if (!CFG.demo) {
+    const content = CFG.presentation || {};
+    const brand = CFG.brand || {};
+    const header = $('.hdr');
+    if (header && content.announcement) {
+      const banner = document.createElement('p');
+      banner.className = 'storefront-owner-announcement';
+      banner.textContent = String(content.announcement).slice(0, 160);
+      if (/^#[0-9a-f]{6}$/i.test(brand.primaryColor || ''))
+        banner.style.borderColor = brand.primaryColor;
+      header.before(banner);
+    }
+    const hero = $('.hero h1');
+    const lead = $('.hero p');
+    if (hero) {
+      const first = hero.firstChild;
+      if (first && first.nodeType === Node.TEXT_NODE)
+        first.textContent = (String(content.hero_title || 'اختاري ستايلك').slice(0, 100)) + ' ';
+      const colored = hero.querySelector('.hl');
+      if (colored) colored.textContent = String(content.hero_highlight || 'بطريقتك.').slice(0, 70);
+    }
+    if (lead) lead.textContent = String(content.hero_description || '').slice(0, 700);
+    if (brand.storeName) {
+      document.title = String(brand.storeName).slice(0, 100);
+      const copyright = $('.foot > span');
+      if (copyright) copyright.textContent = '© 2026 ' + String(brand.storeName).slice(0, 100);
+    }
+    const freshNote = $('#demoNote');
+    if (freshNote) {
+      freshNote.hidden = false;
+      freshNote.textContent = CFG.loadError
+        ? 'تعذّر تحميل المنتجات حاليًا. البيانات التجريبية مش معروضة، جربي تحديث الصفحة.'
+        : 'متجر WOMEN قيد التجهيز · لا توجد طلبات شراء مفعّلة حاليًا';
+    }
+    const storySection = $('#stories')?.parentElement;
+    if (storySection && !STORIES.length) storySection.hidden = true;
+    const looksSection = $('#looks');
+    if (looksSection && !LOOKS.length) looksSection.hidden = true;
+    const notes = [content.payment_note, content.shipping_note, content.returns_note];
+    const promises = $('.promises .promise');
+    promises.forEach((el, index) => {
+      const value = notes[index];
+      if (!value) { el.hidden = true; return; }
+      const heading = el.querySelector('b');
+      const description = el.querySelector('span:not(.ic)');
+      if (heading) heading.textContent = ['طرق الدفع', 'معلومات الشحن', 'الاستبدال والاسترجاع'][index];
+      if (description) description.textContent = String(value).slice(0, 250);
+    });
+    if (!notes.some(Boolean)) {
+      const promisesSection = $('.promises');
+      if (promisesSection) promisesSection.hidden = true;
+    }
+  }
+
   /* ---------- config-driven bits ---------- */
   if (CFG.demo) $('#demoNote').hidden = false;
   if (CFG.whatsapp) $$('[data-wa]').forEach(a => { a.href = `https://wa.me/${CFG.whatsapp}`; });
@@ -181,9 +237,15 @@
       h.setAttribute('aria-pressed', r.saved); savedCount = r.count; setDots('.savedot', r.count); buzz(8);
       say(r.saved ? 'اتحفظت في المحفوظة' : 'اتشالت من المحفوظة');
     }
-    if (a) openSheet({ item: byId(a.dataset.add) });
-    /* no product page yet: the name opens the size sheet instead of jumping the page */
-    if (n && !byId(n.dataset.name).url) { e.preventDefault(); openSheet({ item: byId(n.dataset.name) }); }
+    if (a) {
+      if (!CFG.demo) say("المنتج ظاهر للمعاينة فقط؛ الطلبات مش مفعلة لسه.");
+      else openSheet({ item: byId(a.dataset.add) });
+    }
+    /* Product pages will be enabled after secure WOMEN checkout is tested. */
+    if (n && !byId(n.dataset.name).url) { e.preventDefault();
+      if (!CFG.demo) say("الطلبات وصفحات الشراء قيد التجهيز.");
+      else openSheet({ item: byId(n.dataset.name) });
+    }
   });
   apply('الكل');
 

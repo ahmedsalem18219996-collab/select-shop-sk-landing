@@ -9,7 +9,9 @@ const pageHtml = readFileSync("preview/women/admin/index.html","utf8");
 const previewHtml = readFileSync("preview/women/index.html","utf8");
 const failures = [];
 if(!pageHtml.includes("women-store-bridge")||!pageHtml.includes("auth/v1/token")||!pageHtml.includes('id="loginForm"')) failures.push("login integration missing");
-if(!previewHtml.includes("js/store-adapter.js") || !previewHtml.includes('noindex, nofollow') || previewHtml.includes('href="./admin/"')) failures.push("Claude WOMEN preview must stay isolated, demo-only and never link to old admin UI");
+if(!previewHtml.includes("js/store-adapter.js") || !previewHtml.includes('noindex, nofollow') || previewHtml.includes('href="./admin/"')) failures.push("Claude WOMEN preview must stay isolated and never link to old admin UI");
+if(!pageHtml.includes('id="storefrontForm"')||!pageHtml.includes('id="brandForm"')||!pageHtml.includes('id="presentationForm"')) failures.push("Owner storefront editor/category controls missing");
+if(!readFileSync("preview/women/js/store-adapter.js","utf8").includes('"/catalog"')) failures.push("WOMEN public catalog backend integration missing");
 if(!pageHtml.includes("sessionStorage")||pageHtml.includes("SUPABASE_SECRET_KEY")) failures.push("secret/auth session guard missing");
 const browser = await chromium.launch({headless:true,args:["--no-sandbox"]});
 mkdirSync("test-results",{recursive:true});
@@ -41,6 +43,19 @@ async function check(url,expected){
 const base="https://byluoipdunralsurwebt.supabase.co/functions/v1/women-store-bridge";
 await check(base+"/health",200);
 await check(base+"/catalog",200);
+try {
+ const resp=await fetch(base+"/catalog",{
+  headers:{Origin:"https://selectshopeg.com",Accept:"application/json"},
+  signal:AbortSignal.timeout(16000)
+ });
+ const data=await resp.json();
+ console.log("WOMEN catalog published only",resp.status,"items",data.items?.length,"presentation",!!data.presentation,"brand",!!data.brand);
+ if(resp.status!==200||!Array.isArray(data.items)||!data.presentation?.hero_title||!data.brand?.storeName)
+  failures.push("Owner-editable published-only WOMEN catalog response is invalid");
+ if((data.items||[]).some(x=>x.publicCode==="SS-1001"||x.publicCode==="SS-1002"))
+  failures.push("unpublished WOMEN draft leaked into public catalog");
+} catch(e) { failures.push("WOMEN catalog detail read failed "+e.message) }
+await check(base+"/admin/storefront",401);
 await check(base+"/admin/session",401);
 try {
  const options=await fetch(base+"/admin/products",{

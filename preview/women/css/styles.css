@@ -268,3 +268,9 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 @media (prefers-reduced-motion: reduce) {
   .app *, .app *::before, .app *::after { animation: none !important; transition: none !important; }
 }
+
+/* Owner-managed storefront announcement — does not restyle Claude's components. */
+.storefront-owner-announcement{margin:0;padding:9px 16px;text-align:center;font:600 11px/1.9 'Readex Pro',system-ui,sans-serif;border-bottom:3px solid #4a294c;background:#fff;color:#25232d;overflow-wrap:anywhere}
+
+/* Respect empty real-catalog sections rather than showing unused demo containers. */
+[hidden]{display:none!important}
