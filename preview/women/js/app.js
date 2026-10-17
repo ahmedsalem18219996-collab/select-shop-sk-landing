@@ -131,16 +131,22 @@
     return best;
   }
   function mark(seg) { if (seg === liveSeg) return; liveSeg = seg; segs.forEach(s => { s.classList.toggle('on', s === seg); s.setAttribute('aria-selected', s === seg); }); buzz(6); }
+  /* Fix: browser-initiated alignment on first render must not select a category.
+     Only an actual pointer/wheel/touch/keyboard or header-category action arms tape filtering. */
+  let tapeInteracted = false;
+  for (const type of ['pointerdown', 'wheel', 'touchstart', 'keydown']) {
+    tape.addEventListener(type, () => { tapeInteracted = true; }, { passive: type !== 'keydown' });
+  }
   let st;
-  tape.addEventListener('scroll', () => { mark(nearest()); clearTimeout(st); st = setTimeout(() => apply(liveSeg.dataset.c), 110); }, { passive: true });
-  tape.addEventListener('scrollend', () => { mark(nearest()); clearTimeout(st); apply(liveSeg.dataset.c); });
-  tin.addEventListener('click', e => { const s = e.target.closest('.seg'); if (s) center(s); });
+  tape.addEventListener('scroll', () => { if (!tapeInteracted) return; mark(nearest()); clearTimeout(st); st = setTimeout(() => apply(liveSeg.dataset.c), 110); }, { passive: true });
+  tape.addEventListener('scrollend', () => { if (!tapeInteracted) return; mark(nearest()); clearTimeout(st); apply(liveSeg.dataset.c); });
+  tin.addEventListener('click', e => { const s = e.target.closest('.seg'); if (s) { tapeInteracted = true; center(s); } });
   /* scrolls only the tape, never the page (scrollIntoView would jump the page on load) */
   function center(s, instant) {
     const t = tape.getBoundingClientRect(), r = s.getBoundingClientRect();
     tape.scrollBy({ left: (r.left + r.width / 2) - (t.left + t.width / 2), behavior: instant || reduce ? 'auto' : 'smooth' });
   }
-  $$('[data-jump]').forEach(a => a.addEventListener('click', () => { const s = segs.find(x => x.dataset.c === a.dataset.jump); if (s) setTimeout(() => center(s), 300); }));
+  $('[data-jump]').forEach(a => a.addEventListener('click', () => { const s = segs.find(x => x.dataset.c === a.dataset.jump); if (s) { tapeInteracted = true; setTimeout(() => center(s), 300); } }));
   /* mobile browsers fire resize when the address bar hides: only re-lay the tape when the width changes */
   let lastW = tape.clientWidth;
   addEventListener('resize', () => { if (tape.clientWidth === lastW) return; lastW = tape.clientWidth; padTape(); center(liveSeg, true); });
