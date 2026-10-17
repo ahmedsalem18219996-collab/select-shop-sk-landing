@@ -1,6 +1,7 @@
 // Standalone browser and API regression. No credentials or writes.
 import { chromium } from "playwright";
-import { resolve, mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 const file = pathToFileURL(resolve("preview/women/admin/index.html")).toString();
