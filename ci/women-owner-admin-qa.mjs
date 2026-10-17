@@ -43,6 +43,54 @@ try{
   console.log("Admin UI "+width+"px",JSON.stringify(m));
   await page.close();
  }
+ // Mocked browser-role rendering only: no account created or customer data touched.
+ for(const scenario of [
+   {role:"owner",permissions:[],team:true,products:true},
+   {role:"staff",permissions:["products.view"],team:false,products:true},
+   {role:"staff",permissions:["settings.view"],team:false,products:false},
+ ]) {
+   const context=await browser.newContext({viewport:{width:390,height:844}});
+   const page=await context.newPage();
+   page.on("pageerror",e=>failures.push(scenario.role+" role screen exception "+e.message));
+   await page.route("https://byluoipdunralsurwebt.supabase.co/**",route=>{
+      const url=route.request().url();
+      const headers={"access-control-allow-origin":"*","content-type":"application/json"};
+      if(url.includes("/admin/session"))
+        return route.fulfill({status:200,headers,body:JSON.stringify({role:scenario.role,permissions:scenario.permissions})});
+      if(url.includes("/admin/products"))
+        return route.fulfill({status:200,headers,body:'{"items":[]}'});
+      if(url.includes("/admin/users"))
+        return route.fulfill({status:200,headers,body:JSON.stringify({users:[{id:"owner-id",email:"owner@example.test",role:"owner",active:true,permissions:[]}],permissionKeys:[]})});
+      return route.fulfill({status:404,headers,body:'{"error":"mock_not_found"}'});
+   });
+   try{
+     await page.goto(file,{waitUntil:"domcontentloaded"});
+     await page.evaluate(()=>{
+       sessionStorage.setItem("select-shop-women-owner-tab-session",
+         JSON.stringify({access_token:"x".repeat(150),refresh_token:"mock",expires_at:Date.now()+600000}));
+     });
+     await page.reload({waitUntil:"domcontentloaded"});
+     await page.locator("#appScreen").waitFor({state:"visible",timeout:15000});
+     const access=await page.evaluate(()=>({
+       role:document.querySelector("#roleBadge")?.textContent,
+       team:[...document.querySelectorAll('[data-tab="team"]')].every(el=>el.hidden),
+       products:[...document.querySelectorAll('[data-tab="products"]')].every(el=>el.hidden),
+       brandHidden:document.querySelector("#brandForm")?.hidden,
+       width:document.documentElement.scrollWidth,
+       viewport:innerWidth
+     }));
+     console.log("Role UX",scenario.role,JSON.stringify(access));
+     if(access.team===scenario.team||access.products===scenario.products||
+        (!scenario.team&&!access.brandHidden)||access.width>access.viewport+1)
+       failures.push("role visibility mismatch: "+scenario.role+" "+JSON.stringify(access));
+     if(scenario.team){
+       await page.locator('[data-tab="team"]').first().click();
+       await page.locator("#teamList .teamMember").first().waitFor({state:"visible",timeout:12000});
+       await page.screenshot({path:"test-results/women-admin-owner-390.png",fullPage:true,animations:"disabled"});
+     }
+   }catch(e){failures.push("mocked role UI "+scenario.role+": "+e.message)}
+   finally{await context.close()}
+ }
 }finally{await browser.close()}
 async function check(url,expected){
  try{
