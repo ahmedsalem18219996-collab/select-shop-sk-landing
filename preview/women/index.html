@@ -166,7 +166,7 @@
         <span class="brand-word"><strong>SELECT SHOP</strong><small>WOMEN COLLECTION</small></span>
       </a>
       <nav class="nav" aria-label="روابط الموقع"><a href="#home">الرئيسية</a><a href="#models">الموديلات</a><a href="#about">عن المتجر</a></nav>
-      <a href="#models" class="nav-pill">اكتشفي المجموعة ↗</a>
+      <a href="./admin/" class="nav-pill" aria-label="لوحة إدارة WOMEN">لوحة الإدارة ↗</a>
     </div>
   </header>
   <main id="home">
@@ -247,7 +247,15 @@
         </div>
       </div>
     </section>
-    <section id="about" class="story">
+    <section id="publishedModels" class="section" style="background:#fff;border-top:1px solid #eee5f1">
+      <div class="wrap">
+        <div class="section-head">
+          <div><span class="eyebrow">LIVE WOMEN CATALOG</span><h2>الموديلات المتاحة فعليًا</h2><p>القائمة دي بتتحدّث من قاعدة WOMEN فقط، ومش بتعرض مسودات أو منتجات صفقة.</p></div>
+          <span class="mini">SELECT SHOP WOMEN / SUPABASE</span>
+        </div>
+        <div id="publishedProducts" class="products" aria-live="polite"><div class="coming"><div><h3>لسه بنجهز أول مجموعة</h3><p>المنتجات هتظهر هنا بعد توثيق الصور والمقاسات والأسعار واعتماد النشر من لوحة الإدارة.</p></div><span class="tag">لا توجد منتجات منشورة حتى الآن</span></div></div>
+      </div>
+    </section>    <section id="about" class="story">
       <div class="wrap story-grid">
         <div><span class="eyebrow" style="color:#e1afe4">ABOUT SELECT SHOP</span><h2>ستايل حلو.<br>واختيار أسهل.</h2><p>بنجهز متجر للملابس الحريمي بشكل بسيط، من أول عرض الموديل بأبعاد صور متناسقة لحد اختيار المقاس وتأكيد الأوردر. ولسه بنختبر كل خطوة قبل ما نسمح بطلبات حقيقية.</p></div>
         <div class="steps">
@@ -298,6 +306,34 @@
       });
       dialog.addEventListener("click", function (event) { if (event.target === dialog) dialog.close(); });
     })();
+  </script>
+  <script>
+  (function(){
+    "use strict";
+    var holder=document.getElementById("publishedProducts");
+    var url="https://byluoipdunralsurwebt.supabase.co/functions/v1/women-store-bridge/catalog";
+    function el(tag,klass,txt){var n=document.createElement(tag);if(klass)n.className=klass;if(txt!=null)n.textContent=txt;return n;}
+    fetch(url,{headers:{"accept":"application/json"},cache:"no-store"}).then(function(r){if(!r.ok)throw Error("Catalog service "+r.status);return r.json()}).then(function(data){
+      if(!Array.isArray(data.items)||!data.items.length)return;
+      holder.replaceChildren();
+      data.items.forEach(function(p){
+        var card=el("article","prod"), art=el("div","prod-art"), body=el("div","prod-body");
+        if(p.image&&/^https:\/\/byluoipdunralsurwebt\.supabase\.co\/storage\/v1\/object\/public\/product-media\/media\/[0-9a-f]{32}\.(?:jpg|png|webp)$/.test(p.image)){
+          var img=el("img");img.src=p.image;img.alt=p.title||"صورة المنتج";img.loading="lazy";img.style.cssText="width:100%;height:100%;object-fit:cover;position:relative;z-index:1";art.append(img);
+        }else{art.append(el("span","mini","WOMEN COLLECTION"));}
+        body.append(el("span","mini",p.publicCode||""));
+        body.append(el("h3","",p.title||"موديل"));
+        body.append(el("p","",p.purchasable?"الطلب هيُفعّل بعد اختبار الدفع والشحن.":"معروض للمعاينة فقط."));
+        var price=p.priceMinor==null?"السعر قيد المراجعة":(Number(p.priceMinor)/100).toLocaleString("ar-EG")+" جنيه";
+        body.append(el("div","price",price));
+        body.append(el("div","subprice","الدفع والطلبات غير مفعّلين في المعاينة"));
+        card.append(art,body);holder.append(card);
+      });
+    }).catch(function(){
+      holder.setAttribute("data-catalog-status","unavailable");
+      var tag=holder.querySelector(".tag");if(tag)tag.textContent="جارٍ التحقق من ربط الكتالوج";
+    });
+  })();
   </script>
 </body>
 </html>
