@@ -9,7 +9,7 @@ const pageHtml = readFileSync("preview/women/admin/index.html","utf8");
 const previewHtml = readFileSync("preview/women/index.html","utf8");
 const failures = [];
 if(!pageHtml.includes("women-store-bridge")||!pageHtml.includes("auth/v1/token")||!pageHtml.includes('id="loginForm"')) failures.push("login integration missing");
-if(!previewHtml.includes('href="./admin/"')) failures.push("Owner admin link missing from WOMEN temporary preview");
+if(!previewHtml.includes("التصميم الجديد قيد التجهيز") || previewHtml.includes('href="./admin/"')) failures.push("Temporary WOMEN preview must remain a neutral handoff, without surfacing old admin UI");
 if(!pageHtml.includes("sessionStorage")||pageHtml.includes("SUPABASE_SECRET_KEY")) failures.push("secret/auth session guard missing");
 const browser = await chromium.launch({headless:true,args:["--no-sandbox"]});
 mkdirSync("test-results",{recursive:true});
