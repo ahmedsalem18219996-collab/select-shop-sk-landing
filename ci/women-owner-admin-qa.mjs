@@ -42,5 +42,15 @@ const base="https://byluoipdunralsurwebt.supabase.co/functions/v1/women-store-br
 await check(base+"/health",200);
 await check(base+"/catalog",200);
 await check(base+"/admin/session",401);
+try {
+ const options=await fetch(base+"/admin/products",{
+   method:"OPTIONS",
+   headers:{Origin:"https://selectshopeg.com","Access-Control-Request-Method":"POST","Access-Control-Request-Headers":"authorization,content-type"},
+   signal:AbortSignal.timeout(10000)
+ });
+ const allowed=options.headers.get("access-control-allow-origin");
+ console.log("Edge preflight",options.status,allowed);
+ if(options.status!==204 || allowed!=="https://selectshopeg.com")failures.push("Owner CORS preflight failed");
+} catch(e){failures.push("Owner CORS preflight error "+e.message)}
 if(failures.length){console.error("FAIL:\n"+failures.join("\n"));process.exitCode=1}
 else console.log("PASS: responsive Owner admin UI and real WOMEN-only edge readiness");
