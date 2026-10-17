@@ -25,6 +25,15 @@
   if (!CFG.demo) {
     const content = CFG.presentation || {};
     const brand = CFG.brand || {};
+    const header = $('.hdr');
+    if (header && content.announcement) {
+      const banner = document.createElement('p');
+      banner.className = 'storefront-owner-announcement';
+      banner.textContent = String(content.announcement).slice(0, 160);
+      if (/^#[0-9a-f]{6}$/i.test(brand.primaryColor || ''))
+        banner.style.borderColor = brand.primaryColor;
+      header.before(banner);
+    }
     const hero = $('.hero h1');
     const lead = $('.hero p');
     if (hero) {
