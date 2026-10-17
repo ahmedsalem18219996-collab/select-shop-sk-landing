@@ -1,0 +1,39 @@
+name: WOMEN temporary preview mobile QA (isolated)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "preview/women/**"
+      - "ci/women-preview-qa.mjs"
+      - ".github/workflows/women-preview-qa.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout static preview
+        uses: actions/checkout@v4
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install isolated Chromium browser runner
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test responsive layout and product preview interactions
+        run: node ci/women-preview-qa.mjs
+      - name: Save browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: women-temporary-preview-qa
+          path: test-results/women-preview-*.png
+          retention-days: 7
+          if-no-files-found: ignore
