@@ -93,7 +93,7 @@ try{
     width:document.documentElement.scrollWidth,viewport:innerWidth
   }));
   console.log("LIVE MODE",r.status(),JSON.stringify(state));
-  if(state.demo!==false||state.fake||state.count!==0||state.story!==0||!state.note?.includes("الطلبات")||state.width>state.viewport+2)
+  if(state.demo!==false||state.fake||state.count!==0||state.story!==0||!state.note?.includes("طلبات")||state.width>state.viewport+2)
     failures.push("Live WOMEN storefront is showing fake catalog or broken: "+JSON.stringify(state));
   await live.screenshot({path:"test-results/women-live-mobile-390.png",fullPage:true,animations:"disabled"});
  }catch(e){failures.push("Live catalog smoke "+e.message)}
