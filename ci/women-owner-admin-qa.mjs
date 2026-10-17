@@ -86,7 +86,7 @@ try{
         (!scenario.team&&!access.brandHidden)||access.width>access.viewport+1)
        failures.push("role visibility mismatch: "+scenario.role+" "+JSON.stringify(access));
      if(scenario.team){
-       await page.locator('[data-tab="team"]').first().click();
+       await page.locator('.mobilebar [data-tab="team"]').click();
        await page.locator("#teamList .teamMember").first().waitFor({state:"visible",timeout:12000});
        await page.screenshot({path:"test-results/women-admin-owner-390.png",fullPage:true,animations:"disabled"});
      }
