@@ -43,6 +43,19 @@ async function check(url,expected){
 const base="https://byluoipdunralsurwebt.supabase.co/functions/v1/women-store-bridge";
 await check(base+"/health",200);
 await check(base+"/catalog",200);
+try {
+ const resp=await fetch(base+"/catalog",{
+  headers:{Origin:"https://selectshopeg.com",Accept:"application/json"},
+  signal:AbortSignal.timeout(16000)
+ });
+ const data=await resp.json();
+ console.log("WOMEN catalog published only",resp.status,"items",data.items?.length,"presentation",!!data.presentation,"brand",!!data.brand);
+ if(resp.status!==200||!Array.isArray(data.items)||!data.presentation?.hero_title||!data.brand?.storeName)
+  failures.push("Owner-editable published-only WOMEN catalog response is invalid");
+ if((data.items||[]).some(x=>x.publicCode==="SS-1001"||x.publicCode==="SS-1002"))
+  failures.push("unpublished WOMEN draft leaked into public catalog");
+} catch(e) { failures.push("WOMEN catalog detail read failed "+e.message) }
+await check(base+"/admin/storefront",401);
 await check(base+"/admin/session",401);
 try {
  const options=await fetch(base+"/admin/products",{
