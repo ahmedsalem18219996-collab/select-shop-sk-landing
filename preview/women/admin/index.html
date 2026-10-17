@@ -276,7 +276,7 @@ const BASE="https://byluoipdunralsurwebt.supabase.co";
 const API=BASE+"/functions/v1/women-store-bridge";
 const STORAGE_KEY="select-shop-women-owner-tab-session";
 const $=id=>document.getElementById(id);
-let session=null,list=[],product=null,createKey=null,busy=false;
+let session=null,list=[],product=null,createKey=null,busy=false,contentState=null,brandState=null;
 const msg=(s,ok=false,login=false)=>{const el=$(login?"loginMessage":"appMessage");el.textContent=s||"";el.classList.toggle("success",!!ok)};
 function setBusy(active){busy=active;document.querySelectorAll("button[type=submit]").forEach(b=>{b.disabled=active})}
 function saveAuth(data){session={access_token:data.access_token,refresh_token:data.refresh_token,expires_at:Date.now()+Math.max(60,Number(data.expires_in||3600)-30)*1000};sessionStorage.setItem(STORAGE_KEY,JSON.stringify(session))}
@@ -300,10 +300,10 @@ async function api(path,opts={}){
 }
 function showLogged(logged){$("loginScreen").hidden=logged;$("appScreen").hidden=!logged}
 function tab(name){
- if(name==="edit"){["products","create","settings"].forEach(n=>document.querySelectorAll('[data-tab="'+n+'"]').forEach(b=>b.setAttribute("aria-selected","false")))}
+ if(name==="edit"){["products","create","settings","storefront"].forEach(n=>document.querySelectorAll('[data-tab="'+n+'"]').forEach(b=>b.setAttribute("aria-selected","false")))}
  else document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===name)));
- ["products","create","edit","settings"].forEach(n=>$(n+"Tab").hidden=n!==name);
- $("pageTitle").textContent=({products:"إدارة المنتجات",create:"إضافة موديل",edit:"تفاصيل الموديل",settings:"حالة المتجر"})[name];
+ ["products","create","edit","settings","storefront"].forEach(n=>$(n+"Tab").hidden=n!==name);
+ $("pageTitle").textContent=({products:"إدارة المنتجات",create:"إضافة موديل",edit:"تفاصيل الموديل",settings:"حالة المتجر",storefront:"تعديل واجهة المتجر"})[name];
  msg("");window.scrollTo({top:0,behavior:"smooth"});
 }
 const cell=(text,cls)=>{const e=document.createElement("td");e.textContent=String(text??"—");if(cls)e.className=cls;return e};
@@ -318,6 +318,23 @@ async function loadProducts(){
  const td=document.createElement("td"),b=document.createElement("button");b.className="btn outline small";b.type="button";b.textContent="فتح وتعديل";b.addEventListener("click",()=>openItem(item.public_code));td.append(b);tr.append(td);tbody.append(tr);
  }
 }
+
+async function loadStorefront(){
+ const response=await api("/admin/storefront");
+ contentState=response.content;
+ brandState=response.brand;
+ if(!contentState||!brandState)throw Error("إعدادات واجهة WOMEN غير متاحة.");
+ const formFields={
+  heroTitle:"hero_title",heroHighlight:"hero_highlight",heroDescription:"hero_description",
+  announcement:"announcement",paymentNote:"payment_note",shippingNote:"shipping_note",
+  returnsNote:"returns_note"
+ };
+ for(const [id,key] of Object.entries(formFields))$(id).value=contentState[key]||"";
+ for(const [id,key] of Object.entries({brandName:"store_name",brandTagline:"tagline",
+   brandInstagram:"instagram_url",brandWhatsapp:"whatsapp_e164"}))$(id).value=brandState[key]||"";
+ $("brandColor").value=/^#[0-9A-Fa-f]{6}$/.test(brandState.primary_color||"")?brandState.primary_color:"#6E4BC8";
+}
+
 function priceText(v){return v?.amount_minor!=null?(Number(v.amount_minor)/100).toString():""}
 async function openItem(code){
  try{
@@ -327,6 +344,7 @@ async function openItem(code){
  $("editStatus").textContent=({draft:"مسودة",public:"منشور",hidden:"مخفي"})[product.status]||product.status;
  $("editStatus").className="status "+(product.status==="public"?"public":product.status==="hidden"?"hidden":"");
  $("editTitle").value=product.title||"";$("editDescription").value=product.description||"";$("priceEgp").value=priceText(product.base_price);
+ $("editCategory").value=response.presentation?.category||"أخرى";$("editIsNew").checked=response.presentation?.is_new===true;
  const blockers=Array.isArray(product.publish_blockers)?product.publish_blockers:[];
  $("blockerText").textContent=blockers.length?"ينقص النشر: "+blockers.join("، "):"شروط النشر الأساسية مستوفاة، لكن لازم نراجع العرض والطلب قبل البيع.";
  $("publishBtn").disabled=product.status==="public";
@@ -359,7 +377,15 @@ function logout(){
  if(token)fetch(BASE+"/auth/v1/logout",{method:"POST",headers:{apikey:PUB,Authorization:"Bearer "+token}}).catch(()=>{});
 }
 $("logoutBtn").addEventListener("click",logout);$("logoutMobile").addEventListener("click",logout);
-document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",async()=>{tab(b.dataset.tab);if(b.dataset.tab==="products")await actionTask(async()=>{await loadProducts();return""})}));
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",async()=>{
+ tab(b.dataset.tab);
+ if(b.dataset.tab==="products"||b.dataset.tab==="storefront")
+  await actionTask(async()=>{
+   if(b.dataset.tab==="products")await loadProducts();
+   else await loadStorefront();
+   return "";
+  });
+}));
 document.querySelectorAll("[data-open-create]").forEach(b=>b.addEventListener("click",()=>tab("create")));
 $("backList").addEventListener("click",async()=>{tab("products");await actionTask(async()=>{await loadProducts();return""})});
 $("reloadBtn").addEventListener("click",()=>actionTask(async()=>{await loadProducts();return"تم تحديث القائمة"}));
@@ -397,6 +423,46 @@ $("hideBtn").addEventListener("click",()=>actionTask(async()=>{
  await api("/admin/products/"+product.public_code+"/hide",{method:"POST"});
  await openItem(product.public_code);return"تم إخفاء المنتج.";
 }));
+
+$("presentationForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
+ if(!product)throw Error("اختار منتج أولًا.");
+ await api("/admin/products/"+product.public_code+"/presentation",{
+  method:"PATCH",body:{category:$("editCategory").value,isNew:$("editIsNew").checked}
+ });
+ await openItem(product.public_code);
+ return"اتحفظ القسم والعلامة «جديد» في WOMEN.";
+})});
+$("storefrontForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
+ if(!contentState)throw Error("لازم تحمل إعدادات الواجهة أولًا.");
+ const result=await api("/admin/storefront",{method:"PATCH",body:{
+  version:contentState.version,
+  heroTitle:$("heroTitle").value.trim(),
+  heroHighlight:$("heroHighlight").value.trim(),
+  heroDescription:$("heroDescription").value.trim(),
+  announcement:$("announcement").value.trim(),
+  paymentNote:$("paymentNote").value.trim(),
+  shippingNote:$("shippingNote").value.trim(),
+  returnsNote:$("returnsNote").value.trim()
+ }});
+ if(result.outcome==="conflict")throw Error("في تعديلات أحدث. حدّث صفحة إعدادات الواجهة وحاول تاني.");
+ if(result.outcome!=="changed"&&result.outcome!=="unchanged")throw Error("الإعدادات مرفوضة: "+result.outcome);
+ await loadStorefront();return"اتحفظت واجهة Claude؛ افتح المتجر واعمل تحديث علشان تشوف التغيير.";
+})});
+$("brandForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
+ if(!brandState)throw Error("حمّل إعدادات الهوية أولًا.");
+ const result=await api("/admin/brand",{method:"PATCH",body:{
+  version:brandState.version,
+  storeName:$("brandName").value.trim(),
+  tagline:$("brandTagline").value.trim(),
+  primaryColor:$("brandColor").value,
+  instagramUrl:$("brandInstagram").value.trim(),
+  whatsapp:$("brandWhatsapp").value.trim()
+ }});
+ if(result.outcome==="conflict")throw Error("الإعدادات اتحدثت من مكان تاني؛ افتحها من جديد.");
+ if(!["changed","unchanged"].includes(result.outcome))throw Error("الهوية مرفوضة: "+result.outcome);
+ await loadStorefront();return"تم حفظ هوية المتجر.";
+})});
+
 $("settingsRefresh").addEventListener("click",()=>actionTask(async()=>{
  const r=await fetch(API+"/health",{cache:"no-store",headers:{apikey:PUB}});
  if(!r.ok)throw Error("خدمة WOMEN مش متاحة، HTTP "+r.status);
