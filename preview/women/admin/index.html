@@ -329,7 +329,7 @@ const BASE="https://byluoipdunralsurwebt.supabase.co";
 const API=BASE+"/functions/v1/women-store-bridge";
 const STORAGE_KEY="select-shop-women-owner-tab-session";
 const $=id=>document.getElementById(id);
-let session=null,list=[],product=null,createKey=null,busy=false,contentState=null,brandState=null;
+let session=null,list=[],product=null,createKey=null,busy=false,contentState=null,brandState=null,shippingState={profiles:[],regions:[],rates:[]};
 const msg=(s,ok=false,login=false)=>{const el=$(login?"loginMessage":"appMessage");el.textContent=s||"";el.classList.toggle("success",!!ok)};
 function setBusy(active){busy=active;document.querySelectorAll("button[type=submit]").forEach(b=>{b.disabled=active})}
 function saveAuth(data){session={access_token:data.access_token,refresh_token:data.refresh_token,expires_at:Date.now()+Math.max(60,Number(data.expires_in||3600)-30)*1000};sessionStorage.setItem(STORAGE_KEY,JSON.stringify(session))}
@@ -353,10 +353,10 @@ async function api(path,opts={}){
 }
 function showLogged(logged){$("loginScreen").hidden=logged;$("appScreen").hidden=!logged}
 function tab(name){
- if(name==="edit"){["products","create","settings","storefront"].forEach(n=>document.querySelectorAll('[data-tab="'+n+'"]').forEach(b=>b.setAttribute("aria-selected","false")))}
+ if(name==="edit"){["products","create","settings","storefront","shipping"].forEach(n=>document.querySelectorAll('[data-tab="'+n+'"]').forEach(b=>b.setAttribute("aria-selected","false")))}
  else document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===name)));
- ["products","create","edit","settings","storefront"].forEach(n=>$(n+"Tab").hidden=n!==name);
- $("pageTitle").textContent=({products:"إدارة المنتجات",create:"إضافة موديل",edit:"تفاصيل الموديل",settings:"حالة المتجر",storefront:"تعديل واجهة المتجر"})[name];
+ ["products","create","edit","settings","storefront","shipping"].forEach(n=>$(n+"Tab").hidden=n!==name);
+ $("pageTitle").textContent=({products:"إدارة المنتجات",create:"إضافة موديل",edit:"تفاصيل الموديل",settings:"حالة المتجر",storefront:"تعديل واجهة المتجر",shipping:"إعدادات الشحن"})[name];
  msg("");window.scrollTo({top:0,behavior:"smooth"});
 }
 const cell=(text,cls)=>{const e=document.createElement("td");e.textContent=String(text??"—");if(cls)e.className=cls;return e};
@@ -388,6 +388,66 @@ async function loadStorefront(){
  $("brandColor").value=/^#[0-9A-Fa-f]{6}$/.test(brandState.primary_color||"")?brandState.primary_color:"#6E4BC8";
 }
 
+
+function fillSelect(id, list, keyField, labelField, selected){
+ const select=$(id);select.replaceChildren();
+ const start=document.createElement("option");start.value="";start.textContent="— اختار —";select.append(start);
+ for(const item of list){const option=document.createElement("option");option.value=String(item[keyField]);option.textContent=String(item[labelField]);select.append(option)}
+ select.value=selected||"";
+}
+async function loadShipping(){
+ const data=await api("/admin/shipping");
+ shippingState=data;
+ const profiles=(data.profiles||[]).filter(x=>x.active);
+ const regions=(data.regions||[]).filter(x=>x.active);
+ fillSelect("productShippingProfile",profiles,"key","name",product?.shipping_profile?.key);
+ fillSelect("rateProfile",profiles,"key","name");
+ fillSelect("rateRegion",regions,"key","label");
+ const tbody=$("shippingRows");tbody.replaceChildren();
+ for(const rate of data.rates||[]){
+  if(!rate.active)continue;
+  const profile=profiles.find(p=>p.id===rate.shipping_profile_id);
+  const region=regions.find(r=>r.key===rate.region_key);
+  const tr=document.createElement("tr");
+  tr.append(cell(profile?.name||rate.shipping_profile_id),cell(region?.label||rate.region_key),
+    cell((Number(rate.amount_minor)/100).toLocaleString("ar-EG")+" ج"));
+  tbody.append(tr);
+ }
+ if(!tbody.children.length){const tr=document.createElement("tr"),td=cell("لسه مفيش أسعار شحن مؤكدة.");td.colSpan=3;tr.append(td);tbody.append(tr)}
+}
+function renderVariants(){
+ const container=$("variantsList");container.replaceChildren();
+ const options=Array.isArray(product.options)?product.options:[];
+ const variants=Array.isArray(product.variants)?product.variants:[];
+ $("sizesSaveBtn").disabled=!!options.length&&!!variants.length;
+ $("productSizes").disabled=!!options.length&&!!variants.length;
+ if(options.length&&options[0].values?.length)
+  $("productSizes").value=options[0].values.map(x=>x.value).join(", ");
+ else $("productSizes").value="";
+ if(!variants.length){const p=document.createElement("p");p.textContent="المقاسات لسه ما اتسجلتش.";container.append(p);return}
+ for(const item of variants){
+  const names=(item.selections||[]).map(sel=>{
+   const option=options.find(o=>o.option_id===sel.option_id);
+   return option?.values?.find(v=>v.value_id===sel.value_id)?.value||"مقاس";
+  });
+  const row=document.createElement("div");row.className="variant-row";
+  const txt=document.createElement("div"),strong=document.createElement("b"),note=document.createElement("small");
+  strong.textContent=names.join(" × ")||"مقاس "+(item.position+1);
+  note.textContent=item.availability==="available"?" · متاح":item.availability==="unavailable"?" · خلص":" · التوافر غير محدد";
+  txt.append(strong,note);
+  const button=document.createElement("button");button.type="button";
+  button.className="btn outline small";
+  button.textContent=item.availability==="available"?"علّميه خلص":"علّميه متاح";
+  button.addEventListener("click",()=>actionTask(async()=>{
+   await api("/admin/products/"+product.public_code+"/availability",{method:"PATCH",body:{
+    version:product.structure_version,position:item.position,available:item.availability!=="available"
+   }});
+   await openItem(product.public_code);return"تم تحديث توافر المقاس.";
+  }));
+  row.append(txt,button);container.append(row);
+ }
+}
+
 function priceText(v){return v?.amount_minor!=null?(Number(v.amount_minor)/100).toString():""}
 async function openItem(code){
  try{
@@ -398,6 +458,8 @@ async function openItem(code){
  $("editStatus").className="status "+(product.status==="public"?"public":product.status==="hidden"?"hidden":"");
  $("editTitle").value=product.title||"";$("editDescription").value=product.description||"";$("priceEgp").value=priceText(product.base_price);
  $("editCategory").value=response.presentation?.category||"أخرى";$("editIsNew").checked=response.presentation?.is_new===true;
+ renderVariants();
+ await loadShipping();
  const blockers=Array.isArray(product.publish_blockers)?product.publish_blockers:[];
  $("blockerText").textContent=blockers.length?"ينقص النشر: "+blockers.join("، "):"شروط النشر الأساسية مستوفاة، لكن لازم نراجع العرض والطلب قبل البيع.";
  $("publishBtn").disabled=product.status==="public";
@@ -435,6 +497,7 @@ document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",as
  if(b.dataset.tab==="products"||b.dataset.tab==="storefront")
   await actionTask(async()=>{
    if(b.dataset.tab==="products")await loadProducts();
+   else if(b.dataset.tab==="shipping")await loadShipping();
    else await loadStorefront();
    return "";
   });
@@ -476,6 +539,39 @@ $("hideBtn").addEventListener("click",()=>actionTask(async()=>{
  await api("/admin/products/"+product.public_code+"/hide",{method:"POST"});
  await openItem(product.public_code);return"تم إخفاء المنتج.";
 }));
+
+
+$("sizesForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
+ if(!product)throw Error("اختار منتج.");
+ const sizes=$("productSizes").value.split(",").map(x=>x.trim()).filter(Boolean);
+ if(!sizes.length||new Set(sizes.map(x=>x.toLowerCase())).size!==sizes.length)
+  throw Error("اكتب مقاسات صحيحة ومش متكررة، بفواصل.");
+ const r=await api("/admin/products/"+product.public_code+"/sizes",{method:"POST",body:{sizes}});
+ if(r.outcome!=="applied")throw Error("تعذر إنشاء المقاسات؛ راجع نسخة المنتج.");
+ await openItem(product.public_code);return"اتعملت المقاسات، حدّد التوافر لكل مقاس.";
+})});
+$("assignShippingForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
+ if(!product||!$("productShippingProfile").value)throw Error("اختار بروفايل شحن.");
+ await api("/admin/products/"+product.public_code+"/shipping",{method:"POST",
+   body:{profileKey:$("productShippingProfile").value}});
+ await openItem(product.public_code);return"تم ربط الشحن بالموديل.";
+})});
+$("regionForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
+ await api("/admin/shipping/region",{method:"POST",body:{key:$("regionKey").value.trim().toLowerCase(),label:$("regionLabel").value.trim()}});
+ $("regionForm").reset();await loadShipping();return"اتحفظت منطقة الشحن.";
+})});
+$("profileForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
+ await api("/admin/shipping/profile",{method:"POST",body:{key:$("profileKey").value.trim().toLowerCase(),name:$("profileName").value.trim()}});
+ $("profileForm").reset();await loadShipping();return"اتحفظ بروفايل الشحن.";
+})});
+$("shippingRateForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
+ if(!$("rateProfile").value||!$("rateRegion").value||Number($("rateAmount").value)<=0)
+  throw Error("اختار بروفايل ومنطقة وسعر.");
+ await api("/admin/shipping/rate",{method:"POST",body:{
+  profileKey:$("rateProfile").value,regionKey:$("rateRegion").value,egp:$("rateAmount").value
+ }});
+ await loadShipping();return"اتحفظت مصاريف الشحن.";
+})});
 
 $("presentationForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
  if(!product)throw Error("اختار منتج أولًا.");
