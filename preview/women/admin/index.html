@@ -342,7 +342,7 @@ td{color:#47364f}
       <div class="panel"><h2>حالة SELECT SHOP WOMEN</h2><p>الموقع الأساسي وصفقة محفوظين منفصلين.</p>
       <div class="note">المنتجات تُحفظ في قاعدة WOMEN فقط. المعاينة العامة لا تستقبل طلبات حتى اعتماد المخزون والمقاسات والشحن واختبارات Checkout.</div>
       <p><b>استضافة الواجهة:</b> GitHub Pages — https://selectshopeg.com/preview/women/</p>
-      <p><b>الخدمات الخلفية:</b> Supabase WOMEN — خدمة Edge مستقلة بصلاحيات Owner.</p>
+      <p><b>الخدمات الخلفية:</b> Supabase WOMEN — خدمة Edge مستقلة بصلاحيات Owner / Staff محددة.</p>
       <p><b>الدفع:</b> لم يُفعّل في المعاينة.</p>
       <div class="row"><button type="button" data-tab="shipping" class="btn outline">إعدادات الشحن</button><button id="settingsRefresh" type="button" class="btn outline">إعادة فحص الاتصال ↻</button><a class="btn purple" href="../">فتح واجهة WOMEN</a></div>
       <div id="healthResult" class="notice"></div></div>
@@ -592,15 +592,16 @@ $("inviteStaffForm").addEventListener("submit",e=>{e.preventDefault();actionTask
  return"تم إرسال دعوة الموظف. هيحدد كلمة مروره من رابط الإيميل.";
 })});
 $("reloadTeamBtn").addEventListener("click",()=>actionTask(async()=>{await loadTeam();return"تم تحديث الفريق.";}));
-async function handleInviteCallback(){
+function handleInviteCallback(){
  const tokenParams=new URLSearchParams(location.hash.replace(/^#/,""));
  if(tokenParams.get("type")!=="invite" || !tokenParams.get("access_token") ||
-    !tokenParams.get("refresh_token"))return;
+    !tokenParams.get("refresh_token"))return false;
  saveAuth({access_token:tokenParams.get("access_token"),refresh_token:tokenParams.get("refresh_token"),expires_in:Number(tokenParams.get("expires_in")||3600)});
  history.replaceState(null,"",location.pathname+location.search);
  $("loginForm").hidden=true;
  $("inviteAcceptForm").hidden=false;
  msg("تم التحقق من الدعوة. اختار كلمة مرور جديدة.",true,true);
+ return true;
 }
 $("inviteAcceptForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
  const password=$("invitePassword").value;
@@ -658,6 +659,7 @@ $("loginForm").addEventListener("submit",async e=>{
  finally{btn.disabled=false}
 });
 function logout(){
+ adminState={role:"",permissions:[]};
  const token=session?.access_token;clearAuth();showLogged(false);$("password").value="";
  msg("تم تسجيل الخروج.",true,true);
  if(token)fetch(BASE+"/auth/v1/logout",{method:"POST",headers:{apikey:PUB,Authorization:"Bearer "+token}}).catch(()=>{});
@@ -790,8 +792,8 @@ $("settingsRefresh").addEventListener("click",()=>actionTask(async()=>{
  const d=await r.json();$("healthResult").textContent="API: "+d.status+" / "+d.service;return"الاتصال بالخدمة نجح.";
 }));
 try{const raw=sessionStorage.getItem(STORAGE_KEY);if(raw)session=JSON.parse(raw)}catch{clearAuth()}
-handleInviteCallback();
-if(session?.access_token){api("/admin/session").then(async state=>{
+const invitePending=handleInviteCallback();
+if(!invitePending && session?.access_token){api("/admin/session").then(async state=>{
  adminState=state;applyAccess();showLogged(true);
  const next=initialTab();if(next){tab(next);if(next==="products")await loadProducts();else if(next==="storefront")await loadStorefront();else if(next==="shipping")await loadShipping();}
  else msg("الحساب من غير صلاحيات. اتواصل مع المالك.");
