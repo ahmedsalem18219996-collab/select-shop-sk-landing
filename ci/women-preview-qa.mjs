@@ -27,7 +27,7 @@ try{
   page.on("console",e=>{if(e.type()==="error") failures.push(width+" browser console: "+e.text());});
   page.on("request",request=>{if(!request.url().startsWith(ORIGIN+"/"))failures.push(width+" external request: "+request.url().slice(0,100));});
   try{
-   const response=await page.goto(ORIGIN+"/",{waitUntil:"load",timeout:30000});
+   const response=await page.goto(ORIGIN+"/?design-preview=1",{waitUntil:"load",timeout:30000});
    await page.waitForFunction(()=>document.querySelectorAll("#feed .card").length===14,{timeout:30000}).catch(()=>{});
    await page.evaluate(()=>document.fonts.ready);
    const m=await page.evaluate(()=>({
@@ -40,7 +40,7 @@ try{
    console.log("Claude V2",width,response.status(),JSON.stringify(m));
    if(response.status()!==200)failures.push(width+" html HTTP "+response.status());
    if(m.dir!=="rtl"||m.scrollY>3||m.document>m.viewport+2||m.body>m.viewport+2)failures.push(width+" RTL/top/overflow "+JSON.stringify(m));
-   if(!m.demo||!m.meta?.includes("noindex"))failures.push(width+" public demo banner/noindex missing");
+   if(!m.demo||!m.meta?.includes("noindex"))failures.push(width+" explicit design-preview banner/noindex missing");
    if(m.products!==14||m.stories!==5||m.looks!==3||m.tape!==9)failures.push(width+" original Claude interactions/data not loaded");
    if(width===390){
     await page.screenshot({path:"test-results/women-preview-mobile-390.png",fullPage:true,animations:"disabled"});
@@ -77,6 +77,24 @@ try{
   }catch(e){failures.push(width+" test error "+e.stack?.slice(0,500));}
   finally{await page.close();}
  }
+ // Public/default mode MUST NOT display Claude's 14 fake prices or invent shipping claims.
+ const live=await browser.newPage({viewport:{width:390,height:844},reducedMotion:"reduce"});
+ try{
+  const r=await live.goto(ORIGIN+"/",{waitUntil:"load",timeout:25000});
+  await live.waitForFunction(()=>!!document.querySelector("#demoNote")?.textContent?.includes("متجر WOMEN"),null,{timeout:25000});
+  const state=await live.evaluate(()=>({
+    title:document.title, demo:window.SELECT_CONFIG.demo, count:document.querySelectorAll("#feed .card").length,
+    story:document.querySelectorAll("#stories .story").length,
+    fake:document.body.textContent.includes("فستان ميدي كتان"),
+    note:document.querySelector("#demoNote")?.textContent?.trim(),
+    width:document.documentElement.scrollWidth,viewport:innerWidth
+  }));
+  console.log("LIVE MODE",r.status(),JSON.stringify(state));
+  if(state.demo!==false||state.fake||state.count!==0||state.story!==0||!state.note?.includes("الطلبات")||state.width>state.viewport+2)
+    failures.push("Live WOMEN storefront is showing fake catalog or broken: "+JSON.stringify(state));
+  await live.screenshot({path:"test-results/women-live-mobile-390.png",fullPage:true,animations:"disabled"});
+ }catch(e){failures.push("Live catalog smoke "+e.message)}
+ finally{await live.close();}
  for(const f of ["assets/fonts/rakkas-400-arabic.woff2","assets/fonts/readex-pro-arabic.woff2","assets/fonts/dm-mono-400-latin.woff2","css/styles.css","js/app.js"]){
   const r=await fetch(ORIGIN+"/"+f);
   console.log("asset",f,r.status,r.headers.get("content-type"));
