@@ -73,6 +73,7 @@ td{color:#47364f}
 .status.hidden{background:#f8e8ea;color:#a34f63}
 .media{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
 .media img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:11px;background:#f2ebf4}
+.variants{display:grid;gap:9px;margin-top:18px}.variant-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #e6dfe8;border-radius:11px;padding:11px 13px}.variant-row b{font-size:12px}.variant-row small{color:#84788b;font-size:10px}.variant-row button{min-width:106px}
 .login{min-height:100dvh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 15% 22%,#e7d4f6,transparent 40%),radial-gradient(circle at 86% 79%,#f9cfe5,transparent 40%),#faf7fc}
 .login-box{background:#fff;border:1px solid #eee2f2;border-radius:27px;padding:clamp(22px,4vw,42px);width:min(460px,100%);box-shadow:0 22px 70px #6944771c}
 .login-box .logo{color:#271b32;justify-content:center;margin-bottom:29px}
@@ -129,6 +130,7 @@ td{color:#47364f}
       <button data-tab="products" aria-selected="true">◈ كل المنتجات</button>
       <button data-tab="create" aria-selected="false">＋ إضافة منتج</button>
       <button data-tab="storefront" aria-selected="false">✦ تعديل واجهة المتجر</button>
+      <button data-tab="shipping" aria-selected="false">▤ إعدادات الشحن</button>
       <button data-tab="settings" aria-selected="false">◇ حالة المتجر</button>
     </nav>
     <div class="sidebar-note">لوحة WOMEN التجريبية. الطلبات الحقيقية غير مفعّلة من المعاينة.<p><a href="../">↗ افتح واجهة المتجر</a></p></div>
@@ -204,6 +206,27 @@ td{color:#47364f}
               <button class="btn outline" type="submit">رفع وحفظ الصورة</button>
             </form>
           </div>
+          <div class="panel">
+            <h2>المقاسات والمتغيرات</h2>
+            <p>حدّد المقاسات الحقيقية للموديل مرة واحدة قبل نشره. بعدها غيّر حالة كل مقاس (متاح أو خلص). المقاسات لا تتعمل تلقائيًا من أمثلة التصميم.</p>
+            <form id="sizesForm">
+              <div class="field"><label for="productSizes">المقاسات الفعلية، افصل بينها بفاصلة</label>
+                <input id="productSizes" placeholder="مثال: S, M, L, XL أو 37, 38, 39" required maxlength="250">
+              </div>
+              <button class="btn purple" type="submit" id="sizesSaveBtn">إنشاء المقاسات</button>
+            </form>
+            <div id="variantsList" class="variants"></div>
+          </div>
+          <div class="panel">
+            <h2>ربط شحن المنتج</h2>
+            <p>اعملي بروفايل شحن وحددي أسعاره في قسم «إعدادات الشحن» الأول.</p>
+            <form id="assignShippingForm" class="row" style="align-items:end">
+              <div style="flex:1;min-width:160px"><label for="productShippingProfile">بروفايل الشحن</label>
+                <select id="productShippingProfile"><option value="">— اختار بروفايل —</option></select>
+              </div>
+              <button type="submit" class="btn outline">ربط البروفايل</button>
+            </form>
+          </div>
           <div class="panel"><h2>حالة النشر</h2>
             <p id="blockerText">جاري فحص شروط النشر...</p>
             <div class="row"><button id="publishBtn" type="button" class="btn good">نشر بعد مراجعة الشروط</button><button id="hideBtn" type="button" class="btn danger">إخفاء المنتج</button></div>
@@ -249,13 +272,43 @@ td{color:#47364f}
       </div>
       <p class="note">المنتجات والأسعار التجريبية مش بتتحول لمنتجات حقيقية من هنا. نزّلي الموديلات من «إضافة منتج»، وأكّدي المخزون والمقاسات والشحن قبل النشر والبيع.</p>
     </section>
+    <section id="shippingTab" hidden>
+      <div class="panel">
+        <h2>▤ إعدادات شحن WOMEN</h2>
+        <p>المناطق وأسعارها بتتحفظ في قاعدة WOMEN فقط. مش هنستخدم أرقام صفقة القديمة تلقائيًا.</p>
+        <div class="grid2">
+          <form id="regionForm">
+            <h3>إضافة منطقة شحن</h3>
+            <div class="field"><label for="regionKey">كود المنطقة بالإنجليزي</label><input id="regionKey" pattern="[a-z0-9_-]+" placeholder="cairo" required maxlength="64"></div>
+            <div class="field"><label for="regionLabel">اسم المنطقة</label><input id="regionLabel" placeholder="القاهرة" required maxlength="100"></div>
+            <button class="btn outline" type="submit">حفظ المنطقة</button>
+          </form>
+          <form id="profileForm">
+            <h3>إضافة بروفايل شحن</h3>
+            <div class="field"><label for="profileKey">كود البروفايل</label><input id="profileKey" pattern="[a-z0-9_-]+" placeholder="egypt" required maxlength="64"></div>
+            <div class="field"><label for="profileName">اسم البروفايل</label><input id="profileName" placeholder="شحن محافظات مصر" required maxlength="100"></div>
+            <button class="btn outline" type="submit">حفظ البروفايل</button>
+          </form>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>سعر الشحن حسب المنطقة</h2>
+        <form id="shippingRateForm" class="grid2">
+          <div class="field"><label for="rateProfile">بروفايل الشحن</label><select id="rateProfile" required><option value="">— اختار —</option></select></div>
+          <div class="field"><label for="rateRegion">المنطقة</label><select id="rateRegion" required><option value="">— اختار —</option></select></div>
+          <div class="field"><label for="rateAmount">مصاريف الشحن بالجنيه</label><input id="rateAmount" type="number" min="1" max="999999" step=".01" placeholder="مثال: 85" required></div>
+          <div class="field" style="align-self:end"><button class="btn primary" type="submit">حفظ تكلفة الشحن</button></div>
+        </form>
+        <div class="tablewrap"><table><thead><tr><th>البروفايل</th><th>المنطقة</th><th>الشحن</th></tr></thead><tbody id="shippingRows"><tr><td colspan="3">لم يتم التهيئة بعد</td></tr></tbody></table></div>
+      </div>
+    </section>
     <section id="settingsTab" hidden>
       <div class="panel"><h2>حالة SELECT SHOP WOMEN</h2><p>الموقع الأساسي وصفقة محفوظين منفصلين.</p>
       <div class="note">المنتجات تُحفظ في قاعدة WOMEN فقط. المعاينة العامة لا تستقبل طلبات حتى اعتماد المخزون والمقاسات والشحن واختبارات Checkout.</div>
       <p><b>استضافة الواجهة:</b> GitHub Pages — https://selectshopeg.com/preview/women/</p>
       <p><b>الخدمات الخلفية:</b> Supabase WOMEN — خدمة Edge مستقلة بصلاحيات Owner.</p>
       <p><b>الدفع:</b> لم يُفعّل في المعاينة.</p>
-      <div class="row"><button id="settingsRefresh" type="button" class="btn outline">إعادة فحص الاتصال ↻</button><a class="btn purple" href="../">فتح واجهة WOMEN</a></div>
+      <div class="row"><button type="button" data-tab="shipping" class="btn outline">إعدادات الشحن</button><button id="settingsRefresh" type="button" class="btn outline">إعادة فحص الاتصال ↻</button><a class="btn purple" href="../">فتح واجهة WOMEN</a></div>
       <div id="healthResult" class="notice"></div></div>
     </section>
   </div>
