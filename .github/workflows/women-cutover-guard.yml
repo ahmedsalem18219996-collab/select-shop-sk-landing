@@ -1,0 +1,47 @@
+name: WOMEN temporary-site cutover guard (no deployment)
+
+on:
+  push:
+    branches:
+      - experiment/women-temp-site-cutover
+    paths:
+      - "ops/women-cutover/**"
+      - ".github/workflows/women-cutover-guard.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "ops/women-cutover/**"
+      - ".github/workflows/women-cutover-guard.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate staging gate syntax and unchanged domain config
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check ops/women-cutover/verify-staging.mjs
+          test "$(cat CNAME)" = "selectshopeg.com"
+          test -f index.html
+          test -f catalog-v2-live.js
+          test -f storefront-v2-live.js
+          test -d v2-live
+          echo "WOMEN cutover preparation is isolated; no domain or homepage switch was performed."
+      - name: No credentials or private WOMEN source added to public repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RIE '(SUPABASE_SECRET_KEY|CLOUDFLARE_API_TOKEN)[[:space:]]*[:=][[:space:]]*["\x27]?[A-Za-z0-9_-]{12,}' ops/women-cutover --include='*.mjs' --include='*.md'; then
+            echo 'Possible credential assignment. Do not publish.'
+            exit 1
+          fi
+          echo "Static guard scan passed (not a replacement for a security audit)."
