@@ -146,7 +146,7 @@
     const t = tape.getBoundingClientRect(), r = s.getBoundingClientRect();
     tape.scrollBy({ left: (r.left + r.width / 2) - (t.left + t.width / 2), behavior: instant || reduce ? 'auto' : 'smooth' });
   }
-  $('[data-jump]').forEach(a => a.addEventListener('click', () => { const s = segs.find(x => x.dataset.c === a.dataset.jump); if (s) { tapeInteracted = true; setTimeout(() => center(s), 300); } }));
+  $$('[data-jump]').forEach(a => a.addEventListener('click', () => { const s = segs.find(x => x.dataset.c === a.dataset.jump); if (s) { tapeInteracted = true; setTimeout(() => center(s), 300); } }));
   /* mobile browsers fire resize when the address bar hides: only re-lay the tape when the width changes */
   let lastW = tape.clientWidth;
   addEventListener('resize', () => { if (tape.clientWidth === lastW) return; lastW = tape.clientWidth; padTape(); center(liveSeg, true); });
