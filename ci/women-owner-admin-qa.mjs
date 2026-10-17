@@ -54,7 +54,9 @@ try{
    page.on("pageerror",e=>failures.push(scenario.role+" role screen exception "+e.message));
    await page.route("https://byluoipdunralsurwebt.supabase.co/**",route=>{
       const url=route.request().url();
-      const headers={"access-control-allow-origin":"*","content-type":"application/json"};
+      const headers={"access-control-allow-origin":"*","access-control-allow-methods":"GET,POST,PATCH,OPTIONS",
+        "access-control-allow-headers":"authorization,apikey,content-type","content-type":"application/json"};
+      if(route.request().method()==="OPTIONS")return route.fulfill({status:204,headers,body:""});
       if(url.includes("/admin/session"))
         return route.fulfill({status:200,headers,body:JSON.stringify({role:scenario.role,permissions:scenario.permissions})});
       if(url.includes("/admin/products"))
