@@ -41,10 +41,12 @@ nav button:hover{background:#ffffff10}
 .panel h2{font-size:20px;line-height:1.6;margin:0 0 14px}
 .panel p{color:var(--muted);font-size:11px;line-height:2}
 label{display:block;font-size:11px;font-weight:700;color:#5a4966;margin-bottom:8px}
-input,textarea{display:block;width:100%;border:1px solid #dfd5e7;background:#fff;border-radius:11px;padding:13px 14px;font-size:12px;color:#301e3a;min-height:46px;outline:none}
-input:focus,textarea:focus{border-color:#9f6bc8;box-shadow:0 0 0 3px #a667cf1d}
+input,textarea,select{display:block;width:100%;border:1px solid #dfd5e7;background:#fff;border-radius:11px;padding:13px 14px;font-size:12px;color:#301e3a;min-height:46px;outline:none}
+input:focus,textarea:focus,select:focus{border-color:#9f6bc8;box-shadow:0 0 0 3px #a667cf1d}
 textarea{min-height:113px;resize:vertical;line-height:1.9}
 input[type=file]{font-size:10px;padding:12px}
+select{width:100%;min-height:46px;border:1px solid #dfd5e7;border-radius:11px;padding:11px;background:#fff;color:#301e3a;font:inherit;font-size:12px}
+.checkline{display:flex;align-items:center;gap:10px;min-height:43px}.checkline input{width:18px;min-height:18px;height:18px;flex:none}
 .field{margin-bottom:20px}
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
 .row>*{min-width:0}
@@ -126,6 +128,7 @@ td{color:#47364f}
     <nav aria-label="لوحة الإدارة">
       <button data-tab="products" aria-selected="true">◈ كل المنتجات</button>
       <button data-tab="create" aria-selected="false">＋ إضافة منتج</button>
+      <button data-tab="storefront" aria-selected="false">✦ تعديل واجهة المتجر</button>
       <button data-tab="settings" aria-selected="false">◇ حالة المتجر</button>
     </nav>
     <div class="sidebar-note">لوحة WOMEN التجريبية. الطلبات الحقيقية غير مفعّلة من المعاينة.<p><a href="../">↗ افتح واجهة المتجر</a></p></div>
@@ -170,6 +173,25 @@ td{color:#47364f}
             <h2>السعر الأساسي</h2><p>بالجنيه المصري، غير شامل الشحن. لا تنشري السعر قبل تأكيده.</p>
             <form id="priceForm" class="row" style="align-items:end"><div style="flex:1;min-width:130px"><label for="priceEgp">السعر (جنيه)</label><input id="priceEgp" type="number" min="1" max="9999999" step=".01" placeholder="699"></div><button type="submit" class="btn purple">حفظ السعر</button></form>
           </div>
+          <div class="panel">
+            <h2>القسم والعرض في المتجر</h2>
+            <p>بيظهر المنتج في قسم المازورة المناسب بعد نشره، ومش بيتحول للبيع تلقائيًا.</p>
+            <form id="presentationForm">
+              <div class="field"><label for="editCategory">قسم المنتج</label>
+                <select id="editCategory" required>
+                  <option value="فساتين">فساتين</option>
+                  <option value="أطقم">أطقم</option>
+                  <option value="عبايات">عبايات</option>
+                  <option value="بلوزات">بلوزات</option>
+                  <option value="جيبات وبناطيل">جيبات وبناطيل</option>
+                  <option value="إكسسوارات">إكسسوارات</option>
+                  <option value="أخرى">أخرى / قيد التصنيف</option>
+                </select>
+              </div>
+              <label class="checkline"><input id="editIsNew" type="checkbox"> يظهر في قسم «الجديد» بعد النشر</label>
+              <button class="btn outline" type="submit">حفظ قسم المنتج</button>
+            </form>
+          </div>
         </div>
         <div>
           <div class="panel">
@@ -190,6 +212,43 @@ td{color:#47364f}
         </div>
       </div>
     </section>
+    <section id="storefrontTab" hidden>
+      <div class="panel">
+        <h2>✦ محتوى واجهة Claude</h2>
+        <p>غيّري النصوص اللي بتظهر على الصفحة الرئيسية، من غير ما تفتحي GitHub أو يتغير شكل التصميم.</p>
+        <form id="storefrontForm">
+          <div class="grid2">
+            <div class="field"><label for="heroTitle">عنوان الواجهة</label><input id="heroTitle" maxlength="100" required placeholder="اختاري ستايلك"></div>
+            <div class="field"><label for="heroHighlight">الكلمة المميزة في العنوان</label><input id="heroHighlight" maxlength="70" required placeholder="بطريقتك."></div>
+          </div>
+          <div class="field"><label for="heroDescription">وصف الواجهة</label><textarea id="heroDescription" maxlength="700" placeholder="وصف قصير يعبر عن المتجر"></textarea></div>
+          <div class="field"><label for="announcement">شريط التنويه</label><input id="announcement" maxlength="160" placeholder="SELECT SHOP WOMEN"></div>
+          <div class="grid2">
+            <div class="field"><label for="paymentNote">معلومات الدفع (تظهر فقط لو كتبتيها)</label><textarea id="paymentNote" maxlength="250" placeholder="اكتبي طرق الدفع المؤكدة"></textarea></div>
+            <div class="field"><label for="shippingNote">معلومات الشحن المؤكدة</label><textarea id="shippingNote" maxlength="250" placeholder="من غير وعود توصيل غير مؤكدة"></textarea></div>
+          </div>
+          <div class="field"><label for="returnsNote">سياسة الاستبدال والاسترجاع المؤكدة</label><textarea id="returnsNote" maxlength="250"></textarea></div>
+          <div class="row"><button class="btn primary" type="submit">حفظ محتوى واجهة المتجر</button><a href="../" class="btn outline" target="_blank" rel="noopener noreferrer">↗ مشاهدة الواجهة</a></div>
+        </form>
+      </div>
+      <div class="panel">
+        <h2>هوية المتجر وطرق التواصل</h2>
+        <p>اسم المتجر ووصفه المختصر ولونه ورابط إنستجرام من إعدادات WOMEN المستقلة.</p>
+        <form id="brandForm">
+          <div class="grid2">
+            <div class="field"><label for="brandName">اسم المتجر</label><input id="brandName" required maxlength="120"></div>
+            <div class="field"><label for="brandTagline">الشعار النصي</label><input id="brandTagline" maxlength="300"></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="brandColor">لون الهوية</label><input id="brandColor" type="color" value="#6E4BC8"></div>
+            <div class="field"><label for="brandInstagram">رابط إنستجرام</label><input id="brandInstagram" type="url" placeholder="https://instagram.com/..."></div>
+          </div>
+          <div class="field"><label for="brandWhatsapp">واتساب بصيغة دولية (اختياري)</label><input id="brandWhatsapp" type="tel" placeholder="+201..." maxlength="20"></div>
+          <button class="btn purple" type="submit">حفظ الهوية والتواصل</button>
+        </form>
+      </div>
+      <p class="note">المنتجات والأسعار التجريبية مش بتتحول لمنتجات حقيقية من هنا. نزّلي الموديلات من «إضافة منتج»، وأكّدي المخزون والمقاسات والشحن قبل النشر والبيع.</p>
+    </section>
     <section id="settingsTab" hidden>
       <div class="panel"><h2>حالة SELECT SHOP WOMEN</h2><p>الموقع الأساسي وصفقة محفوظين منفصلين.</p>
       <div class="note">المنتجات تُحفظ في قاعدة WOMEN فقط. المعاينة العامة لا تستقبل طلبات حتى اعتماد المخزون والمقاسات والشحن واختبارات Checkout.</div>
@@ -203,6 +262,7 @@ td{color:#47364f}
   <nav class="mobilebar" aria-label="إدارة الموبايل">
     <button data-tab="products" aria-selected="true">▦ المنتجات</button>
     <button data-tab="create" aria-selected="false">＋ إضافة</button>
+    <button data-tab="storefront" aria-selected="false">✦ الواجهة</button>
     <button data-tab="settings" aria-selected="false">◇ الحالة</button>
     <a href="../">↗ المتجر</a>
     <button id="logoutMobile">خروج</button>
