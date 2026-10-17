@@ -1,33 +1,87 @@
-// SELECT SHOP WOMEN — neutral GitHub Pages Claude-design handoff smoke.
-// Read-only: public path must be safe, RTL, responsive, and not offer fake purchases.
+// WOMEN Claude V2 — GitHub Pages isolated static preview acceptance.
 import { chromium } from "playwright";
-import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
-const url = pathToFileURL(resolve("preview/women/index.html")).toString();
-const widths = [320,360,390,400,768,1280];
-const errors=[];
+import { createServer } from "node:http";
+import { readFile, mkdir } from "node:fs/promises";
+import { resolve, extname, sep } from "node:path";
+const ROOT=resolve("preview/women"), failures=[];
+const MIME={".html":"text/html; charset=utf-8",".css":"text/css; charset=utf-8",".js":"text/javascript; charset=utf-8",".woff2":"font/woff2",".svg":"image/svg+xml"};
+const server=createServer(async (req,res)=>{
+ try{
+  let p=decodeURIComponent(new URL(req.url,"http://localhost").pathname);
+  if(p==="/")p="/index.html";
+  const path=resolve(ROOT,"."+p);
+  if(path!==ROOT&&!path.startsWith(ROOT+sep)) {res.writeHead(403);res.end();return;}
+  const body=await readFile(path);
+  res.writeHead(200,{"Content-Type":MIME[extname(path)]||"application/octet-stream","Cache-Control":"no-store","X-Content-Type-Options":"nosniff"});res.end(body);
+ }catch(e){res.writeHead(404);res.end("Not found");}
+});
+await new Promise(ok=>server.listen(0,"127.0.0.1",ok));
+const ORIGIN="http://127.0.0.1:"+server.address().port;
+const widths=[320,360,390,400,768,1280];
+await mkdir("test-results",{recursive:true});
 const browser=await chromium.launch({headless:true,args:["--no-sandbox"]});
 try{
-  for(const width of widths){
-    const page=await browser.newPage({viewport:{width,height:860}});
-    page.on("pageerror",err=>errors.push(width+" JS error "+err.message));
-    await page.goto(url,{waitUntil:"domcontentloaded"});
-    await page.evaluate(()=>document.fonts.ready);
-    const state=await page.evaluate(()=>({
-      viewport:innerWidth,root:document.documentElement.scrollWidth,
-      body:document.body.scrollWidth,rtl:document.documentElement.dir==="rtl",
-      title:document.title,heading:document.querySelector("h1")?.textContent||"",
-      scripts:document.scripts.length,images:document.images.length,
-      buttons:document.querySelectorAll("button").length,
-    }));
-    if(state.root>width+1||state.body>width+1)errors.push(width+" overflow "+JSON.stringify(state));
-    if(!state.rtl||!state.title.includes("WOMEN")||!state.heading.includes("التصميم الجديد"))errors.push(width+" handoff placeholder mismatch");
-    if(state.scripts!==0||state.buttons!==0||state.images!==0)errors.push(width+" old interactive design unexpectedly present");
-    if(width===390)await page.screenshot({path:"test-results/women-preview-mobile-390.png",fullPage:true});
-    if(width===1280)await page.screenshot({path:"test-results/women-preview-desktop.png",fullPage:true});
-    console.log("WOMEN GitHub Pages clean handoff",width,JSON.stringify(state));
-    await page.close();
-  }
-} finally { await browser.close(); }
-if(errors.length){console.error("FAIL:\n"+errors.join("\n"));process.exitCode=1}
-else console.log("PASS: clean neutral GitHub Pages handoff with zero old designs and no checkout.");
+ for(const width of widths){
+  const page=await browser.newPage({viewport:{width,height:850},deviceScaleFactor:1,reducedMotion:"reduce",isMobile:width<768,hasTouch:width<768});
+  page.on("pageerror",e=>failures.push(width+" page error: "+e.message));
+  page.on("console",e=>{if(e.type()==="error") failures.push(width+" browser console: "+e.text());});
+  page.on("request",request=>{if(!request.url().startsWith(ORIGIN+"/"))failures.push(width+" external request: "+request.url().slice(0,100));});
+  try{
+   const response=await page.goto(ORIGIN+"/",{waitUntil:"load",timeout:30000});
+   await page.waitForFunction(()=>document.querySelectorAll("#feed .card").length===14,{timeout:30000}).catch(()=>{});
+   await page.evaluate(()=>document.fonts.ready);
+   const m=await page.evaluate(()=>({
+    viewport:innerWidth,document:document.documentElement.scrollWidth,body:document.body.scrollWidth,scrollY,
+    dir:document.documentElement.dir,demo:!document.querySelector("#demoNote")?.hidden,
+    title:document.title,products:document.querySelectorAll("#feed .card").length,
+    stories:document.querySelectorAll("#stories .story").length,looks:document.querySelectorAll("#looks .look").length,
+    tape:document.querySelectorAll("#tape .seg").length,meta:document.querySelector('meta[name="robots"]')?.content
+   }));
+   console.log("Claude V2",width,response.status(),JSON.stringify(m));
+   if(response.status()!==200)failures.push(width+" html HTTP "+response.status());
+   if(m.dir!=="rtl"||m.scrollY>3||m.document>m.viewport+2||m.body>m.viewport+2)failures.push(width+" RTL/top/overflow "+JSON.stringify(m));
+   if(!m.demo||!m.meta?.includes("noindex"))failures.push(width+" public demo banner/noindex missing");
+   if(m.products!==14||m.stories!==5||m.looks!==3||m.tape!==9)failures.push(width+" original Claude interactions/data not loaded");
+   if(width===390){
+    await page.screenshot({path:"test-results/women-preview-mobile-390.png",fullPage:true,animations:"disabled"});
+    await page.locator("#tape .seg").filter({hasText:"فساتين"}).first().click();
+    await page.waitForTimeout(700);
+    const count=(await page.locator("#countOut").textContent())?.trim();
+    console.log("tape category result",count);
+    if(count!=="3 قطع")failures.push("tape should select dresses: "+count);
+    // Reset the category without changing window scroll artificially.
+    await page.locator("#tape .seg").filter({hasText:"الكل"}).first().click();
+    await page.waitForTimeout(500);
+    await page.locator("#feed .heart").first().click();
+    if((await page.locator(".savedot").first().textContent())?.trim()!=="1")failures.push("wishlist toggle failed");
+    await page.locator("#feed .add").first().click();
+    if(!(await page.locator("#sheet").evaluate(e=>e.classList.contains("show"))))failures.push("size sheet did not open");
+    if((await page.locator("#shSizes .size").count())!==5)failures.push("size sheet choices missing");
+    await page.locator("#finder summary").click();
+    await page.locator("#fBust").fill("92");
+    await page.locator("#fWaist").fill("76");
+    const rec=await page.locator("#shSizes .size.rec").first().getAttribute("data-z");
+    if(rec!=="M")failures.push("size finder incorrect: "+rec);
+    await page.locator("#shAdd").click();
+    await page.waitForTimeout(350);
+    if((await page.locator(".bagdot").first().textContent())?.trim()!=="1")failures.push("demo bag counter failed");
+    await page.locator("#stories .story").first().click();
+    if(!(await page.locator("#viewer").evaluate(e=>e.classList.contains("show"))))failures.push("story viewer failed");
+    await page.goBack({waitUntil:"domcontentloaded"}).catch(()=>{});
+    await page.waitForTimeout(150);
+    if(await page.locator("#viewer").evaluate(e=>e.classList.contains("show")))failures.push("mobile Back failed to close story");
+    const fonts=await page.evaluate(()=>Array.from(document.fonts).map(x=>({family:x.family,status:x.status})));
+    console.log("fonts",JSON.stringify(fonts.slice(0,12)));
+   }
+   if(width===1280)await page.screenshot({path:"test-results/women-preview-desktop-1280.png",fullPage:true,animations:"disabled"});
+  }catch(e){failures.push(width+" test error "+e.stack?.slice(0,500));}
+  finally{await page.close();}
+ }
+ for(const f of ["assets/fonts/rakkas-400-arabic.woff2","assets/fonts/readex-pro-arabic.woff2","assets/fonts/dm-mono-400-latin.woff2","css/styles.css","js/app.js"]){
+  const r=await fetch(ORIGIN+"/"+f);
+  console.log("asset",f,r.status,r.headers.get("content-type"));
+  if(r.status!==200)failures.push("missing asset "+f);
+ }
+}finally{await browser.close();await new Promise(ok=>server.close(ok));}
+if(failures.length){console.error("FAILED:\n"+failures.join("\n"));process.exitCode=1}
+else console.log("PASS: original Claude V2 responsive, demo-safe, interactions and locally hosted assets");
