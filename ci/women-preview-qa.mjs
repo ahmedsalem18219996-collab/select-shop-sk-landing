@@ -80,6 +80,9 @@ try{
  // Public/default mode MUST NOT display Claude's 14 fake prices or invent shipping claims.
  const live=await browser.newPage({viewport:{width:390,height:844},reducedMotion:"reduce"});
  try{
+  // Supabase disallows localhost Origins in production; use an isolated, explicit
+  // public-response fixture for local UI behaviour. Live API is tested separately.
+  await live.route("https://byluoipdunralsurwebt.supabase.co/functions/v1/women-store-bridge/catalog",route=>route.fulfill({status:200,contentType:"application/json",headers:{"access-control-allow-origin":"*"},body:JSON.stringify({items:[],presentation:{hero_title:"اختاري ستايلك",hero_highlight:"بطريقتك.",hero_description:"منتجاتنا قيد التجهيز",announcement:"SELECT SHOP WOMEN"},brand:{storeName:"SELECT SHOP WOMEN",primaryColor:"#6E4BC8"}})}));
   const r=await live.goto(ORIGIN+"/",{waitUntil:"load",timeout:25000});
   await live.waitForFunction(()=>!!document.querySelector("#demoNote")?.textContent?.includes("متجر WOMEN"),null,{timeout:25000});
   const state=await live.evaluate(()=>({
