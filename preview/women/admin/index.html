@@ -106,13 +106,14 @@ td{color:#47364f}
 .mobilebar a{font-size:9px;padding:8px 2px;flex:1;text-align:center;color:#6f5b7b}
 }
 </style>
+<link rel="stylesheet" href="./admin-motion.css">
 </head>
 <body>
 <section id="loginScreen" class="login">
   <div class="login-box">
     <div class="logo"><i>S</i><div>SELECT SHOP<small>WOMEN — ADMIN</small></div></div>
     <h1>لوحة إدارة WOMEN</h1>
-    <p>دخول المالك فقط — إدارة المنتجات مرتبطة بقاعدة WOMEN المستقلة.</p>
+    <p>دخول المالك والموظفين المصرّح لهم فقط. كل حساب ليه صلاحيات مستقلة داخل WOMEN.</p>
     <form id="loginForm">
       <div class="field"><label for="email">البريد الإلكتروني</label><input id="email" type="email" autocomplete="username" required placeholder="البريد المسجل للمالك"></div>
       <div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" required placeholder="كلمة مرور الإدارة"></div>
@@ -120,24 +121,32 @@ td{color:#47364f}
       <div id="loginMessage" class="notice" role="status" aria-live="polite"></div>
     </form>
     <p class="note">تسجيل الدخول بيتم عبر Supabase WOMEN. كلمة المرور مش بتتحفظ في الصفحة أو GitHub.</p>
+    <form id="inviteAcceptForm" hidden>
+      <h2>تفعيل حساب الموظف</h2>
+      <p>اختار كلمة مرور قوية خاصة بحسابك. ما تشاركهاش مع أي حد.</p>
+      <div class="field"><label for="invitePassword">كلمة مرور جديدة</label><input id="invitePassword" type="password" autocomplete="new-password" minlength="12" required></div>
+      <div class="field"><label for="invitePasswordAgain">تأكيد كلمة المرور</label><input id="invitePasswordAgain" type="password" autocomplete="new-password" minlength="12" required></div>
+      <button type="submit" class="btn primary">تفعيل حساب Staff</button>
+    </form>
     <a href="../" class="back">↗ الرجوع لمعاينة المتجر</a>
   </div>
 </section>
 <div id="appScreen" class="shell" hidden>
   <aside class="sidebar">
-    <div class="logo"><i>S</i><div>SELECT SHOP<small>WOMEN / OWNER</small></div></div>
+    <div class="logo"><i>S</i><div>SELECT SHOP<small>WOMEN / ADMIN</small></div></div>
     <nav aria-label="لوحة الإدارة">
       <button data-tab="products" aria-selected="true">◈ كل المنتجات</button>
       <button data-tab="create" aria-selected="false">＋ إضافة منتج</button>
       <button data-tab="storefront" aria-selected="false">✦ تعديل واجهة المتجر</button>
       <button data-tab="shipping" aria-selected="false">▤ إعدادات الشحن</button>
       <button data-tab="settings" aria-selected="false">◇ حالة المتجر</button>
+      <button data-tab="team" aria-selected="false" data-owner-only>♙ إدارة الفريق والصلاحيات</button>
     </nav>
     <div class="sidebar-note">لوحة WOMEN التجريبية. الطلبات الحقيقية غير مفعّلة من المعاينة.<p><a href="../">↗ افتح واجهة المتجر</a></p></div>
     <button id="logoutBtn" class="btn outline" type="button">تسجيل الخروج</button>
   </aside>
   <div class="content">
-    <header class="top"><div><small>SELECT SHOP / WOMEN</small><h1 id="pageTitle">إدارة المنتجات</h1></div><span class="pill">OWNER • WOMEN</span></header>
+    <header class="top"><div><small>SELECT SHOP / WOMEN</small><h1 id="pageTitle">إدارة المنتجات</h1></div><span class="pill" id="roleBadge">OWNER • WOMEN</span></header>
     <div id="appMessage" class="notice" role="status" aria-live="polite"></div>
     <section id="productsTab">
       <div class="cards">
@@ -302,6 +311,33 @@ td{color:#47364f}
         <div class="tablewrap"><table><thead><tr><th>البروفايل</th><th>المنطقة</th><th>الشحن</th></tr></thead><tbody id="shippingRows"><tr><td colspan="3">لم يتم التهيئة بعد</td></tr></tbody></table></div>
       </div>
     </section>
+    <section id="teamTab" hidden>
+      <div class="panel teamHero">
+        <span class="teamKicker">OWNER / TEAM ACCESS</span>
+        <h2>الفريق والصلاحيات</h2>
+        <p>إنت المالك الوحيد. بتحدد مين يدخل اللوحة ويقدر يعمل إيه؛ مفيش موظف يقدر يضيف مستخدم تاني أو يرفع صلاحياته.</p>
+      </div>
+      <div class="grid2">
+        <div class="panel">
+          <h2>دعوة موظف جديد</h2>
+          <p>هنبعت دعوة على الإيميل اللي تختاره. الموظف بيعمل كلمة مرور لحسابه بنفسه.</p>
+          <form id="inviteStaffForm">
+            <div class="field"><label for="staffEmail">إيميل الموظف</label><input type="email" id="staffEmail" autocomplete="off" required placeholder="staff@example.com" maxlength="254"></div>
+            <p class="footnote">اختار الصلاحيات فقط. باقي الوظائف هتفضل مقفولة.</p>
+            <div class="permissionGrid" id="invitePermissions"></div>
+            <button class="btn primary" type="submit">إرسال دعوة Staff</button>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <h2>المستخدمين المسجلين</h2>
+            <button id="reloadTeamBtn" class="btn outline small" type="button">تحديث ↻</button>
+          </div>
+          <div class="teamList" id="teamList" role="list"><p class="muted">جاري تحميل الفريق...</p></div>
+        </div>
+      </div>
+      <div class="note">تعديل صلاحيات Staff بيبدأ تطبيقه من أول طلب للـAPI، حتى لو الموظف فاتح اللوحة. مش ممكن يتجاوز الصلاحيات عن طريق تغيير كود المتصفح.</div>
+    </section>
     <section id="settingsTab" hidden>
       <div class="panel"><h2>حالة SELECT SHOP WOMEN</h2><p>الموقع الأساسي وصفقة محفوظين منفصلين.</p>
       <div class="note">المنتجات تُحفظ في قاعدة WOMEN فقط. المعاينة العامة لا تستقبل طلبات حتى اعتماد المخزون والمقاسات والشحن واختبارات Checkout.</div>
@@ -317,6 +353,7 @@ td{color:#47364f}
     <button data-tab="create" aria-selected="false">＋ إضافة</button>
     <button data-tab="storefront" aria-selected="false">✦ الواجهة</button>
     <button data-tab="settings" aria-selected="false">◇ الحالة</button>
+    <button data-tab="team" aria-selected="false" data-owner-only>♙ الفريق</button>
     <a href="../">↗ المتجر</a>
     <button id="logoutMobile">خروج</button>
   </nav>
