@@ -106,13 +106,14 @@ td{color:#47364f}
 .mobilebar a{font-size:9px;padding:8px 2px;flex:1;text-align:center;color:#6f5b7b}
 }
 </style>
+<link rel="stylesheet" href="./admin-motion.css">
 </head>
 <body>
 <section id="loginScreen" class="login">
   <div class="login-box">
     <div class="logo"><i>S</i><div>SELECT SHOP<small>WOMEN — ADMIN</small></div></div>
     <h1>لوحة إدارة WOMEN</h1>
-    <p>دخول المالك فقط — إدارة المنتجات مرتبطة بقاعدة WOMEN المستقلة.</p>
+    <p>دخول المالك والموظفين المصرّح لهم فقط. كل حساب ليه صلاحيات مستقلة داخل WOMEN.</p>
     <form id="loginForm">
       <div class="field"><label for="email">البريد الإلكتروني</label><input id="email" type="email" autocomplete="username" required placeholder="البريد المسجل للمالك"></div>
       <div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" required placeholder="كلمة مرور الإدارة"></div>
@@ -120,24 +121,32 @@ td{color:#47364f}
       <div id="loginMessage" class="notice" role="status" aria-live="polite"></div>
     </form>
     <p class="note">تسجيل الدخول بيتم عبر Supabase WOMEN. كلمة المرور مش بتتحفظ في الصفحة أو GitHub.</p>
+    <form id="inviteAcceptForm" hidden>
+      <h2>تفعيل حساب الموظف</h2>
+      <p>اختار كلمة مرور قوية خاصة بحسابك. ما تشاركهاش مع أي حد.</p>
+      <div class="field"><label for="invitePassword">كلمة مرور جديدة</label><input id="invitePassword" type="password" autocomplete="new-password" minlength="12" required></div>
+      <div class="field"><label for="invitePasswordAgain">تأكيد كلمة المرور</label><input id="invitePasswordAgain" type="password" autocomplete="new-password" minlength="12" required></div>
+      <button type="submit" class="btn primary">تفعيل حساب Staff</button>
+    </form>
     <a href="../" class="back">↗ الرجوع لمعاينة المتجر</a>
   </div>
 </section>
 <div id="appScreen" class="shell" hidden>
   <aside class="sidebar">
-    <div class="logo"><i>S</i><div>SELECT SHOP<small>WOMEN / OWNER</small></div></div>
+    <div class="logo"><i>S</i><div>SELECT SHOP<small>WOMEN / ADMIN</small></div></div>
     <nav aria-label="لوحة الإدارة">
       <button data-tab="products" aria-selected="true">◈ كل المنتجات</button>
       <button data-tab="create" aria-selected="false">＋ إضافة منتج</button>
       <button data-tab="storefront" aria-selected="false">✦ تعديل واجهة المتجر</button>
       <button data-tab="shipping" aria-selected="false">▤ إعدادات الشحن</button>
       <button data-tab="settings" aria-selected="false">◇ حالة المتجر</button>
+      <button data-tab="team" aria-selected="false" data-owner-only>♙ إدارة الفريق والصلاحيات</button>
     </nav>
     <div class="sidebar-note">لوحة WOMEN التجريبية. الطلبات الحقيقية غير مفعّلة من المعاينة.<p><a href="../">↗ افتح واجهة المتجر</a></p></div>
     <button id="logoutBtn" class="btn outline" type="button">تسجيل الخروج</button>
   </aside>
   <div class="content">
-    <header class="top"><div><small>SELECT SHOP / WOMEN</small><h1 id="pageTitle">إدارة المنتجات</h1></div><span class="pill">OWNER • WOMEN</span></header>
+    <header class="top"><div><small>SELECT SHOP / WOMEN</small><h1 id="pageTitle">إدارة المنتجات</h1></div><span class="pill" id="roleBadge">OWNER • WOMEN</span></header>
     <div id="appMessage" class="notice" role="status" aria-live="polite"></div>
     <section id="productsTab">
       <div class="cards">
@@ -302,11 +311,38 @@ td{color:#47364f}
         <div class="tablewrap"><table><thead><tr><th>البروفايل</th><th>المنطقة</th><th>الشحن</th></tr></thead><tbody id="shippingRows"><tr><td colspan="3">لم يتم التهيئة بعد</td></tr></tbody></table></div>
       </div>
     </section>
+    <section id="teamTab" hidden>
+      <div class="panel teamHero">
+        <span class="teamKicker">OWNER / TEAM ACCESS</span>
+        <h2>الفريق والصلاحيات</h2>
+        <p>إنت المالك الوحيد. بتحدد مين يدخل اللوحة ويقدر يعمل إيه؛ مفيش موظف يقدر يضيف مستخدم تاني أو يرفع صلاحياته.</p>
+      </div>
+      <div class="grid2">
+        <div class="panel">
+          <h2>دعوة موظف جديد</h2>
+          <p>هنبعت دعوة على الإيميل اللي تختاره. الموظف بيعمل كلمة مرور لحسابه بنفسه.</p>
+          <form id="inviteStaffForm">
+            <div class="field"><label for="staffEmail">إيميل الموظف</label><input type="email" id="staffEmail" autocomplete="off" required placeholder="staff@example.com" maxlength="254"></div>
+            <p class="footnote">اختار الصلاحيات فقط. باقي الوظائف هتفضل مقفولة.</p>
+            <div class="permissionGrid" id="invitePermissions"></div>
+            <button class="btn primary" type="submit">إرسال دعوة Staff</button>
+          </form>
+        </div>
+        <div class="panel">
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <h2>المستخدمين المسجلين</h2>
+            <button id="reloadTeamBtn" class="btn outline small" type="button">تحديث ↻</button>
+          </div>
+          <div class="teamList" id="teamList" role="list"><p class="muted">جاري تحميل الفريق...</p></div>
+        </div>
+      </div>
+      <div class="note">تعديل صلاحيات Staff بيبدأ تطبيقه من أول طلب للـAPI، حتى لو الموظف فاتح اللوحة. مش ممكن يتجاوز الصلاحيات عن طريق تغيير كود المتصفح.</div>
+    </section>
     <section id="settingsTab" hidden>
       <div class="panel"><h2>حالة SELECT SHOP WOMEN</h2><p>الموقع الأساسي وصفقة محفوظين منفصلين.</p>
       <div class="note">المنتجات تُحفظ في قاعدة WOMEN فقط. المعاينة العامة لا تستقبل طلبات حتى اعتماد المخزون والمقاسات والشحن واختبارات Checkout.</div>
       <p><b>استضافة الواجهة:</b> GitHub Pages — https://selectshopeg.com/preview/women/</p>
-      <p><b>الخدمات الخلفية:</b> Supabase WOMEN — خدمة Edge مستقلة بصلاحيات Owner.</p>
+      <p><b>الخدمات الخلفية:</b> Supabase WOMEN — خدمة Edge مستقلة بصلاحيات Owner / Staff محددة.</p>
       <p><b>الدفع:</b> لم يُفعّل في المعاينة.</p>
       <div class="row"><button type="button" data-tab="shipping" class="btn outline">إعدادات الشحن</button><button id="settingsRefresh" type="button" class="btn outline">إعادة فحص الاتصال ↻</button><a class="btn purple" href="../">فتح واجهة WOMEN</a></div>
       <div id="healthResult" class="notice"></div></div>
@@ -317,6 +353,7 @@ td{color:#47364f}
     <button data-tab="create" aria-selected="false">＋ إضافة</button>
     <button data-tab="storefront" aria-selected="false">✦ الواجهة</button>
     <button data-tab="settings" aria-selected="false">◇ الحالة</button>
+    <button data-tab="team" aria-selected="false" data-owner-only>♙ الفريق</button>
     <a href="../">↗ المتجر</a>
     <button id="logoutMobile">خروج</button>
   </nav>
@@ -329,7 +366,44 @@ const BASE="https://byluoipdunralsurwebt.supabase.co";
 const API=BASE+"/functions/v1/women-store-bridge";
 const STORAGE_KEY="select-shop-women-owner-tab-session";
 const $=id=>document.getElementById(id);
-let session=null,list=[],product=null,createKey=null,busy=false,contentState=null,brandState=null,shippingState={profiles:[],regions:[],rates:[]};
+let session=null,list=[],product=null,createKey=null,busy=false,contentState=null,brandState=null,shippingState={profiles:[],regions:[],rates:[]},adminState={role:"",permissions:[]};
+const PERMISSION_LABELS={
+ "dashboard.view":"عرض لوحة المؤشرات",
+ "products.view":"عرض المنتجات",
+ "products.edit":"إضافة وتعديل المنتجات والمقاسات",
+ "products.price":"تعديل الأسعار",
+ "products.publish":"نشر وإخفاء المنتجات",
+ "media.manage":"رفع الصور",
+ "shipping.view":"عرض الشحن",
+ "shipping.manage":"تعديل مناطق وأسعار الشحن",
+ "settings.view":"عرض إعدادات المتجر",
+ "settings.manage":"تعديل واجهة المتجر والهوية"
+};
+const can=key=>adminState.role==="owner"||adminState.permissions.includes(key);
+const allowedTab=name=>({
+  products:"products.view",create:"products.edit",storefront:"settings.view",
+  shipping:"shipping.view",settings:"dashboard.view",team:"users.manage",edit:"products.view"
+})[name] ? can(({products:"products.view",create:"products.edit",storefront:can("settings.view")?"settings.view":"settings.manage",shipping:can("shipping.view")?"shipping.view":"shipping.manage",settings:"dashboard.view",team:"users.manage",edit:"products.view"})[name]) : false;
+function applyAccess(){
+ $("roleBadge").textContent=adminState.role==="owner"?"OWNER • WOMEN":"STAFF • WOMEN";
+ document.querySelectorAll("[data-owner-only]").forEach(el=>{el.hidden=adminState.role!=="owner"});
+ document.querySelectorAll("[data-tab]").forEach(el=>{
+  el.hidden=!allowedTab(el.dataset.tab);
+ });
+ for(const [id,permission] of Object.entries({
+  createForm:"products.edit",editForm:"products.edit",sizesForm:"products.edit",
+  presentationForm:"products.edit",priceForm:"products.price",imageForm:"media.manage",
+  publishBtn:"products.publish",hideBtn:"products.publish",assignShippingForm:"shipping.manage",
+  regionForm:"shipping.manage",profileForm:"shipping.manage",shippingRateForm:"shipping.manage",
+  storefrontForm:"settings.manage",brandForm:"users.manage"
+ })){
+  const el=$(id);if(el)el.hidden=!can(permission);
+ }
+}
+function initialTab(){
+ const names=["products","create","storefront","shipping","settings","team"];
+ return names.find(name=>allowedTab(name))||null;
+}
 const msg=(s,ok=false,login=false)=>{const el=$(login?"loginMessage":"appMessage");el.textContent=s||"";el.classList.toggle("success",!!ok)};
 function setBusy(active){busy=active;document.querySelectorAll("button[type=submit]").forEach(b=>{b.disabled=active})}
 function saveAuth(data){session={access_token:data.access_token,refresh_token:data.refresh_token,expires_at:Date.now()+Math.max(60,Number(data.expires_in||3600)-30)*1000};sessionStorage.setItem(STORAGE_KEY,JSON.stringify(session))}
@@ -348,16 +422,17 @@ async function api(path,opts={}){
  if(opts.body&&!(opts.body instanceof FormData))headers["Content-Type"]="application/json";
  const r=await fetch(API+path,{method:opts.method||"GET",headers,body:opts.body instanceof FormData?opts.body:opts.body?JSON.stringify(opts.body):undefined,cache:"no-store"});
  let data={};try{data=await r.json()}catch{}
- if(!r.ok){const error=data.error==="unauthorized_owner"?"تم رفض الجلسة أو الحساب مش Owner.":data.outcome==="rejected"?"العملية مرفوضة بسبب شروط المنتج.":data.error||data.outcome||"تعذر تنفيذ العملية";throw Error(error+(Array.isArray(data.blockers)&&data.blockers.length?" ("+data.blockers.join("، ")+")":""))}
+ if(!r.ok){const error=["unauthorized_owner","unauthorized_admin"].includes(data.error)?"الحساب مش مفعل لإدارة WOMEN.":data.error==="permission_denied"?"صلاحية غير متاحة لحسابك.":data.outcome==="rejected"?"العملية مرفوضة بسبب شروط المنتج.":data.error||data.outcome||"تعذر تنفيذ العملية";throw Error(error+(Array.isArray(data.blockers)&&data.blockers.length?" ("+data.blockers.join("، ")+")":""))}
  return data;
 }
 function showLogged(logged){$("loginScreen").hidden=logged;$("appScreen").hidden=!logged}
 function tab(name){
- if(name==="edit"){["products","create","settings","storefront","shipping"].forEach(n=>document.querySelectorAll('[data-tab="'+n+'"]').forEach(b=>b.setAttribute("aria-selected","false")))}
+ if(!allowedTab(name))return;
+ if(name==="edit"){["products","create","settings","storefront","shipping","team"].forEach(n=>document.querySelectorAll('[data-tab="'+n+'"]').forEach(b=>b.setAttribute("aria-selected","false")))}
  else document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===name)));
- ["products","create","edit","settings","storefront","shipping"].forEach(n=>$(n+"Tab").hidden=n!==name);
- $("pageTitle").textContent=({products:"إدارة المنتجات",create:"إضافة موديل",edit:"تفاصيل الموديل",settings:"حالة المتجر",storefront:"تعديل واجهة المتجر",shipping:"إعدادات الشحن"})[name];
- msg("");window.scrollTo({top:0,behavior:"smooth"});
+ ["products","create","edit","settings","storefront","shipping","team"].forEach(n=>$(n+"Tab").hidden=n!==name);
+ $("pageTitle").textContent=({products:"إدارة المنتجات",create:"إضافة موديل",edit:"تفاصيل الموديل",settings:"حالة المتجر",storefront:"تعديل واجهة المتجر",shipping:"إعدادات الشحن",team:"الفريق والصلاحيات"})[name];
+ msg("");window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
 }
 const cell=(text,cls)=>{const e=document.createElement("td");e.textContent=String(text??"—");if(cls)e.className=cls;return e};
 async function loadProducts(){
@@ -438,6 +513,7 @@ function renderVariants(){
   const button=document.createElement("button");button.type="button";
   button.className="btn outline small";
   button.textContent=item.availability==="available"?"علّميه خلص":"علّميه متاح";
+  button.hidden=!can("products.edit");
   button.addEventListener("click",()=>actionTask(async()=>{
    await api("/admin/products/"+product.public_code+"/availability",{method:"PATCH",body:{
     version:product.structure_version,position:item.position,available:item.availability!=="available"
@@ -447,6 +523,101 @@ function renderVariants(){
   row.append(txt,button);container.append(row);
  }
 }
+
+
+function permissionCheckboxes(parent, chosen=[], keyPrefix="staff") {
+ parent.replaceChildren();
+ const selected=new Set(chosen);
+ for(const [key,description] of Object.entries(PERMISSION_LABELS)){
+  const label=document.createElement("label");label.className="permissionOption";
+  const box=document.createElement("input");box.type="checkbox";box.value=key;
+  box.checked=selected.has(key);box.id=keyPrefix+"-"+key.replaceAll(".","-");
+  const text=document.createElement("span");text.textContent=description;
+  label.append(box,text);parent.append(label);
+ }
+}
+function selectedPermissions(parent){
+ return Array.from(parent.querySelectorAll('input[type="checkbox"]:checked'),input=>input.value);
+}
+async function loadTeam(){
+ if(adminState.role!=="owner")throw Error("إدارة الفريق للمالك فقط.");
+ const data=await api("/admin/users");
+ permissionCheckboxes($("invitePermissions"),["products.view","products.edit","media.manage"],"invite");
+ const list=$("teamList");list.replaceChildren();
+ for(const user of data.users||[]){
+  const article=document.createElement("article");article.className="teamMember";article.setAttribute("role","listitem");
+  const heading=document.createElement("div");heading.className="teamMemberHead";
+  const info=document.createElement("div"),h=document.createElement("strong"),note=document.createElement("small");
+  h.textContent=user.email||"حساب مرتبط بـWOMEN";
+  note.textContent=user.role==="owner"?"Owner • كل الصلاحيات":user.active?"Staff • نشط":"Staff • موقوف";
+  info.append(h,note);heading.append(info);
+  article.append(heading);
+  if(user.role!=="owner"){
+   const permissions=document.createElement("div");permissions.className="permissionGrid";
+   permissionCheckboxes(permissions,user.permissions||[],"user"+user.id);
+   const controls=document.createElement("div");controls.className="teamControls";
+   const activeLabel=document.createElement("label");activeLabel.className="checkline";
+   const active=document.createElement("input");active.type="checkbox";active.checked=!!user.active;
+   activeLabel.append(active,document.createTextNode("الحساب نشط"));
+   const save=document.createElement("button");save.type="button";save.className="btn outline";save.textContent="حفظ صلاحيات الموظف";
+   save.addEventListener("click",()=>actionTask(async()=>{
+    const wanted=selectedPermissions(permissions);
+    if(!window.confirm("حفظ صلاحيات الحساب المحدد؟ التغيير هيطبق فورًا."))return"تم إلغاء العملية.";
+    const result=await api("/admin/users/"+encodeURIComponent(user.id),{
+      method:"PATCH",body:{permissions:wanted,active:active.checked}
+    });
+    if(result.outcome!=="saved")throw Error("ما اتحفظتش الصلاحيات.");
+    await loadTeam();
+    return"صلاحيات Staff اتحدثت بنجاح.";
+   }));
+   controls.append(activeLabel,save);
+   article.append(permissions,controls);
+  }
+  list.append(article);
+ }
+ if(!list.children.length){const p=document.createElement("p");p.className="muted";p.textContent="لسه مفيش حسابات فريق.";list.append(p);}
+}
+$("inviteStaffForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
+ if(adminState.role!=="owner")throw Error("دعوة الموظفين للمالك فقط.");
+ const email=$("staffEmail").value.trim().toLowerCase();
+ const permissions=selectedPermissions($("invitePermissions"));
+ if(!permissions.length)throw Error("اختار صلاحية واحدة على الأقل.");
+ if(!confirm("هنبعت دعوة للموظف: "+email+" بالصلاحيات المحددة. تأكيد الإرسال؟"))
+   return"تم إلغاء الدعوة.";
+ const result=await api("/admin/users/invite",{
+  method:"POST",body:{email,permissions}
+ });
+ if(result.outcome!=="invited")throw Error("الدعوة لم تكتمل. اتأكد من إعداد بريد Supabase.");
+ $("inviteStaffForm").reset();await loadTeam();
+ return"تم إرسال دعوة الموظف. هيحدد كلمة مروره من رابط الإيميل.";
+})});
+$("reloadTeamBtn").addEventListener("click",()=>actionTask(async()=>{await loadTeam();return"تم تحديث الفريق.";}));
+function handleInviteCallback(){
+ const tokenParams=new URLSearchParams(location.hash.replace(/^#/,""));
+ if(tokenParams.get("type")!=="invite" || !tokenParams.get("access_token") ||
+    !tokenParams.get("refresh_token"))return false;
+ saveAuth({access_token:tokenParams.get("access_token"),refresh_token:tokenParams.get("refresh_token"),expires_in:Number(tokenParams.get("expires_in")||3600)});
+ history.replaceState(null,"",location.pathname+location.search);
+ $("loginForm").hidden=true;
+ $("inviteAcceptForm").hidden=false;
+ msg("تم التحقق من الدعوة. اختار كلمة مرور جديدة.",true,true);
+ return true;
+}
+$("inviteAcceptForm").addEventListener("submit",e=>{e.preventDefault();actionTask(async()=>{
+ const password=$("invitePassword").value;
+ if(password.length<12 || password!==$("invitePasswordAgain").value)
+  throw Error("كلمة المرور لازم 12 حرف على الأقل ومتطابقة مع التأكيد.");
+ const token=await authToken();
+ const response=await fetch(BASE+"/auth/v1/user",{method:"PUT",
+  headers:{apikey:PUB,Authorization:"Bearer "+token,"Content-Type":"application/json"},
+  body:JSON.stringify({password})});
+ if(!response.ok)throw Error("تفعيل كلمة المرور فشل. افتح الدعوة مرة تانية.");
+ $("inviteAcceptForm").hidden=true;$("loginForm").hidden=false;
+ $("invitePassword").value="";$("invitePasswordAgain").value="";
+ adminState=await api("/admin/session");applyAccess();showLogged(true);
+ const next=initialTab();if(next){tab(next);if(next==="products")await loadProducts();}
+ return"حساب Staff اتفعل وصلاحياتك جاهزة.";
+})});
 
 function priceText(v){return v?.amount_minor!=null?(Number(v.amount_minor)/100).toString():""}
 async function openItem(code){
@@ -459,7 +630,7 @@ async function openItem(code){
  $("editTitle").value=product.title||"";$("editDescription").value=product.description||"";$("priceEgp").value=priceText(product.base_price);
  $("editCategory").value=response.presentation?.category||"أخرى";$("editIsNew").checked=response.presentation?.is_new===true;
  renderVariants();
- await loadShipping();
+ if(can("shipping.view")||can("shipping.manage"))await loadShipping();
  const blockers=Array.isArray(product.publish_blockers)?product.publish_blockers:[];
  $("blockerText").textContent=blockers.length?"ينقص النشر: "+blockers.join("، "):"شروط النشر الأساسية مستوفاة، لكن لازم نراجع العرض والطلب قبل البيع.";
  $("publishBtn").disabled=product.status==="public";
@@ -482,11 +653,13 @@ $("loginForm").addEventListener("submit",async e=>{
  const r=await fetch(BASE+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:PUB,"Content-Type":"application/json"},body:JSON.stringify({email:$("email").value.trim(),password:$("password").value})});
  if(!r.ok)throw Error("البريد أو كلمة المرور غير صحيحة.");
  saveAuth(await r.json());$("password").value="";
- await api("/admin/session");showLogged(true);tab("products");await loadProducts();
+ adminState=await api("/admin/session");applyAccess();showLogged(true);
+ const next=initialTab();if(next){tab(next);if(next==="products")await loadProducts();else if(next==="storefront")await loadStorefront();else if(next==="shipping")await loadShipping();}else msg("الحساب مفعل بدون صلاحيات. تواصل مع المالك.");
  }catch(error){clearAuth();msg("الدخول لم يكتمل: "+error.message,false,true)}
  finally{btn.disabled=false}
 });
 function logout(){
+ adminState={role:"",permissions:[]};
  const token=session?.access_token;clearAuth();showLogged(false);$("password").value="";
  msg("تم تسجيل الخروج.",true,true);
  if(token)fetch(BASE+"/auth/v1/logout",{method:"POST",headers:{apikey:PUB,Authorization:"Bearer "+token}}).catch(()=>{});
@@ -494,10 +667,11 @@ function logout(){
 $("logoutBtn").addEventListener("click",logout);$("logoutMobile").addEventListener("click",logout);
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",async()=>{
  tab(b.dataset.tab);
- if(b.dataset.tab==="products"||b.dataset.tab==="storefront")
+ if(b.dataset.tab==="products"||b.dataset.tab==="storefront"||b.dataset.tab==="shipping"||b.dataset.tab==="team")
   await actionTask(async()=>{
    if(b.dataset.tab==="products")await loadProducts();
    else if(b.dataset.tab==="shipping")await loadShipping();
+   else if(b.dataset.tab==="team")await loadTeam();
    else await loadStorefront();
    return "";
   });
@@ -618,7 +792,12 @@ $("settingsRefresh").addEventListener("click",()=>actionTask(async()=>{
  const d=await r.json();$("healthResult").textContent="API: "+d.status+" / "+d.service;return"الاتصال بالخدمة نجح.";
 }));
 try{const raw=sessionStorage.getItem(STORAGE_KEY);if(raw)session=JSON.parse(raw)}catch{clearAuth()}
-if(session?.access_token){api("/admin/session").then(async()=>{showLogged(true);tab("products");await loadProducts()}).catch(()=>{clearAuth();showLogged(false);msg("انتهت الجلسة؛ سجّل الدخول من جديد.",false,true)})}
+const invitePending=handleInviteCallback();
+if(!invitePending && session?.access_token){api("/admin/session").then(async state=>{
+ adminState=state;applyAccess();showLogged(true);
+ const next=initialTab();if(next){tab(next);if(next==="products")await loadProducts();else if(next==="storefront")await loadStorefront();else if(next==="shipping")await loadShipping();}
+ else msg("الحساب من غير صلاحيات. اتواصل مع المالك.");
+}).catch(()=>{clearAuth();showLogged(false);msg("انتهت الجلسة؛ سجّل الدخول من جديد.",false,true)})}
 })();
 </script>
 </body></html>

@@ -2,6 +2,7 @@
 import { chromium } from "playwright";
 import { mkdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { Script } from "node:vm";
 import { pathToFileURL } from "node:url";
 
 const file = pathToFileURL(resolve("preview/women/admin/index.html")).toString();
@@ -13,6 +14,19 @@ if(!previewHtml.includes("js/store-adapter.js") || !previewHtml.includes('noinde
 if(!pageHtml.includes('id="storefrontForm"')||!pageHtml.includes('id="brandForm"')||!pageHtml.includes('id="presentationForm"')) failures.push("Owner storefront editor/category controls missing");
 if(!readFileSync("preview/women/js/store-adapter.js","utf8").includes('"/catalog"')) failures.push("WOMEN public catalog backend integration missing");
 if(!pageHtml.includes("sessionStorage")||pageHtml.includes("SUPABASE_SECRET_KEY")) failures.push("secret/auth session guard missing");
+if(!pageHtml.includes('id="teamTab"')||!pageHtml.includes('id="inviteStaffForm"')||
+   !pageHtml.includes('id="inviteAcceptForm"')||!pageHtml.includes('id="roleBadge"')||
+   !pageHtml.includes('./admin-motion.css'))
+ failures.push("Owner and Staff dashboard motion/permission UI missing");
+try {
+ const inline=pageHtml.match(/<script>([\s\S]*?)<\/script>/);
+ if(!inline)throw Error("admin inline app not found");
+ new Script(inline[1],{filename:"women-admin.js"});
+} catch(e){failures.push("Admin JavaScript syntax error: "+e.message)}
+const css=readFileSync("preview/women/admin/admin-motion.css","utf8");
+if(!css.includes("prefers-reduced-motion")||!css.includes(".teamMember")||
+   !css.includes(".sidebar nav button"))failures.push("accessible motion design missing");
+
 const browser = await chromium.launch({headless:true,args:["--no-sandbox"]});
 mkdirSync("test-results",{recursive:true});
 try{
@@ -28,6 +42,56 @@ try{
   if(width===1280)await page.screenshot({path:"test-results/women-admin-login-desktop.png",fullPage:true});
   console.log("Admin UI "+width+"px",JSON.stringify(m));
   await page.close();
+ }
+ // Mocked browser-role rendering only: no account created or customer data touched.
+ for(const scenario of [
+   {role:"owner",permissions:[],team:true,products:true},
+   {role:"staff",permissions:["products.view"],team:false,products:true},
+   {role:"staff",permissions:["settings.view"],team:false,products:false},
+ ]) {
+   const context=await browser.newContext({viewport:{width:390,height:844}});
+   const page=await context.newPage();
+   page.on("pageerror",e=>failures.push(scenario.role+" role screen exception "+e.message));
+   await page.route("https://byluoipdunralsurwebt.supabase.co/**",route=>{
+      const url=route.request().url();
+      const headers={"access-control-allow-origin":"*","access-control-allow-methods":"GET,POST,PATCH,OPTIONS",
+        "access-control-allow-headers":"authorization,apikey,content-type","content-type":"application/json"};
+      if(route.request().method()==="OPTIONS")return route.fulfill({status:204,headers,body:""});
+      if(url.includes("/admin/session"))
+        return route.fulfill({status:200,headers,body:JSON.stringify({role:scenario.role,permissions:scenario.permissions})});
+      if(url.includes("/admin/products"))
+        return route.fulfill({status:200,headers,body:'{"items":[]}'});
+      if(url.includes("/admin/users"))
+        return route.fulfill({status:200,headers,body:JSON.stringify({users:[{id:"owner-id",email:"owner@example.test",role:"owner",active:true,permissions:[]}],permissionKeys:[]})});
+      return route.fulfill({status:404,headers,body:'{"error":"mock_not_found"}'});
+   });
+   try{
+     await page.goto(file,{waitUntil:"domcontentloaded"});
+     await page.evaluate(()=>{
+       sessionStorage.setItem("select-shop-women-owner-tab-session",
+         JSON.stringify({access_token:"x".repeat(150),refresh_token:"mock",expires_at:Date.now()+600000}));
+     });
+     await page.reload({waitUntil:"domcontentloaded"});
+     await page.locator("#appScreen").waitFor({state:"visible",timeout:15000});
+     const access=await page.evaluate(()=>({
+       role:document.querySelector("#roleBadge")?.textContent,
+       team:[...document.querySelectorAll('[data-tab="team"]')].every(el=>el.hidden),
+       products:[...document.querySelectorAll('[data-tab="products"]')].every(el=>el.hidden),
+       brandHidden:document.querySelector("#brandForm")?.hidden,
+       width:document.documentElement.scrollWidth,
+       viewport:innerWidth
+     }));
+     console.log("Role UX",scenario.role,JSON.stringify(access));
+     if(access.team===scenario.team||access.products===scenario.products||
+        (!scenario.team&&!access.brandHidden)||access.width>access.viewport+1)
+       failures.push("role visibility mismatch: "+scenario.role+" "+JSON.stringify(access));
+     if(scenario.team){
+       await page.locator('.mobilebar [data-tab="team"]').click();
+       await page.locator("#teamList .teamMember").first().waitFor({state:"visible",timeout:12000});
+       await page.screenshot({path:"test-results/women-admin-owner-390.png",fullPage:true,animations:"disabled"});
+     }
+   }catch(e){failures.push("mocked role UI "+scenario.role+": "+e.message)}
+   finally{await context.close()}
  }
 }finally{await browser.close()}
 async function check(url,expected){
@@ -57,6 +121,8 @@ try {
 } catch(e) { failures.push("WOMEN catalog detail read failed "+e.message) }
 await check(base+"/admin/storefront",401);
 await check(base+"/admin/session",401);
+await check(base+"/admin/users",401);
+await check(base+"/admin/products",401);
 try {
  const options=await fetch(base+"/admin/products",{
    method:"OPTIONS",
@@ -68,4 +134,4 @@ try {
  if(options.status!==204 || allowed!=="https://selectshopeg.com")failures.push("Owner CORS preflight failed");
 } catch(e){failures.push("Owner CORS preflight error "+e.message)}
 if(failures.length){console.error("FAIL:\n"+failures.join("\n"));process.exitCode=1}
-else console.log("PASS: responsive Owner admin UI and real WOMEN-only edge readiness");
+else console.log("PASS: responsive Owner/Staff dashboard, no unsigned user access, animation and real WOMEN edge");

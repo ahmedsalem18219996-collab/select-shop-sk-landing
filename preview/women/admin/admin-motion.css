@@ -1,0 +1,198 @@
+/* SELECT SHOP WOMEN OWNER/STAFF DASHBOARD — Studio Motion
+   Original production CSS influenced by Skiper UI hover interactions,
+   Vengeance UI gradient/spotlight surfaces and Animmaster kinetic reveals.
+   No proprietary paid components copied; all motion honors reduced-motion. */
+:root{
+  --admin-ink:#1f1526;
+  --admin-plum:#24172d;
+  --admin-accent:#854acb;
+  --admin-pink:#ec62ae;
+  --admin-lilac:#b3a0ed;
+  --admin-line:#e7dfed;
+  --admin-bg:#f7f4f8;
+  --admin-card:#fff;
+}
+body{background:var(--admin-bg);color:var(--admin-ink)}
+.shell{background:radial-gradient(ellipse at 94% 0%,#f1e9fb,transparent 43%),var(--admin-bg)}
+.sidebar{
+  position:sticky;top:0;align-self:start;height:100dvh;
+  overflow:auto;isolation:isolate;
+  background:linear-gradient(154deg,#231529 0%,#34203f 58%,#27162e 100%);
+  border-inline-end:1px solid #8c6e9633;
+  box-shadow:0 15px 45px #25172a21;
+}
+.sidebar::before{
+  content:"";position:absolute;z-index:-1;inset:-180px -90px auto;
+  width:390px;height:390px;border-radius:50%;
+  background:radial-gradient(circle,#9d5bdf40,#ed75c00d 46%,transparent 70%);
+  pointer-events:none;
+}
+.sidebar .logo{padding-bottom:26px;border-bottom:1px solid #ffffff24}
+.sidebar .logo i,.login-box .logo i{
+  position:relative;isolation:isolate;
+  background:linear-gradient(135deg,#9964df,#f05fae 82%);
+  box-shadow:0 12px 32px #db62ce50, inset 0 1px 1px #ffffff67;
+}
+.sidebar nav{gap:7px}
+.sidebar nav button{
+  display:flex;align-items:center;min-height:49px;
+  border:1px solid transparent;border-radius:13px;
+  position:relative;overflow:hidden;
+  color:#d1bfd9;letter-spacing:-.01em;
+  transition:background .25s ease,color .25s ease,transform .25s ease,border-color .25s ease;
+}
+.sidebar nav button:hover{transform:translateX(-3px);background:#ffffff12;border-color:#ffffff22;color:#fff}
+.sidebar nav button[aria-selected=true]{
+  color:#fff;border-color:#f4a1e04a;
+  background:linear-gradient(100deg,#fa7abe2c,#9966ce25);
+  box-shadow:inset -3px 0 0 #ff8ac3,0 8px 22px #160b1b29;
+}
+.sidebar nav button[aria-selected=true]::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,transparent,#fff1,transparent);
+  transform:translateX(-120%);animation:adminShine .75s ease forwards;
+}
+.sidebar .sidebar-note{background:#ffffff0b;border:1px solid #ffffff19;border-radius:14px;padding:13px;line-height:2}
+.content{position:relative}
+.top{
+  position:relative;isolation:isolate;overflow:hidden;
+  border-radius:23px;border:1px solid #ffffff44;
+  padding:clamp(18px,2.6vw,36px);
+  background:
+   radial-gradient(ellipse at 84% 20%,#ba73d95c,transparent 55%),
+   linear-gradient(110deg,#27182f 5%,#533568 100%);
+  box-shadow:0 26px 65px #4e30602b, inset 0 1px 0 #ffffff25;
+  color:white;
+}
+.top::after{
+  content:"";position:absolute;pointer-events:none;z-index:-1;
+  width:290px;aspect-ratio:1;inset-block-start:-180px;inset-inline-start:42%;
+  border:1px solid #ffffff30;border-radius:50%;
+  box-shadow:0 0 0 34px #ffffff0c,0 0 0 78px #ffffff07;
+}
+.top small{color:#ecc5ed;letter-spacing:.06em}
+.top h1{color:#fff;font-weight:800;letter-spacing:-.045em}
+.top .pill{
+  color:#ffe1f5;border:1px solid #ffffff5c;
+  background:#ffffff12;backdrop-filter:blur(14px);box-shadow:inset 0 1px 0 #ffffff27;
+}
+.cards .stat{isolation:isolate;position:relative;overflow:hidden;
+  background:linear-gradient(150deg,#fff,#fcf9ff);
+  border-radius:18px;border-color:#e7dcee;box-shadow:0 12px 38px #4928590a;
+  transition:transform .25s ease,box-shadow .25s ease,border-color .25s;
+}
+.cards .stat::before{
+  content:"";position:absolute;inset:0 0 auto;height:3px;
+  background:linear-gradient(90deg,#6b3c9d,#ef79ba,#ffc4df);
+  opacity:0;transition:opacity .25s;
+}
+.cards .stat:hover{transform:translateY(-4px);border-color:#d7b9e2;box-shadow:0 18px 42px #51336d1c}
+.cards .stat:hover::before{opacity:1}
+.cards .stat strong{font-weight:850;letter-spacing:-.045em}
+.cards .stat:nth-child(2) strong{color:#b45d91}
+.cards .stat:nth-child(3) strong{color:#278460}
+.panel{
+  position:relative;background:var(--admin-card);
+  border-radius:19px;border:1px solid var(--admin-line);
+  box-shadow:0 10px 30px #45295708;
+}
+.panel h2{font-weight:800;letter-spacing:-.026em}
+.stat,.panel{animation:adminEnter .45s cubic-bezier(.2,.75,.2,1) both}
+.cards .stat:nth-child(2){animation-delay:.06s}
+.cards .stat:nth-child(3){animation-delay:.12s}
+.panel:nth-child(2){animation-delay:.07s}
+.panel:nth-child(3){animation-delay:.13s}
+.btn{
+  transition:transform .18s ease,background .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.btn:hover:not(:disabled){transform:translateY(-2px)}
+.btn:active:not(:disabled){transform:translateY(0) scale(.985)}
+.btn.primary,.btn.purple{
+  border-color:transparent;
+  background:linear-gradient(114deg,#553278,#985bba 85%);
+  color:#fff;box-shadow:0 10px 24px #7f4ba825;
+}
+.btn.primary:hover:not(:disabled),.btn.purple:hover:not(:disabled){box-shadow:0 14px 26px #7242aa42}
+.btn.outline:hover{background:#f7ecfa;border-color:#b987ce}
+.stat small,.muted,.footnote{line-height:1.9}
+input,select,textarea{transition:border-color .2s ease,box-shadow .2s ease}
+input:focus,select:focus,textarea:focus{border-color:#a76ac6;box-shadow:0 0 0 4px #a76ac620}
+.tablewrap{border:1px solid #f0e9f2;border-radius:14px}
+table th{background:#faf6fc;color:#806a8a}
+table tr{transition:background .2s ease}
+table tbody tr:hover{background:#faf7fd}
+.status{font-weight:700}
+.note{background:#f7effa;border:1px solid #ecdcf2}
+.teamHero{
+  background:
+    radial-gradient(circle at 90% 8%,#aa72c341,transparent 47%),
+    linear-gradient(125deg,#fff,#fbf5ff);
+  padding:30px;
+  border:1px solid #e4d0eb;
+}
+.teamKicker{font:800 11px/1.7 Manrope,monospace;color:#ad62a3;letter-spacing:.12em}
+.teamHero h2{font-size:clamp(23px,3vw,38px);margin:8px 0 5px}
+.teamHero p{max-width:800px}
+.permissionGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0 20px}
+.permissionOption{
+  display:flex;align-items:flex-start;gap:11px;min-width:0;margin:0;padding:12px 10px;
+  border-radius:12px;border:1px solid #e9deed;background:#fdfbff;
+  cursor:pointer;font-size:11px;line-height:1.6;transition:background .2s,border-color .2s,transform .2s;
+}
+.permissionOption:hover{background:#f7effb;border-color:#cfaadf;transform:translateY(-2px)}
+.permissionOption:has(input:checked){border-color:#b47aca;background:#f6ecfa}
+.permissionOption input[type=checkbox]{width:18px;min-width:18px;height:18px;min-height:18px;
+  margin:1px 0 0;accent-color:#8650bd;cursor:pointer}
+.permissionOption span{min-width:0;overflow-wrap:anywhere;font-weight:650;color:#493154}
+.teamList{display:grid;gap:12px}
+.teamMember{
+  border:1px solid #e7d9ed;border-radius:14px;background:#fdfbfe;padding:16px;
+  box-shadow:0 6px 19px #4f2c6106;
+}
+.teamMemberHead{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.teamMemberHead strong{display:block;overflow-wrap:anywhere;font-size:12px}
+.teamMemberHead small{display:block;color:#90789b;font-size:10px;margin-top:5px}
+.teamMember .permissionGrid{grid-template-columns:repeat(2,minmax(0,1fr));margin-block:18px}
+.teamControls{display:flex;gap:12px;flex-wrap:wrap;align-items:center;
+  justify-content:space-between;border-top:1px solid #eee3f0;padding-top:13px}
+.teamControls .checkline{margin:0}
+.login{background:
+  radial-gradient(circle at 17% 15%,#dfc3f05f,transparent 35%),
+  radial-gradient(circle at 83% 82%,#fac7df99,transparent 42%),#faf7fc}
+.login-box{position:relative;isolation:isolate;box-shadow:0 30px 85px #6c438029;animation:adminEnter .65s both}
+.login-box:before{content:"";position:absolute;inset:0 0 auto;height:4px;
+  background:linear-gradient(90deg,#7c53ab,#e678af,#ffd0e5);
+  border-radius:27px 27px 0 0}
+#inviteAcceptForm{padding-top:18px;border-top:1px solid #eee0ef}
+@keyframes adminEnter{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:none}}
+@keyframes adminShine{to{transform:translateX(120%)}}
+@media(max-width:920px){.permissionGrid,.teamMember .permissionGrid{grid-template-columns:1fr}}
+@media(max-width:600px){
+  .content{padding:15px 13px 118px}
+  .top{border-radius:17px;padding:18px 17px;margin-bottom:17px}
+  .top h1{font-size:21px}
+  .top .pill{font-size:9px;padding:7px 9px}
+  .cards{gap:8px}
+  .stat{padding:12px!important;border-radius:13px!important}
+  .stat strong{font-size:23px!important}
+  .panel{border-radius:15px;padding:16px}
+  .teamHero{padding:20px}
+  .permissionGrid,.teamMember .permissionGrid{grid-template-columns:1fr}
+  .permissionOption{padding:11px 10px}
+  .mobilebar{max-width:100%;overflow-x:auto;overscroll-behavior-x:contain;
+    justify-content:flex-start;scrollbar-width:none;gap:3px;box-shadow:0 -12px 28px #311d3b12}
+  .mobilebar::-webkit-scrollbar{display:none}
+  .mobilebar button,.mobilebar a{flex:none;min-width:65px;padding:9px 5px;white-space:nowrap}
+  .mobilebar button[aria-selected=true]{color:#733e9e;background:#f4e7fa;border-radius:11px}
+  .teamMember{padding:13px}
+  .teamControls{align-items:stretch}
+  .teamControls button{flex:1}
+}
+@media(prefers-reduced-motion:reduce){
+  .stat,.panel,.login-box,.sidebar nav button[aria-selected=true]::after{animation:none!important}
+  .btn,.stat,.panel,.permissionOption,.sidebar nav button,
+  input,select,textarea,table tr{transition:none!important}
+  .btn:hover,.stat:hover,.permissionOption:hover,.sidebar nav button:hover{
+    transform:none!important;
+  }
+}
