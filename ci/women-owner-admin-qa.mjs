@@ -2,6 +2,7 @@
 import { chromium } from "playwright";
 import { mkdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { Script } from "node:vm";
 import { pathToFileURL } from "node:url";
 
 const file = pathToFileURL(resolve("preview/women/admin/index.html")).toString();
@@ -13,6 +14,19 @@ if(!previewHtml.includes("js/store-adapter.js") || !previewHtml.includes('noinde
 if(!pageHtml.includes('id="storefrontForm"')||!pageHtml.includes('id="brandForm"')||!pageHtml.includes('id="presentationForm"')) failures.push("Owner storefront editor/category controls missing");
 if(!readFileSync("preview/women/js/store-adapter.js","utf8").includes('"/catalog"')) failures.push("WOMEN public catalog backend integration missing");
 if(!pageHtml.includes("sessionStorage")||pageHtml.includes("SUPABASE_SECRET_KEY")) failures.push("secret/auth session guard missing");
+if(!pageHtml.includes('id="teamTab"')||!pageHtml.includes('id="inviteStaffForm"')||
+   !pageHtml.includes('id="inviteAcceptForm"')||!pageHtml.includes('id="roleBadge"')||
+   !pageHtml.includes('./admin-motion.css'))
+ failures.push("Owner and Staff dashboard motion/permission UI missing");
+try {
+ const inline=pageHtml.match(/<script>([\s\S]*?)<\/script>/);
+ if(!inline)throw Error("admin inline app not found");
+ new Script(inline[1],{filename:"women-admin.js"});
+} catch(e){failures.push("Admin JavaScript syntax error: "+e.message)}
+const css=readFileSync("preview/women/admin/admin-motion.css","utf8");
+if(!css.includes("prefers-reduced-motion")||!css.includes(".teamMember")||
+   !css.includes(".sidebar nav button"))failures.push("accessible motion design missing");
+
 const browser = await chromium.launch({headless:true,args:["--no-sandbox"]});
 mkdirSync("test-results",{recursive:true});
 try{
@@ -57,6 +71,8 @@ try {
 } catch(e) { failures.push("WOMEN catalog detail read failed "+e.message) }
 await check(base+"/admin/storefront",401);
 await check(base+"/admin/session",401);
+await check(base+"/admin/users",401);
+await check(base+"/admin/products",401);
 try {
  const options=await fetch(base+"/admin/products",{
    method:"OPTIONS",
@@ -68,4 +84,4 @@ try {
  if(options.status!==204 || allowed!=="https://selectshopeg.com")failures.push("Owner CORS preflight failed");
 } catch(e){failures.push("Owner CORS preflight error "+e.message)}
 if(failures.length){console.error("FAIL:\n"+failures.join("\n"));process.exitCode=1}
-else console.log("PASS: responsive Owner admin UI and real WOMEN-only edge readiness");
+else console.log("PASS: responsive Owner/Staff dashboard, no unsigned user access, animation and real WOMEN edge");
