@@ -1,36 +1,86 @@
-/* SELECT SHOP WOMEN · Claude design v2 · store adapter
-   The ONLY file that should talk to a backend. The UI (js/app.js) calls these four functions and
-   never touches products, cart or wishlist storage directly.
-
-   Current implementation = DEMO: catalog from js/data.js, bag and wishlist kept in memory only
-   (nothing persists, nothing is ordered). Replace each function with the real WOMEN public API
-   (for example a Supabase Edge Function using the public anon key + RLS). Never put a service-role
-   key or any secret in this file: it is public JavaScript on GitHub Pages. */
+/* SELECT SHOP WOMEN Claude V2 adapter. No secrets or privileged mutations in public GitHub Pages.
+   The public catalog is served by the WOMEN-only Supabase Edge Function. The sample catalog
+   is ONLY available on the explicitly labelled ?design-preview=1 visual comparison URL.
+   Orders/checkout stay disabled until secure authenticated APIs are verified end-to-end. */
 window.SelectStore = (() => {
-  let bagCount = 0;
+  "use strict";
+  const API = "https://byluoipdunralsurwebt.supabase.co/functions/v1/women-store-bridge";
+  const demo = new URLSearchParams(location.search).get("design-preview") === "1";
   const saved = new Set();
+  let bagCount = 0;
+  window.SELECT_CONFIG.demo = demo;
+  const allowedCategories = ["فساتين", "أطقم", "عبايات", "بلوزات", "جيبات وبناطيل", "إكسسوارات", "أخرى"];
+  const categories = ["الكل", "الجديد", ...allowedCategories, "تخفيضات"];
+  const empty = () => ({
+    sizes: [], categories, products: [], looks: [], stories: [],
+    sizeChart: [], sizeChartMin: { bust: 0, waist: 0 },
+  });
+
+  const safeText = (value, limit = 300) =>
+    typeof value === "string" ? value.trim().slice(0, limit) : "";
+  const safeColor = value =>
+    /^#[0-9a-fA-F]{6}$/.test(value || "") ? value : "#BCC0C9";
+  const validPhoto = value =>
+    typeof value === "string" &&
+    /^https:\/\/byluoipdunralsurwebt\.supabase\.co\/storage\/v1\/object\/public\/product-media\/media\/[0-9a-f]{32}\.(png|jpg|webp)$/.test(value)
+      ? value : null;
 
   return {
-    /* Must resolve to the same shape as window.SELECT_DEMO_DATA (see js/data.js). */
     async loadCatalog() {
-      return window.SELECT_DEMO_DATA;
+      if (demo) return window.SELECT_DEMO_DATA;
+      window.SELECT_CONFIG.loadError = false;
+      try {
+        const response = await fetch(API + "/catalog", {
+          headers: { Accept: "application/json" },
+          cache: "no-store",
+          signal: AbortSignal.timeout(12000),
+        });
+        if (!response.ok) throw Error("catalog_http_" + response.status);
+        const data = await response.json();
+        if (!Array.isArray(data.items)) throw Error("bad_catalog");
+        const brand = data.brand || {};
+        const presentation = data.presentation || {};
+        window.SELECT_CONFIG.presentation = presentation;
+        window.SELECT_CONFIG.brand = brand;
+        if (safeText(brand.whatsapp) && /^\+?[1-9]\d{6,14}$/.test(brand.whatsapp)) {
+          window.SELECT_CONFIG.whatsapp = String(brand.whatsapp).replace(/^\+/, "");
+        }
+        if (typeof brand.instagramUrl === "string" && /^https:\/\/(www\.)?instagram\.com\//.test(brand.instagramUrl))
+          window.SELECT_CONFIG.links.instagram = brand.instagramUrl;
+        const products = data.items.filter(item =>
+          item && /^SS-\d{4,19}$/.test(String(item.publicCode || "")) &&
+          Number.isSafeInteger(item.priceMinor) && item.priceMinor > 0 &&
+          validPhoto(item.image)).map(item => ({
+            id: item.publicCode,
+            name: safeText(item.title, 200),
+            cat: allowedCategories.includes(item.category) ? item.category : "أخرى",
+            price: item.priceMinor / 100,
+            c: "#ECE8E5",
+            sw: [],
+            out: [],
+            one: false,
+            isNew: item.isNew === true,
+            image: validPhoto(item.image),
+            url: null,
+            purchasable: item.purchasable === true,
+          }));
+        return { ...empty(), products };
+      } catch (error) {
+        // Never fall back to fabricated demo products on a public storefront.
+        window.SELECT_CONFIG.loadError = true;
+        console.warn("WOMEN public catalog is currently unavailable");
+        return empty();
+      }
     },
-
-    /* lines: [{ productId, size }] — size is 'S'…'XXL' or 'ONE' for one-size items.
-       Must resolve to { ok: true, count } with the new bag item count, or { ok: false, message }. */
     async addToBag(lines) {
-      bagCount += lines.length;
+      if (!demo) return { ok: false, message: "الطلبات لسه تحت التجهيز. مفيش إضافة فعلية للشنطة أو تسجيل طلب حاليًا." };
+      bagCount += Array.isArray(lines) ? lines.length : 0;
       return { ok: true, count: bagCount };
     },
-
-    /* Must resolve to { saved: boolean, count } for the wishlist badge. */
     async toggleSaved(productId) {
       saved.has(productId) ? saved.delete(productId) : saved.add(productId);
       return { saved: saved.has(productId), count: saved.size };
     },
-
-    isSaved(productId) {
-      return saved.has(productId);
-    }
+    isSaved(productId) { return saved.has(productId); },
   };
 })();
