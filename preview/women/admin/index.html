@@ -366,7 +366,44 @@ const BASE="https://byluoipdunralsurwebt.supabase.co";
 const API=BASE+"/functions/v1/women-store-bridge";
 const STORAGE_KEY="select-shop-women-owner-tab-session";
 const $=id=>document.getElementById(id);
-let session=null,list=[],product=null,createKey=null,busy=false,contentState=null,brandState=null,shippingState={profiles:[],regions:[],rates:[]};
+let session=null,list=[],product=null,createKey=null,busy=false,contentState=null,brandState=null,shippingState={profiles:[],regions:[],rates:[]},adminState={role:"",permissions:[]};
+const PERMISSION_LABELS={
+ "dashboard.view":"عرض لوحة المؤشرات",
+ "products.view":"عرض المنتجات",
+ "products.edit":"إضافة وتعديل المنتجات والمقاسات",
+ "products.price":"تعديل الأسعار",
+ "products.publish":"نشر وإخفاء المنتجات",
+ "media.manage":"رفع الصور",
+ "shipping.view":"عرض الشحن",
+ "shipping.manage":"تعديل مناطق وأسعار الشحن",
+ "settings.view":"عرض إعدادات المتجر",
+ "settings.manage":"تعديل واجهة المتجر والهوية"
+};
+const can=key=>adminState.role==="owner"||adminState.permissions.includes(key);
+const allowedTab=name=>({
+  products:"products.view",create:"products.edit",storefront:"settings.view",
+  shipping:"shipping.view",settings:"dashboard.view",team:"users.manage",edit:"products.view"
+})[name] ? can(({products:"products.view",create:"products.edit",storefront:can("settings.view")?"settings.view":"settings.manage",shipping:can("shipping.view")?"shipping.view":"shipping.manage",settings:"dashboard.view",team:"users.manage",edit:"products.view"})[name]) : false;
+function applyAccess(){
+ $("roleBadge").textContent=adminState.role==="owner"?"OWNER • WOMEN":"STAFF • WOMEN";
+ document.querySelectorAll("[data-owner-only]").forEach(el=>{el.hidden=adminState.role!=="owner"});
+ document.querySelectorAll("[data-tab]").forEach(el=>{
+  el.hidden=!allowedTab(el.dataset.tab);
+ });
+ for(const [id,permission] of Object.entries({
+  createForm:"products.edit",editForm:"products.edit",sizesForm:"products.edit",
+  presentationForm:"products.edit",priceForm:"products.price",imageForm:"media.manage",
+  publishBtn:"products.publish",hideBtn:"products.publish",assignShippingForm:"shipping.manage",
+  regionForm:"shipping.manage",profileForm:"shipping.manage",shippingRateForm:"shipping.manage",
+  storefrontForm:"settings.manage",brandForm:"settings.manage"
+ })){
+  const el=$(id);if(el)el.hidden=!can(permission);
+ }
+}
+function initialTab(){
+ const names=["products","create","storefront","shipping","settings","team"];
+ return names.find(name=>allowedTab(name))||null;
+}
 const msg=(s,ok=false,login=false)=>{const el=$(login?"loginMessage":"appMessage");el.textContent=s||"";el.classList.toggle("success",!!ok)};
 function setBusy(active){busy=active;document.querySelectorAll("button[type=submit]").forEach(b=>{b.disabled=active})}
 function saveAuth(data){session={access_token:data.access_token,refresh_token:data.refresh_token,expires_at:Date.now()+Math.max(60,Number(data.expires_in||3600)-30)*1000};sessionStorage.setItem(STORAGE_KEY,JSON.stringify(session))}
@@ -385,16 +422,17 @@ async function api(path,opts={}){
  if(opts.body&&!(opts.body instanceof FormData))headers["Content-Type"]="application/json";
  const r=await fetch(API+path,{method:opts.method||"GET",headers,body:opts.body instanceof FormData?opts.body:opts.body?JSON.stringify(opts.body):undefined,cache:"no-store"});
  let data={};try{data=await r.json()}catch{}
- if(!r.ok){const error=data.error==="unauthorized_owner"?"تم رفض الجلسة أو الحساب مش Owner.":data.outcome==="rejected"?"العملية مرفوضة بسبب شروط المنتج.":data.error||data.outcome||"تعذر تنفيذ العملية";throw Error(error+(Array.isArray(data.blockers)&&data.blockers.length?" ("+data.blockers.join("، ")+")":""))}
+ if(!r.ok){const error=["unauthorized_owner","unauthorized_admin"].includes(data.error)?"الحساب مش مفعل لإدارة WOMEN.":data.error==="permission_denied"?"صلاحية غير متاحة لحسابك.":data.outcome==="rejected"?"العملية مرفوضة بسبب شروط المنتج.":data.error||data.outcome||"تعذر تنفيذ العملية";throw Error(error+(Array.isArray(data.blockers)&&data.blockers.length?" ("+data.blockers.join("، ")+")":""))}
  return data;
 }
 function showLogged(logged){$("loginScreen").hidden=logged;$("appScreen").hidden=!logged}
 function tab(name){
- if(name==="edit"){["products","create","settings","storefront","shipping"].forEach(n=>document.querySelectorAll('[data-tab="'+n+'"]').forEach(b=>b.setAttribute("aria-selected","false")))}
+ if(!allowedTab(name))return;
+ if(name==="edit"){["products","create","settings","storefront","shipping","team"].forEach(n=>document.querySelectorAll('[data-tab="'+n+'"]').forEach(b=>b.setAttribute("aria-selected","false")))}
  else document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===name)));
- ["products","create","edit","settings","storefront","shipping"].forEach(n=>$(n+"Tab").hidden=n!==name);
- $("pageTitle").textContent=({products:"إدارة المنتجات",create:"إضافة موديل",edit:"تفاصيل الموديل",settings:"حالة المتجر",storefront:"تعديل واجهة المتجر",shipping:"إعدادات الشحن"})[name];
- msg("");window.scrollTo({top:0,behavior:"smooth"});
+ ["products","create","edit","settings","storefront","shipping","team"].forEach(n=>$(n+"Tab").hidden=n!==name);
+ $("pageTitle").textContent=({products:"إدارة المنتجات",create:"إضافة موديل",edit:"تفاصيل الموديل",settings:"حالة المتجر",storefront:"تعديل واجهة المتجر",shipping:"إعدادات الشحن",team:"الفريق والصلاحيات"})[name];
+ msg("");window.scrollTo({top:0,behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"instant":"smooth"});
 }
 const cell=(text,cls)=>{const e=document.createElement("td");e.textContent=String(text??"—");if(cls)e.className=cls;return e};
 async function loadProducts(){
@@ -475,6 +513,7 @@ function renderVariants(){
   const button=document.createElement("button");button.type="button";
   button.className="btn outline small";
   button.textContent=item.availability==="available"?"علّميه خلص":"علّميه متاح";
+  button.hidden=!can("products.edit");
   button.addEventListener("click",()=>actionTask(async()=>{
    await api("/admin/products/"+product.public_code+"/availability",{method:"PATCH",body:{
     version:product.structure_version,position:item.position,available:item.availability!=="available"
@@ -496,7 +535,7 @@ async function openItem(code){
  $("editTitle").value=product.title||"";$("editDescription").value=product.description||"";$("priceEgp").value=priceText(product.base_price);
  $("editCategory").value=response.presentation?.category||"أخرى";$("editIsNew").checked=response.presentation?.is_new===true;
  renderVariants();
- await loadShipping();
+ if(can("shipping.view")||can("shipping.manage"))await loadShipping();
  const blockers=Array.isArray(product.publish_blockers)?product.publish_blockers:[];
  $("blockerText").textContent=blockers.length?"ينقص النشر: "+blockers.join("، "):"شروط النشر الأساسية مستوفاة، لكن لازم نراجع العرض والطلب قبل البيع.";
  $("publishBtn").disabled=product.status==="public";
@@ -519,7 +558,8 @@ $("loginForm").addEventListener("submit",async e=>{
  const r=await fetch(BASE+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:PUB,"Content-Type":"application/json"},body:JSON.stringify({email:$("email").value.trim(),password:$("password").value})});
  if(!r.ok)throw Error("البريد أو كلمة المرور غير صحيحة.");
  saveAuth(await r.json());$("password").value="";
- await api("/admin/session");showLogged(true);tab("products");await loadProducts();
+ adminState=await api("/admin/session");applyAccess();showLogged(true);
+ const next=initialTab();if(next){tab(next);if(next==="products")await loadProducts();else if(next==="storefront")await loadStorefront();else if(next==="shipping")await loadShipping();}else msg("الحساب مفعل بدون صلاحيات. تواصل مع المالك.");
  }catch(error){clearAuth();msg("الدخول لم يكتمل: "+error.message,false,true)}
  finally{btn.disabled=false}
 });
@@ -531,10 +571,11 @@ function logout(){
 $("logoutBtn").addEventListener("click",logout);$("logoutMobile").addEventListener("click",logout);
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",async()=>{
  tab(b.dataset.tab);
- if(b.dataset.tab==="products"||b.dataset.tab==="storefront")
+ if(b.dataset.tab==="products"||b.dataset.tab==="storefront"||b.dataset.tab==="shipping"||b.dataset.tab==="team")
   await actionTask(async()=>{
    if(b.dataset.tab==="products")await loadProducts();
    else if(b.dataset.tab==="shipping")await loadShipping();
+   else if(b.dataset.tab==="team")await loadTeam();
    else await loadStorefront();
    return "";
   });
@@ -655,7 +696,11 @@ $("settingsRefresh").addEventListener("click",()=>actionTask(async()=>{
  const d=await r.json();$("healthResult").textContent="API: "+d.status+" / "+d.service;return"الاتصال بالخدمة نجح.";
 }));
 try{const raw=sessionStorage.getItem(STORAGE_KEY);if(raw)session=JSON.parse(raw)}catch{clearAuth()}
-if(session?.access_token){api("/admin/session").then(async()=>{showLogged(true);tab("products");await loadProducts()}).catch(()=>{clearAuth();showLogged(false);msg("انتهت الجلسة؛ سجّل الدخول من جديد.",false,true)})}
+if(session?.access_token){api("/admin/session").then(async state=>{
+ adminState=state;applyAccess();showLogged(true);
+ const next=initialTab();if(next){tab(next);if(next==="products")await loadProducts();else if(next==="storefront")await loadStorefront();else if(next==="shipping")await loadShipping();}
+ else msg("الحساب من غير صلاحيات. اتواصل مع المالك.");
+}).catch(()=>{clearAuth();showLogged(false);msg("انتهت الجلسة؛ سجّل الدخول من جديد.",false,true)})}
 })();
 </script>
 </body></html>
