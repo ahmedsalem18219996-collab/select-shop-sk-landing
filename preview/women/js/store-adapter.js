@@ -5,6 +5,9 @@
 window.SelectStore = (() => {
   "use strict";
   const API = "https://byluoipdunralsurwebt.supabase.co/functions/v1/women-store-bridge";
+  // Product selection and checkout are handled by the existing trusted Next.js full-stack staging origin.
+  // Never submit an order or a browser-calculated price through this static page.
+  const SECURE_CHECKOUT_ORIGIN = "https://select-shop-women-fullstack-test.ahmedsalem18219996.workers.dev";
   const demo = new URLSearchParams(location.search).get("design-preview") === "1";
   const saved = new Set();
   let bagCount = 0;
@@ -26,6 +29,8 @@ window.SelectStore = (() => {
       ? value : null;
 
   return {
+    // The full-stack cart uses its own origin-bound browser storage; never make a fake static-site bag.
+    cartUrl: demo ? null : SECURE_CHECKOUT_ORIGIN + "/cart",
     async loadCatalog() {
       if (demo) return window.SELECT_DEMO_DATA;
       window.SELECT_CONFIG.loadError = false;
@@ -61,7 +66,8 @@ window.SelectStore = (() => {
             one: false,
             isNew: item.isNew === true,
             image: validPhoto(item.image),
-            url: null,
+            // Opening a published product sends customers to the trusted, same-origin checkout stack.
+            url: SECURE_CHECKOUT_ORIGIN + "/p/" + encodeURIComponent(item.publicCode),
             purchasable: item.purchasable === true,
           }));
         return { ...empty(), products };

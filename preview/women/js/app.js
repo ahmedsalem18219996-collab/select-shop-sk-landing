@@ -54,14 +54,15 @@
       freshNote.hidden = false;
       freshNote.textContent = CFG.loadError
         ? 'تعذّر تحميل المنتجات حاليًا. البيانات التجريبية مش معروضة، جربي تحديث الصفحة.'
-        : 'متجر WOMEN قيد التجهيز · لا توجد طلبات شراء مفعّلة حاليًا';
+        : P.length ? 'اختاري الموديل، وكمّلي المقاس والطلب من صفحة المنتج الآمنة.'
+          : 'متجر WOMEN قيد التجهيز · لا توجد طلبات شراء مفعّلة حاليًا';
     }
     const storySection = $('#stories')?.parentElement;
     if (storySection && !STORIES.length) storySection.hidden = true;
     const looksSection = $('#looks');
     if (looksSection && !LOOKS.length) looksSection.hidden = true;
     const notes = [content.payment_note, content.shipping_note, content.returns_note];
-    const promises = $('.promises .promise');
+    const promises = $$('.promises .promise');
     promises.forEach((el, index) => {
       const value = notes[index];
       if (!value) { el.hidden = true; return; }
@@ -238,12 +239,15 @@
       say(r.saved ? 'اتحفظت في المحفوظة' : 'اتشالت من المحفوظة');
     }
     if (a) {
-      if (!CFG.demo) say("المنتج ظاهر للمعاينة فقط؛ الطلبات مش مفعلة لسه.");
-      else openSheet({ item: byId(a.dataset.add) });
+      const item = byId(a.dataset.add);
+      if (!CFG.demo) {
+        if (item.url) location.assign(item.url);
+        else say("المنتج غير متاح للطلب دلوقتي.");
+      } else openSheet({ item });
     }
-    /* Product pages will be enabled after secure WOMEN checkout is tested. */
+    // The product PDP on the protected full-stack origin owns options, pricing and order writes.
     if (n && !byId(n.dataset.name).url) { e.preventDefault();
-      if (!CFG.demo) say("الطلبات وصفحات الشراء قيد التجهيز.");
+      if (!CFG.demo) say("المنتج غير متاح دلوقتي.");
       else openSheet({ item: byId(n.dataset.name) });
     }
   });
@@ -317,6 +321,10 @@
   $('#fBust').addEventListener('input', fit); $('#fWaist').addEventListener('input', fit);
 
   /* ---------- header + tab bar actions ---------- */
-  $$('[data-open-bag]').forEach(b => b.addEventListener('click', () => say(bagCount ? `في الشنطة ${pieces(bagCount)}` : 'الشنطة فاضية. اضغطي + على أي قطعة')));
+  $$('[data-open-bag]').forEach(b => b.addEventListener('click', () => {
+    // Cart must open at the same origin as checkout so its persisted selections survive.
+    if (!CFG.demo && window.SelectStore.cartUrl) location.assign(window.SelectStore.cartUrl);
+    else say(bagCount ? `في الشنطة ${pieces(bagCount)}` : 'الشنطة فاضية. اضغطي + على أي قطعة');
+  }));
   $$('[data-open-saved]').forEach(b => b.addEventListener('click', () => say(savedCount ? `عندك ${pieces(savedCount)} في المحفوظة` : 'مفيش حاجة محفوظة. دوسي على القلب في أي قطعة')));
 })();
