@@ -1,27 +1,23 @@
-// Auth (Supabase Auth REST) + Admin API (Edge Function women-admin). In preview mode every call goes to the
-// in-browser mock instead, which applies the same permission map with sample data.
+// Auth (Supabase Auth REST) + Admin API (Edge Function women-admin).
+// Production admin requires an authenticated Owner/Staff session for all privileged calls.
 import { CONFIG } from './config.js';
 
 const KEY = 'wa.session';
-const MODE_KEY = 'wa.mode';
 let session = null;
-let mock = null;
 
 function load() {
-  try { session = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { session = null; }
+  // Retire older demo mode and long-lived browser storage.
+  // No preview account may survive a deployment or impersonate an Owner.
+  try { sessionStorage.removeItem('wa.mode'); } catch { /* ignore */ }
+  try { localStorage.removeItem(KEY); } catch { /* ignore */ }
+  try { session = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch { session = null; }
 }
 function persist() {
-  try { session ? localStorage.setItem(KEY, JSON.stringify(session)) : localStorage.removeItem(KEY); } catch { /* ignore */ }
+  try { session ? sessionStorage.setItem(KEY, JSON.stringify(session)) : sessionStorage.removeItem(KEY); } catch { /* ignore */ }
 }
 load();
 
-export function mode() { try { return sessionStorage.getItem(MODE_KEY) === 'demo' ? 'demo' : 'live'; } catch { return 'live'; } }
-export async function enterDemo(role = 'owner') {
-  try { sessionStorage.setItem(MODE_KEY, 'demo'); } catch { /* ignore */ }
-  const m = await getMock(); m.setRole(role);
-}
-export function leaveDemo() { try { sessionStorage.removeItem(MODE_KEY); } catch { /* ignore */ } }
-async function getMock() { if (!mock) mock = (await import('./mock.js')).createMock(); return mock; }
+export const mode = () => 'live';
 
 const authHeaders = () => ({ apikey: CONFIG.publishableKey, 'Content-Type': 'application/json' });
 
@@ -40,7 +36,6 @@ function keep(data) {
 }
 
 export async function signIn(email, password) {
-  if (mode() === 'demo') return { ok: true };
   try {
     const r = await authFetch('token?grant_type=password', { email, password });
     if (!r.ok) return { ok: false, reason: 'wrong' };
@@ -48,7 +43,6 @@ export async function signIn(email, password) {
   } catch { return { ok: false, reason: 'network' }; }
 }
 export async function signOut() {
-  if (mode() === 'demo') { leaveDemo(); return; }
   const tok = session?.access_token; session = null; persist();
   if (tok) authFetch('logout', null, 'POST', tok).catch(() => null);
 }
@@ -77,14 +71,13 @@ async function fresh() {
   if (!r.ok) { session = null; persist(); return null; }
   keep(r.data); return session.access_token;
 }
-export const hasSession = () => mode() === 'demo' || !!session;
+export const hasSession = () => !!session;
 export const sessionEmail = () => session?.email || '';
 
 let onExpired = () => {};
 export function onSessionExpired(fn) { onExpired = fn; }
 
 async function post(path, body, isForm = false) {
-  if (mode() === 'demo') return (await getMock()).route(path, body);
   const tok = await fresh();
   if (!tok) { onExpired(); return { outcome: 'unauthorized' }; }
   let res;
