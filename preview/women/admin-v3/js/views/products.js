@@ -112,6 +112,7 @@ function createSheet(ctx) {
       ${ctx.can('products.price') ? html`<label class="field"><span>${t('create.price')}</span><div class="input-money"><input id="c-price" inputmode="decimal" placeholder="0"><span>EGP</span></div></label>` : ''}
     </div>
     <div class="field"><span>${t('create.sizes')}</span>
+      <button class="chip" type="button" id="c-one-size" aria-pressed="false">${t('create.oneSize')}</button>
       <div class="chips" id="c-sizes" style="flex-wrap:wrap"></div>
       <input class="input" id="c-size" placeholder="${t('create.sizesPh')}" maxlength="18"><small>${t('create.sizesHint')}</small></div>
     <label class="switch"><input type="checkbox" id="c-new" checked><i></i>${t('create.isNew')}</label>
@@ -120,8 +121,22 @@ function createSheet(ctx) {
   $$('[data-close]', box).forEach((b) => b.addEventListener('click', closeLayer));
   const catSel = $('#c-cat', box);
   (categories.length ? Promise.resolve(categories) : loadCategories()).then((cs) => cs.forEach((c) => catSel.add(new Option(c.name, c.name))));
-  const paintSizes = () => render($('#c-sizes', box), html`${sizes.map((s, i) => html`<button type="button" class="chip" data-rm="${i}" aria-label="${t('app.delete')} ${s}">${s} ${icon('x')}</button>`)}`);
-  $('#c-size', box).addEventListener('keydown', (e) => {
+  const oneSize = 'One Size';
+  const oneSizeButton = $('#c-one-size', box);
+  const sizeInput = $('#c-size', box);
+  const paintSizes = () => {
+    const onlyOne = sizes.length === 1 && sizes[0] === oneSize;
+    oneSizeButton.setAttribute('aria-pressed', String(onlyOne));
+    sizeInput.disabled = onlyOne;
+    render($('#c-sizes', box), html`${sizes.map((s, i) => html`<button type="button" class="chip" data-rm="${i}" aria-label="${t('app.delete')} ${s}">${s} ${icon('x')}</button>`)}`);
+  };
+  oneSizeButton.addEventListener('click', () => {
+    if (sizes.length === 1 && sizes[0] === oneSize) sizes.length = 0;
+    else { sizes.length = 0; sizes.push(oneSize); }
+    sizeInput.value = '';
+    paintSizes();
+  });
+  sizeInput.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ',') return; e.preventDefault();
     const v = e.target.value.trim(); if (v && !sizes.some((x) => x.toLowerCase() === v.toLowerCase()) && sizes.length < 20) sizes.push(v);
     e.target.value = ''; paintSizes();
