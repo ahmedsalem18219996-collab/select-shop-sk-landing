@@ -1,0 +1,50 @@
+name: WOMEN Glass Motion V3 (isolated preview QA)
+
+on:
+  push:
+    branches: [main, experiment/women-glass-motion-v3-20261018]
+    paths:
+      - 'preview/women/glass-v3/**'
+      - '.github/workflows/women-glass-motion-v3-qa.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visual-preview-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify design isolation and safety
+        run: |
+          node --check preview/women/glass-v3/check.mjs
+          node - <<'NODE'
+          const fs=require('node:fs'),assert=require('node:assert/strict');
+          const src=fs.readFileSync('preview/women/glass-v3/index.html','utf8');
+          assert(src.includes('noindex,nofollow'));
+          assert(src.includes('data-open-login') && src.includes('data-filter'));
+          for(const forbidden of ['/functions/v1','/api/orders','safka-capture-order','fetch(','localStorage.setItem','sessionStorage.setItem']){
+            assert(!src.includes(forbidden),'Only a visual demo; forbidden feature: '+forbidden);
+          }
+          NODE
+      - name: Install isolated Chromium Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Test interactions and viewport widths
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 >/tmp/women-glass-v3.log 2>&1 &
+          node preview/women/glass-v3/check.mjs
+      - name: Save screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: women-glass-motion-v3
+          path: test-results/women-glass-v3
+          retention-days: 7
+          if-no-files-found: ignore
