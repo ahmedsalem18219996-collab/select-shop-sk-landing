@@ -2,7 +2,13 @@ name: WOMEN Admin V3 authenticated access QA
 
 on:
   push:
-    branches: [main, fix/women-admin-v3-require-login]
+    branches: [main]
+    paths:
+      - "preview/women/admin-v3/**"
+      - "ci/women-admin-v3-auth-qa.mjs"
+      - ".github/workflows/women-admin-v3-auth-qa.yml"
+  pull_request:
+    branches: [main]
     paths:
       - "preview/women/admin-v3/**"
       - "ci/women-admin-v3-auth-qa.mjs"
