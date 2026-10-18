@@ -77,6 +77,60 @@ try{
   }catch(e){failures.push(width+" test: "+e.message)}
   finally{await page.close()}
  }
+
+ // Regression: two simultaneous calls must share refresh and a logout during a pending
+ // refresh must never recreate a signed-in session. Everything is mocked in-page.
+ const racePage=await browser.newPage({viewport:{width:390,height:850}});
+ try {
+  await racePage.goto(origin+"/",{waitUntil:"load",timeout:20000});
+  const race=await racePage.evaluate(async()=>{
+    const api=await import("/js/api.js");
+    sessionStorage.setItem("wa.session",JSON.stringify({
+      access_token:"old-access",refresh_token:"rotating-refresh",
+      expires_at:Date.now()+1000,email:"owner@example.invalid"
+    }));
+    let releaseRefresh, signalStart;
+    let refreshCount=0, backendCalls=0;
+    const started=new Promise(resolve=>{signalStart=resolve;});
+    const originalFetch=window.fetch;
+    window.fetch=(input,opts)=>{
+      const url=String(input);
+      if(url.includes("/auth/v1/token?grant_type=refresh_token")){
+        refreshCount++; signalStart();
+        return new Promise(resolve=>{
+          releaseRefresh=()=>resolve(new Response(JSON.stringify({
+            access_token:"new-access",refresh_token:"new-refresh",expires_in:3600,
+            user:{email:"owner@example.invalid"}
+          }),{status:200,headers:{"content-type":"application/json"}}));
+        });
+      }
+      if(url.includes("/auth/v1/logout"))
+        return Promise.resolve(new Response("{}",{status:200,headers:{"content-type":"application/json"}}));
+      if(url.includes("/functions/v1/women-admin/")){
+        backendCalls++;
+        return Promise.resolve(new Response("{}",{status:200,headers:{"content-type":"application/json"}}));
+      }
+      return Promise.reject(new Error("Unexpected external request: "+url));
+    };
+    try {
+      const pending=[api.call("dashboard.summary"),api.call("products.list")];
+      await Promise.race([started,new Promise((_,reject)=>setTimeout(()=>reject(Error("refresh never started")),3000))]);
+      await api.signOut();
+      releaseRefresh();
+      const responses=await Promise.all(pending);
+      return {
+        refreshCount,backendCalls,hasSession:api.hasSession(),
+        savedSession:sessionStorage.getItem("wa.session"),
+        outcomes:responses.map(r=>r.outcome)
+      };
+    } finally { window.fetch=originalFetch; }
+  });
+  console.log("V3 refresh-logout race",JSON.stringify(race));
+  if(race.refreshCount!==1||race.backendCalls!==0||race.hasSession||
+     race.savedSession!==null||race.outcomes.some(x=>x!=="unauthorized"))
+    failures.push("Refresh/logout resurrected a session or raced refresh tokens: "+JSON.stringify(race));
+ }catch(e){failures.push("Refresh/logout race regression: "+e.message)}
+ finally{await racePage.close()}
 }finally{await browser.close();await new Promise(ok=>server.close(ok))}
 if(failures.length){console.error("FAIL:\n"+failures.join("\n"));process.exitCode=1}
 else console.log("PASS: password-protected Admin V3, no Demo Owner/Staff bypass, clean logged-out view at six widths");
