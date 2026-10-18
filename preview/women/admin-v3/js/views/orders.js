@@ -44,6 +44,8 @@ async function renderDetail(ctx, code) {
   const { order: o, fulfillment: f, fulfillment_events: ev = [], activity } = r.data;
   const reload = () => renderDetail(ctx, code);
   const stage = f?.stage || null;
+  // The database groups lines per shipping group (groups[].items); a flat list is kept as a fallback.
+  const lines = (o.groups || []).flatMap((g) => g.items || []).concat(o.items || []);
   const next = o.status === 'confirmed' ? (NEXT[stage] || []) : [];
   const history = [...(o.history || []).map((h) => ({ at: h.changed_at, text: t('status.' + h.to_status) })), ...ev.map((e) => ({ at: e.at, text: t('stage.' + e.to) + (e.note ? ` · ${e.note}` : '') }))]
     .sort((a, b) => String(b.at).localeCompare(String(a.at)));
@@ -63,8 +65,8 @@ async function renderDetail(ctx, code) {
           <label class="field"><span>${t('orders.tracking')}</span><input class="input ltr" id="ft" value="${f?.tracking_code || ''}" maxlength="80"></label>
           <label class="field"><span>${t('orders.note')}</span><input class="input" id="fn" maxlength="500"></label></div>
           <div class="row"><span class="space"></span><button class="btn btn-primary">${t('app.save')}</button></div></form>` : ''}</section>` : ''}
-      <section class="card"><div class="card-head"><h3>${t('orders.items')}</h3><span class="muted">${fmtNum(o.items?.length || 0)}</span></div>
-        <div class="order-items">${(o.items || []).map((it) => html`<div class="order-item"><div><a class="rowlink" href="#/products/${it.product_public_code}">${it.product_title}</a>
+      <section class="card"><div class="card-head"><h3>${t('orders.items')}</h3><span class="muted">${fmtNum(lines.length)}</span></div>
+        <div class="order-items">${lines.map((it) => html`<div class="order-item"><div><a class="rowlink" href="#/products/${it.product_public_code}">${it.product_title}</a>
           <div class="row-meta"><span class="code">${it.product_public_code}</span>${(it.option_selections || []).map((s) => html`<span>${s.name}: ${s.value}</span>`)}<span>${t('orders.qty')} ${fmtNum(it.quantity)}</span></div></div>
           <b class="num">${money(it.line_total_minor)}</b></div>`)}</div>
         <div class="totals" style="margin-top:14px"><div><span>${t('orders.subtotal')}</span><span class="num">${money(o.merchandise_subtotal_minor)}</span></div>
