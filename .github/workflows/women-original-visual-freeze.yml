@@ -1,0 +1,35 @@
+name: WOMEN original storefront design freeze
+
+on:
+  push:
+    branches: [main, release/women-original-design-freeze-20261018]
+    paths:
+      - "preview/women/index.html"
+      - "preview/women/css/**"
+      - "preview/women/js/**"
+      - "ci/women-original-visual-freeze.mjs"
+      - ".github/workflows/women-original-visual-freeze.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "preview/women/index.html"
+      - "preview/women/css/**"
+      - "preview/women/js/**"
+      - "ci/women-original-visual-freeze.mjs"
+      - ".github/workflows/women-original-visual-freeze.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ensure-original-design:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check original visual sources are unchanged
+        run: node ci/women-original-visual-freeze.mjs
