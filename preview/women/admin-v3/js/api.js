@@ -81,7 +81,14 @@ async function fresh() {
   if (!refreshing) {
     const token = session.refresh_token;
     refreshing = authFetch('token?grant_type=refresh_token', { refresh_token: token })
-      .then((r) => { sync(); if (r.ok) keep(r.data); else if (session?.refresh_token === token) { session = null; persist(); } })
+      .then((r) => {
+        sync();
+        // A sign-out or new sign-in may have replaced this session while refresh was in flight.
+        // Never resurrect a revoked session with a late successful refresh response.
+        if (session?.refresh_token !== token) return;
+        if (r.ok) keep(r.data);
+        else { session = null; persist(); }
+      })
       .catch(() => null)
       .finally(() => { refreshing = null; });
   }
