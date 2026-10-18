@@ -2,7 +2,7 @@ name: WOMEN temporary preview mobile QA (isolated)
 
 on:
   push:
-    branches: [main, feature/women-claude-admin-catalog, feature/women-original-ui-secure-commerce-links-20261018]
+    branches: [main, feature/women-claude-admin-catalog]
     paths:
       - "preview/women/**"
       - "ci/women-preview-qa.mjs"
