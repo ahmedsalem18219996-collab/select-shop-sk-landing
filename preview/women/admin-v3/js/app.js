@@ -2,7 +2,7 @@
 // hash router, command palette (Ctrl/⌘ K), theme and language. Views live in ./views/*.js.
 import { t, getLang, setLang, applyLang } from './i18n.js';
 import { html, render, $, $$, icon, sheet, closeLayer, island, initials, debounce, esc } from './ui.js';
-import * as api from './api.js';
+import * as api from './api.js?v=5';
 
 const app = document.getElementById('app');
 const state = { session: null, route: null, view: null };
