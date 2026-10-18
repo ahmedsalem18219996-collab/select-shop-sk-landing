@@ -12,6 +12,10 @@ export default {
       if (r.outcome !== 'ok') { fail(r); return; }
       const { profiles, regions, rates } = r.data;
       const rate = (p, g) => rates.find((x) => x.profile_key === p && x.region_key === g);
+      const sortedRegions = regions.slice().sort((a, b) => {
+        const priority = (g) => g.key === 'cairo' ? 0 : g.key === 'giza' ? 1 : 2;
+        return priority(a) - priority(b) || a.label.localeCompare(b.label, 'ar');
+      });
       render(el, html`<div class="page">
         <div class="page-head"><div><h2>${t('shipping.title')}</h2><p>${t('shipping.subtitle')}</p></div>
           ${edit ? html`<div class="actions"><button class="btn btn-ghost" data-new="region">${icon('plus')}${t('shipping.addRegion')}</button><button class="btn btn-primary" data-new="profile">${icon('plus')}${t('shipping.addProfile')}</button></div>` : ''}</div>
@@ -20,10 +24,17 @@ export default {
             ${p.active ? html`<span class="badge ok">${t('shipping.active')}</span>` : html`<span class="badge">${t('status.hidden')}</span>`}
             ${edit ? html`<button class="icon-btn" data-edit-profile="${p.key}" aria-label="${t('app.edit')}">${icon('gear')}</button>` : ''}</div>`)}</div></section>
         <section class="card"><div class="card-head"><h3>${t('shipping.rates')}</h3><span class="muted">${fmtNum(regions.length)} ${t('shipping.regions')}</span></div>
+          <div style="padding:0 16px 12px"><label class="field"><span>${t('shipping.searchRegion')}</span><input class="input" type="search" id="region-search" placeholder="${t('shipping.searchRegion')}" autocomplete="off"></label><small class="muted">${t('shipping.rateHint')}</small></div>
           <div class="table-wrap"><table class="t"><thead><tr><th>${t('shipping.regions')}</th>${profiles.map((p) => html`<th>${p.name}</th>`)}${edit ? html`<th></th>` : ''}</tr></thead>
-          <tbody>${regions.map((g) => html`<tr data-region="${g.key}"><td><b>${g.label}</b> ${g.active ? '' : html`<span class="badge">${t('status.hidden')}</span>`}<br><small class="code muted">${g.key}</small></td>
-            ${profiles.map((p) => { const x = rate(p.key, g.key); return html`<td>${edit ? html`<div class="input-money" style="min-width:110px"><input data-rate="${p.key}" inputmode="decimal" value="${x?.active ? x.amount_minor / 100 : ''}" placeholder="${t('shipping.notSet')}" aria-label="${p.name} · ${g.label}"><span>EGP</span></div>` : (x?.active ? money(x.amount_minor) : html`<span class="muted">—</span>`)}</td>`; })}
+          <tbody>${sortedRegions.map((g) => html`<tr data-region="${g.key}"><td><b>${g.label}</b> ${g.active ? '' : html`<span class="badge">${t('status.hidden')}</span>`}<br><small class="code muted">${g.key}</small></td>
+            ${profiles.map((p) => { const x = rate(p.key, g.key); return html`<td>${edit ? html`<div class="input-money" style="min-width:110px"><input data-rate="${p.key}" data-last-amount="${x?.amount_minor || 0}" data-last-active="${x?.active ? '1' : '0'}" inputmode="decimal" value="${x?.active ? x.amount_minor / 100 : ''}" placeholder="${t('shipping.notSet')}" aria-label="${p.name} · ${g.label}"><span>EGP</span></div>` : (x?.active ? money(x.amount_minor) : html`<span class="muted">—</span>`)}</td>`; })}
             ${edit ? html`<td><button class="icon-btn" data-edit-region="${g.key}" aria-label="${t('app.edit')}">${icon('gear')}</button></td>` : ''}</tr>`)}</tbody></table></div></section></div>`);
+      $('#region-search', el)?.addEventListener('input', (e) => {
+        const q = e.target.value.trim().toLocaleLowerCase();
+        $$('tr[data-region]', el).forEach((row) => {
+          row.style.display = !q || row.textContent.toLocaleLowerCase().includes(q) ? '' : 'none';
+        });
+      });
       if (!edit) return;
       const form = (kind, cur) => {
         const box = sheet({ title: kind === 'region' ? (cur ? cur.label : t('shipping.addRegion')) : (cur ? cur.name : t('shipping.addProfile')), body: html`
@@ -47,10 +58,25 @@ export default {
     };
   if (edit) el.addEventListener('change', async (e) => {
       const inp = e.target.closest('[data-rate]'); if (!inp) return;
-      const v = inp.value.trim(); const minor = v ? toMinor(v) : 0;
-      if (minor === null) { inp.setAttribute('aria-invalid', 'true'); return; }
-      const res = await call('shipping.set_rate', { profile_key: inp.dataset.rate, region_key: inp.closest('tr').dataset.region, amount_minor: minor, active: !!v });
-      if (res.outcome === 'saved') { inp.removeAttribute('aria-invalid'); done(); } else fail(res);
+      const v = inp.value.trim();
+      const previous = Number(inp.dataset.lastAmount || 0);
+      // The database requires a positive retained amount even when a rate is disabled.
+      // Empty new fields need no write; clearing an existing field turns that rate off.
+      if (!v && !previous) return;
+      const minor = v ? toMinor(v) : previous;
+      if (minor === null || minor <= 0) { inp.setAttribute('aria-invalid', 'true'); return; }
+      inp.disabled = true;
+      try {
+        const res = await call('shipping.set_rate', { profile_key: inp.dataset.rate, region_key: inp.closest('tr').dataset.region, amount_minor: minor, active: !!v });
+        if (res.outcome === 'saved') {
+          inp.dataset.lastAmount = String(minor);
+          inp.dataset.lastActive = v ? '1' : '0';
+          inp.removeAttribute('aria-invalid'); done();
+        } else {
+          inp.value = inp.dataset.lastActive === '1' ? String(previous / 100) : '';
+          fail(res);
+        }
+      } finally { inp.disabled = false; }
   });
     await load();
   },
