@@ -98,6 +98,22 @@ try{
   await live.screenshot({path:"test-results/women-live-mobile-390.png",fullPage:true,animations:"disabled"});
  }catch(e){failures.push("Live catalog smoke "+e.message)}
  finally{await live.close();}
+ // Live catalog fixture: approved original home must open trusted PDP/Cart, not accept a fake order.
+ const linked=await browser.newPage({viewport:{width:390,height:844},reducedMotion:"reduce"});
+ try {
+  const MEDIA="https://byluoipdunralsurwebt.supabase.co/storage/v1/object/public/product-media/media/"+"a".repeat(32)+".jpg";
+  const WORKER="https://select-shop-women-fullstack-test.ahmedsalem18219996.workers.dev";
+  await linked.route("https://byluoipdunralsurwebt.supabase.co/functions/v1/women-store-bridge/catalog",r=>r.fulfill({status:200,contentType:"application/json",headers:{"access-control-allow-origin":"*"},body:JSON.stringify({items:[{publicCode:"SS-1001",title:"One Size trial",priceMinor:69900,purchasable:true,image:MEDIA,category:"أطقم",isNew:true}]})}));
+  await linked.goto(ORIGIN+"/",{waitUntil:"load"});
+  await linked.locator('#feed .card').first().waitFor({timeout:15000});
+  const link=await linked.locator('#feed [data-name="SS-1001"]').getAttribute('href');
+  if(link!==WORKER+"/p/SS-1001")failures.push("Live product link not routed to trusted checkout origin: "+link);
+  if((await linked.locator('#feed .card').count())!==1)failures.push("Public catalog fixture not displayed");
+  if((await linked.evaluate(()=>window.SelectStore.cartUrl))!==WORKER+"/cart")failures.push("Bag not bound to trusted origin");
+  const check=await linked.evaluate(()=>({width:document.documentElement.scrollWidth,viewport:innerWidth}));
+  if(check.width>check.viewport+2)failures.push("Live catalog link mode has horizontal overflow");
+ } catch(e){failures.push("Trusted commerce links: "+e.message)}
+ finally{await linked.close();}
  for(const f of ["assets/fonts/rakkas-400-arabic.woff2","assets/fonts/readex-pro-arabic.woff2","assets/fonts/dm-mono-400-latin.woff2","css/styles.css","js/app.js"]){
   const r=await fetch(ORIGIN+"/"+f);
   console.log("asset",f,r.status,r.headers.get("content-type"));
