@@ -54,7 +54,8 @@
       freshNote.hidden = false;
       freshNote.textContent = CFG.loadError
         ? 'تعذّر تحميل المنتجات حاليًا. البيانات التجريبية مش معروضة، جربي تحديث الصفحة.'
-        : 'متجر WOMEN قيد التجهيز · لا توجد طلبات شراء مفعّلة حاليًا';
+        : P.length ? 'اختاري الموديل، وكمّلي المقاس والطلب من صفحة المنتج الآمنة.'
+          : 'متجر WOMEN قيد التجهيز · لا توجد طلبات شراء مفعّلة حاليًا';
     }
     const storySection = $('#stories')?.parentElement;
     if (storySection && !STORIES.length) storySection.hidden = true;
