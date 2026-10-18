@@ -61,7 +61,7 @@
     const looksSection = $('#looks');
     if (looksSection && !LOOKS.length) looksSection.hidden = true;
     const notes = [content.payment_note, content.shipping_note, content.returns_note];
-    const promises = $('.promises .promise');
+    const promises = $$('.promises .promise');
     promises.forEach((el, index) => {
       const value = notes[index];
       if (!value) { el.hidden = true; return; }
