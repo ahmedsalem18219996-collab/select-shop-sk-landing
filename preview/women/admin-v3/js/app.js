@@ -2,7 +2,7 @@
 // hash router, command palette (Ctrl/⌘ K), theme and language. Views live in ./views/*.js.
 import { t, getLang, setLang, applyLang } from './i18n.js';
 import { html, render, $, $$, icon, sheet, closeLayer, island, initials, debounce, esc } from './ui.js';
-import * as api from './api.js';
+import * as api from './api.js?v=5';
 
 const app = document.getElementById('app');
 const state = { session: null, route: null, view: null };
@@ -73,13 +73,10 @@ function loginScreen(message = '') {
       <button class="btn btn-primary btn-block" type="submit">${t('auth.signIn')}</button>
       <button class="btn btn-ghost btn-block" type="button" data-forgot>${t('auth.forgot')}</button>
     </form>
-    <div class="demo-callout"><span class="muted">${t('auth.demoNote')}</span>
-      <div class="row"><button class="btn btn-soft btn-sm" data-demo="owner">${t('auth.demo')} · ${t('demo.owner')}</button>
-      <button class="btn btn-soft btn-sm" data-demo="staff">${t('demo.staff')}</button></div></div>`);
+`);
   const pw = $('#password', app);
   $('[data-peek]', app).onclick = (e) => { const show = pw.type === 'password'; pw.type = show ? 'text' : 'password'; render(e.currentTarget, icon(show ? 'eyeOff' : 'eye')); e.currentTarget.setAttribute('aria-label', t(show ? 'auth.hide' : 'auth.show')); };
   $('[data-forgot]', app).onclick = forgotScreen;
-  $$('[data-demo]', app).forEach((b) => b.onclick = async () => { await api.enterDemo(b.dataset.demo); boot(); });
   $('#login', app).onsubmit = async (e) => {
     e.preventDefault();
     const email = $('#email', app).value.trim(), password = pw.value;
@@ -114,7 +111,7 @@ function setPasswordScreen() {
 
 // ---------- shell ----------
 function shell() {
-  const s = state.session, items = allowedItems(), demo = api.mode() === 'demo';
+  const s = state.session, items = allowedItems();
   const navHtml = NAV.map((g) => {
     const its = g.items.filter((i) => can(i.perm)); if (!its.length) return '';
     return html`${g.group ? html`<div class="nav-group">${t('nav.' + g.group)}</div>` : ''}${its.map((i) => html`<a href="#/${i.path}" data-path="${i.path}">${icon(i.icon)}<span>${t('nav.' + i.path)}</span></a>`)}`;
@@ -140,7 +137,6 @@ function shell() {
         <button class="icon-btn" data-theme-toggle aria-label="${t('nav.theme')}">${icon(document.documentElement.dataset.theme === 'dark' ? 'sun' : 'moon')}</button>
       </header>
       <main class="main" id="main" tabindex="-1">
-        ${demo ? html`<div class="mode-banner" role="note">${icon('alert')}<span>${t('demo.banner')}</span><button class="btn btn-ghost btn-sm" data-exit-demo>${t('demo.exit')}</button></div>` : ''}
         <div id="view"></div>
       </main>
     </div>
@@ -155,7 +151,6 @@ function shell() {
   $$('[data-palette]', app).forEach((b) => b.onclick = palette);
   $('[data-lang]', app).onclick = () => { setLang(getLang() === 'ar' ? 'en' : 'ar'); shell(); route(); };
   $('[data-theme-toggle]', app).onclick = () => { applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'); shell(); route(); };
-  $('[data-exit-demo]', app)?.addEventListener('click', signOut);
   $('[data-more]', app).onclick = moreSheet;
   $('[data-new]', app)?.addEventListener('click', () => { location.hash = '#/products?new=1'; });
   const top = $('.topbar', app);
