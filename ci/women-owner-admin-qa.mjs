@@ -63,6 +63,13 @@ try{
         return route.fulfill({status:200,headers,body:'{"items":[]}'});
       if(url.includes("/admin/users"))
         return route.fulfill({status:200,headers,body:JSON.stringify({users:[{id:"owner-id",email:"owner@example.test",role:"owner",active:true,permissions:[]}],permissionKeys:[]})});
+      // Read-only Staff lands on storefront when products.view is not granted.
+      // An authenticated 200 fixture is required to avoid falsely treating a mock 404 as a login failure.
+      if(url.includes("/admin/storefront"))
+        return route.fulfill({status:200,headers,body:JSON.stringify({
+          content:{version:1,hero_title:"اختاري ستايلك",hero_highlight:"بطريقتك.",hero_description:"منتجات WOMEN",announcement:"SELECT SHOP WOMEN",payment_note:"",shipping_note:"",returns_note:""},
+          brand:{version:1,store_name:"SELECT SHOP WOMEN",primary_color:"#6E4BC8"}
+        })});
       return route.fulfill({status:404,headers,body:'{"error":"mock_not_found"}'});
    });
    try{
