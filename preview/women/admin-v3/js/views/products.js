@@ -26,7 +26,8 @@ async function renderList(ctx) {
       </div>
     </div>
     <div id="results">${skRows(6)}</div></div>`);
-  loadCategories().then((cs) => { const s = $('#cat', el); cs.forEach((c) => { const o = new Option(c.name, c.name); o.selected = c.name === state.category; s.add(o); }); });
+  // The list may arrive after the user has moved to another screen: only fill the select if it is still on the page.
+  loadCategories().then((cs) => { const s = $('#cat', el); if (!s) return; cs.forEach((c) => { const o = new Option(c.name, c.name); o.selected = c.name === state.category; s.add(o); }); });
   const results = $('#results', el);
   const load = async () => {
     const r = await call('products.list', { q: state.q || null, status: state.status || null, category: state.category || null });
@@ -285,7 +286,15 @@ const TABS = {
         const ids = media.map((m) => m.media_id), j = idx + (b.dataset.act === 'left' ? -1 : 1);
         [ids[idx], ids[j]] = [ids[j], ids[idx]]; res = await call('media.reorder', { code, media_ids: ids });
       }
-      if (b.dataset.act === 'delete') { if (!(await confirmDialog({ title: t('editor.deleteImg'), text: t('editor.deleteImgQ'), okText: t('app.delete'), danger: true }))) return; res = await deleteProductImage(code, id); }
+      if (b.dataset.act === 'delete') {
+        if (!(await confirmDialog({ title: t('editor.deleteImg'), text: t('editor.deleteImgQ'), okText: t('app.delete'), danger: true }))) return;
+        // The database only deletes a hidden photo (MD006): take it off the store first, then delete it.
+        if (!media[idx].hidden) {
+          const h = await call('media.set_hidden', { code, media_id: id, hidden: true });
+          if (h.outcome !== 'saved') { fail(h); return; }
+        }
+        res = await deleteProductImage(code, id);
+      }
       if (['saved', 'deleted'].includes(res?.outcome)) { done(); reload(); } else if (res) fail(res);
     });
   },

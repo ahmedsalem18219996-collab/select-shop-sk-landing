@@ -207,7 +207,10 @@ async function route() {
   if (target !== name) { location.replace('#/' + target); return; }
   $$('[data-path]', app).forEach((a) => { if (a.dataset.path === name) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
   const mod = (await VIEWS[target]()).default;
-  const el = $('#view', app);
+  // Each navigation renders into its own element. A late async render or reload from the previous screen writes into
+  // a detached element and can no longer draw over the current one.
+  const el = document.createElement('div');
+  $('#view', app).replaceChildren(el);
   const title = mod.title ? mod.title(rest) : t('nav.' + target);
   $('#page-title', app).textContent = title; document.title = `${title} · SELECT WOMEN`;
   state.view?.destroy?.();
