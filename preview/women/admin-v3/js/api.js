@@ -3,14 +3,20 @@
 import { CONFIG } from './config.js';
 
 const KEY = 'wa.session';
+const EXPIRED = 'wa:session-expired';
 let session = null;
 
+// The tab's sessionStorage is the single source of truth for the session. Every read goes through sync(), so a
+// second copy of this module (e.g. a cached or differently-versioned URL) can never act on a stale token.
+function sync() {
+  try { session = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch { session = null; }
+}
 function load() {
   // Retire older demo mode and long-lived browser storage.
   // No preview account may survive a deployment or impersonate an Owner.
   try { sessionStorage.removeItem('wa.mode'); } catch { /* ignore */ }
   try { localStorage.removeItem(KEY); } catch { /* ignore */ }
-  try { session = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch { session = null; }
+  sync();
 }
 function persist() {
   try { session ? sessionStorage.setItem(KEY, JSON.stringify(session)) : sessionStorage.removeItem(KEY); } catch { /* ignore */ }
@@ -43,6 +49,7 @@ export async function signIn(email, password) {
   } catch { return { ok: false, reason: 'network' }; }
 }
 export async function signOut() {
+  sync();
   const tok = session?.access_token; session = null; persist();
   if (tok) authFetch('logout', null, 'POST', tok).catch(() => null);
 }
@@ -60,22 +67,34 @@ export function consumeAuthHash() {
   return type;
 }
 export async function setPassword(password) {
+  sync();
   const r = await authFetch('user', { password }, 'PUT', session?.access_token);
   return r.ok ? { ok: true } : { ok: false, reason: r.status === 422 ? 'weak' : 'expired' };
 }
+// One refresh at a time: parallel requests near expiry share it instead of spending the refresh token twice.
+let refreshing = null;
 async function fresh() {
+  sync();
   if (!session) return null;
   if (session.expires_at - Date.now() > 60_000) return session.access_token;
   if (!session.refresh_token) return null;
-  const r = await authFetch('token?grant_type=refresh_token', { refresh_token: session.refresh_token });
-  if (!r.ok) { session = null; persist(); return null; }
-  keep(r.data); return session.access_token;
+  if (!refreshing) {
+    const token = session.refresh_token;
+    refreshing = authFetch('token?grant_type=refresh_token', { refresh_token: token })
+      .then((r) => { sync(); if (r.ok) keep(r.data); else if (session?.refresh_token === token) { session = null; persist(); } })
+      .catch(() => null)
+      .finally(() => { refreshing = null; });
+  }
+  await refreshing;
+  sync();
+  return session && session.expires_at - Date.now() > 0 ? session.access_token : null;
 }
 export const hasSession = () => !!session;
-export const sessionEmail = () => session?.email || '';
+export const sessionEmail = () => { sync(); return session?.email || ''; };
 
-let onExpired = () => {};
-export function onSessionExpired(fn) { onExpired = fn; }
+// Broadcast, so the shell reacts whichever copy of this module saw the expiry.
+const onExpired = () => dispatchEvent(new Event(EXPIRED));
+export function onSessionExpired(fn) { addEventListener(EXPIRED, fn); }
 
 async function post(path, body, isForm = false) {
   const tok = await fresh();

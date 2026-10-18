@@ -2,7 +2,8 @@
 // hash router, command palette (Ctrl/⌘ K), theme and language. Views live in ./views/*.js.
 import { t, getLang, setLang, applyLang } from './i18n.js';
 import { html, render, $, $$, icon, sheet, closeLayer, island, initials, debounce, esc } from './ui.js';
-import * as api from './api.js?v=5';
+// Same specifier as every view ('../api.js'): one module instance, one session. Cache-busting is done on app.js in index.html.
+import * as api from './api.js';
 
 const app = document.getElementById('app');
 const state = { session: null, route: null, view: null };
