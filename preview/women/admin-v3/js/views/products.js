@@ -120,7 +120,14 @@ function createSheet(ctx) {
     foot: html`<button class="btn btn-ghost" data-close>${t('app.cancel')}</button><button class="btn btn-primary" data-create>${t('create.submit')}</button>` });
   $$('[data-close]', box).forEach((b) => b.addEventListener('click', closeLayer));
   const catSel = $('#c-cat', box);
-  (categories.length ? Promise.resolve(categories) : loadCategories()).then((cs) => cs.forEach((c) => catSel.add(new Option(c.name, c.name))));
+  const createButton = $('[data-create]', box);
+  createButton.disabled = true;
+  (categories.length ? Promise.resolve(categories) : loadCategories()).then((cs) => {
+    const ordered = [...cs].sort((a, b) => Number(b.visible !== false) - Number(a.visible !== false));
+    ordered.forEach((c) => catSel.add(new Option(c.visible === false ? `${c.name} (${t('status.hidden')})` : c.name, c.name)));
+    const firstVisible = ordered.find((c) => c.visible !== false);
+    if (firstVisible) catSel.value = firstVisible.name;
+  }).finally(() => { createButton.disabled = false; });
   const oneSize = 'One Size';
   const oneSizeButton = $('#c-one-size', box);
   const sizeInput = $('#c-size', box);
@@ -165,6 +172,20 @@ function createSheet(ctx) {
         else li.textContent = '✗ ' + t('create.steps.sizes');
       } else if (!sizes.length && r.outcome === 'created') {
         await call('products.structure', { code, version, change: { op: 'create_variants', selections: [[]] } });
+      }
+      // Shipping is a separate explicit product assignment. Without it, an Owner-created
+      // product may be visible but cannot be quoted correctly at checkout.
+      // Pick the WOMEN default when available, else the first active shipping profile.
+      if (ctx.can('shipping.manage') && r.outcome === 'created') {
+        const available = await call('shipping.get');
+        if (available.outcome === 'ok') {
+          const active = (available.data?.profiles || []).filter((p) => p.active);
+          const standard = active.find((p) => p.key === 'women_standard') || active[0];
+          if (standard) {
+            const assigned = await call('products.set_shipping_profile', { code, profile_key: standard.key });
+            if (assigned.outcome !== 'saved') fail(assigned);
+          }
+        } else fail(available);
       }
       closeLayer(); done(t('create.done')); ctx.go('products/' + code);
     });
