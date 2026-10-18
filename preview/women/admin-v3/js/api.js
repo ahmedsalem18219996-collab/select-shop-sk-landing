@@ -1,0 +1,115 @@
+// Auth (Supabase Auth REST) + Admin API (Edge Function women-admin). In preview mode every call goes to the
+// in-browser mock instead, which applies the same permission map with sample data.
+import { CONFIG } from './config.js';
+
+const KEY = 'wa.session';
+const MODE_KEY = 'wa.mode';
+let session = null;
+let mock = null;
+
+function load() {
+  try { session = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { session = null; }
+}
+function persist() {
+  try { session ? localStorage.setItem(KEY, JSON.stringify(session)) : localStorage.removeItem(KEY); } catch { /* ignore */ }
+}
+load();
+
+export function mode() { try { return sessionStorage.getItem(MODE_KEY) === 'demo' ? 'demo' : 'live'; } catch { return 'live'; } }
+export async function enterDemo(role = 'owner') {
+  try { sessionStorage.setItem(MODE_KEY, 'demo'); } catch { /* ignore */ }
+  const m = await getMock(); m.setRole(role);
+}
+export function leaveDemo() { try { sessionStorage.removeItem(MODE_KEY); } catch { /* ignore */ } }
+async function getMock() { if (!mock) mock = (await import('./mock.js')).createMock(); return mock; }
+
+const authHeaders = () => ({ apikey: CONFIG.publishableKey, 'Content-Type': 'application/json' });
+
+async function authFetch(path, body, method = 'POST', bearer) {
+  const res = await fetch(`${CONFIG.supabaseUrl}/auth/v1/${path}`, {
+    method, headers: { ...authHeaders(), ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  let data = null; try { data = await res.json(); } catch { /* empty */ }
+  return { ok: res.ok, status: res.status, data };
+}
+function keep(data) {
+  session = { access_token: data.access_token, refresh_token: data.refresh_token,
+    expires_at: Date.now() + (Number(data.expires_in) || 3600) * 1000, email: data.user?.email || session?.email || '' };
+  persist();
+}
+
+export async function signIn(email, password) {
+  if (mode() === 'demo') return { ok: true };
+  try {
+    const r = await authFetch('token?grant_type=password', { email, password });
+    if (!r.ok) return { ok: false, reason: 'wrong' };
+    keep(r.data); return { ok: true };
+  } catch { return { ok: false, reason: 'network' }; }
+}
+export async function signOut() {
+  if (mode() === 'demo') { leaveDemo(); return; }
+  const tok = session?.access_token; session = null; persist();
+  if (tok) authFetch('logout', null, 'POST', tok).catch(() => null);
+}
+export async function requestReset(email) {
+  try { await authFetch(`recover?redirect_to=${encodeURIComponent(CONFIG.appUrl)}`, { email }); } catch { /* same answer either way */ }
+  return { ok: true };
+}
+// Invitation / recovery links come back as #access_token=…&type=invite|recovery
+export function consumeAuthHash() {
+  const h = new URLSearchParams(location.hash.replace(/^#/, ''));
+  const tok = h.get('access_token'), type = h.get('type');
+  if (!tok || !['invite', 'recovery', 'signup', 'magiclink'].includes(type || '')) return null;
+  keep({ access_token: tok, refresh_token: h.get('refresh_token'), expires_in: h.get('expires_in') });
+  history.replaceState(null, '', location.pathname + location.search);
+  return type;
+}
+export async function setPassword(password) {
+  const r = await authFetch('user', { password }, 'PUT', session?.access_token);
+  return r.ok ? { ok: true } : { ok: false, reason: r.status === 422 ? 'weak' : 'expired' };
+}
+async function fresh() {
+  if (!session) return null;
+  if (session.expires_at - Date.now() > 60_000) return session.access_token;
+  if (!session.refresh_token) return null;
+  const r = await authFetch('token?grant_type=refresh_token', { refresh_token: session.refresh_token });
+  if (!r.ok) { session = null; persist(); return null; }
+  keep(r.data); return session.access_token;
+}
+export const hasSession = () => mode() === 'demo' || !!session;
+export const sessionEmail = () => session?.email || '';
+
+let onExpired = () => {};
+export function onSessionExpired(fn) { onExpired = fn; }
+
+async function post(path, body, isForm = false) {
+  if (mode() === 'demo') return (await getMock()).route(path, body);
+  const tok = await fresh();
+  if (!tok) { onExpired(); return { outcome: 'unauthorized' }; }
+  let res;
+  try {
+    res = await fetch(`${CONFIG.api}${path}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${tok}`, apikey: CONFIG.publishableKey, ...(isForm ? {} : { 'Content-Type': 'application/json' }) },
+      body: isForm ? body : JSON.stringify(body),
+    });
+  } catch { return { outcome: 'network' }; }
+  let data; try { data = await res.json(); } catch { data = { outcome: 'server_error' }; }
+  if (res.status === 401) onExpired();
+  return data;
+}
+
+// Every JSON operation: the database decides whether this user may do it.
+export const call = (op, args = {}) => post('/call', { op, args });
+export const uploadProductImage = (form) => post('/media/upload', form, true);
+export const deleteProductImage = (code, mediaId) => post('/media/delete', { code, media_id: mediaId });
+export const uploadStorefrontImage = (form) => post('/storefront/upload', form, true);
+export const uploadStoreAsset = (form) => post('/settings/asset', form, true);
+export const inviteStaff = (email, permissions) => post('/users/invite', { email, permissions });
+
+export function mediaUrl(pathOrUrl) {
+  if (!pathOrUrl) return null;
+  if (/^(https:|blob:|data:)/.test(pathOrUrl)) return pathOrUrl;
+  return CONFIG.storagePublic + String(pathOrUrl).replace(/^\/+/, '');
+}
