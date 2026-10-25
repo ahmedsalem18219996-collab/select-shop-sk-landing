@@ -1,14 +1,9 @@
 name: SELECT SHOP Safqa daily catalog sync
 # inclusive_shipping_guard_110: supplier recommended retail + current max active regional delivery (110 EGP), verified by server
 
+# Legacy Safqa/Prof funnel retired: no scheduled or push-triggered supplier sync.
+# Preserve a manual-only recovery path; no suppliers, orders or catalog rows are deleted.
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/safka-daily-sync.yml'
-      - 'ci/safka-daily-sync.mjs'
-  schedule:
-    - cron: '25 2 * * *'
   workflow_dispatch:
 
 permissions:
